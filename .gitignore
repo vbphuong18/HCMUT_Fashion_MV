@@ -1,34 +1,24 @@
-# Whitelist: ignore everything at the root by default, then allow chosen paths.
-# This keeps datasets (*.zip, images/), checkpoints (FashionMV_hf/) and personal
-# documents (CV, transcripts) out of the public repo even if new files appear.
+# Whitelist: ignore everything at the root by default, then allow chosen folders.
+# Datasets, checkpoints, personal documents and archived drafts stay local-only
+# even when new files are dropped into the project root.
 /*
 !/.gitignore
 !/README.md
-!/TT1_Report/
-!/kaggle_kernel_*/
-!/out/
-!/decuong_MultiViewCIR_v3.tex
-!/VoThiBichPhuong2470570_literature_overview.pdf
-!/VoThiBichPhuong2470570_MultiViewCIR_v2.pdf
+!/report/
+!/src/
+!/results/
+!/docs/
 
-# ---- TT1_Report: keep LaTeX sources, figures, scripts and the final PDF ----
-/TT1_Report/out/*
-!/TT1_Report/out/main.pdf
-/TT1_Report/out_timeline/
-/TT1_Report/out_translation/
-/TT1_Report/_backup_v1/
-# Full Vietnamese translation of the paper: derivative of a copyrighted work
-/TT1_Report/paper_translation.tex
+# ---- report/: LaTeX sources, figures and the final PDF ----
+/report/build/
 
-# ---- Kaggle kernels: keep script + metadata + ProCIR result JSON, drop downloads ----
-/kaggle_kernel_*/output/*
-!/kaggle_kernel_*/output/results/
+# ---- results/: keep JSON + logs, drop regenerable embedding caches ----
+/results/baselines/cache/
 
-# ---- out/: keep result JSONs and run logs, drop embedding caches & old builds ----
-/out/*
-!/out/*.json
-!/out/*_run.log
-!/out/ext_*.log
+# ---- docs/: keep proposal + literature review only ----
+# Paper PDF/full text and the full Vietnamese translation are copyrighted or derivative.
+/docs/paper/
+/docs/translation/
 
 # ---- LaTeX build artifacts anywhere ----
 *.aux
@@ -42,11 +32,16 @@
 *.toc
 *.synctex.gz
 *.log
-!/out/*_run.log
-!/out/ext_*.log
+!/results/baselines/logs/*.log
 
 # ---- Python / OS ----
 __pycache__/
 *.pyc
 .DS_Store
 Thumbs.db
+
+# Local-only folders at the root (already excluded by the whitelist above):
+#   data/        datasets, images, checkpoints, raw zips, Kaggle downloads
+#   FashionMV/   clone of https://github.com/yuandaxia2001/FashionMV
+#   personal/    CV, transcripts
+#   archive/     old drafts, backups and duplicate files

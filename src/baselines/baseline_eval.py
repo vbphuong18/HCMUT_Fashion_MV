@@ -14,14 +14,17 @@ import json
 import os
 import random
 import time
+from pathlib import Path
 
 import torch
 import torch.nn.functional as F
 from PIL import Image
 from transformers import CLIPModel, CLIPProcessor
 
-DATA_DIR = "D:/1/Intern12/FashionMV_hf/data/data"
-IMAGE_ROOT = "D:/1/Intern12/images"
+ROOT = Path(__file__).resolve().parents[2]  # repository root
+DATA_DIR = str(ROOT / "data" / "FashionMV_hf" / "data" / "data")
+IMAGE_ROOT = str(ROOT / "data" / "images")
+OUT_DIR = str(ROOT / "results" / "baselines")
 MAX_VIEWS = 5
 F200K_SAMPLE_SIZE = 2000  # match the subsample used for the ProCIR f200k-v3 Kaggle run
 IMG_BATCH = 32
@@ -188,7 +191,7 @@ def main():
               f"(queries={len(q_embs)}, gallery={len(pid_list)})", flush=True)
         all_results[dataset] = {**r, "n_queries": len(q_embs), "n_gallery": len(pid_list)}
 
-    out_path = args.output or f"D:/1/Intern12/out/baseline_{args.model.replace('/', '_')}.json"
+    out_path = args.output or f"{OUT_DIR}/baseline_{args.model.replace('/', '_')}.json"
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
     with open(out_path, "w") as f:
         json.dump(all_results, f, indent=2)

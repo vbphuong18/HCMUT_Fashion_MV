@@ -1,12 +1,15 @@
 import glob
 import json
 import os
+from pathlib import Path
 
 import pyarrow.parquet as pq
 
-SRC_GLOB = "D:/1/Intern12/fashion200k_probe/data/*.parquet"
-OUT_ROOT = "D:/1/Intern12/images/f200k"
-TRIPLETS = "D:/1/Intern12/FashionMV_hf/data/data/val_triplets.jsonl"
+ROOT = Path(__file__).resolve().parents[2]  # repository root
+# parquet shards downloaded from HuggingFace (Marqo/fashion200k)
+SRC_GLOB = str(ROOT / "data" / "raw" / "fashion200k_parquet" / "data" / "*.parquet")
+OUT_ROOT = str(ROOT / "data" / "images" / "f200k")
+TRIPLETS = str(ROOT / "data" / "FashionMV_hf" / "data" / "data" / "val_triplets.jsonl")
 
 os.makedirs(OUT_ROOT, exist_ok=True)
 

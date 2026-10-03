@@ -5,17 +5,28 @@ Summary and reproduction of the paper **FashionMV: Product-Level Composed Image 
 - Student: Võ Thị Bích Phượng — 2470570, HCMUT
 - Advisor: Assoc. Prof. Dr. Võ Thị Ngọc Châu
 
-## Contents
+## Repository layout
 
-| Path | Description |
-|------|-------------|
-| `TT1_Report/` | LaTeX source of the report (book format, 7 chapters); the compiled PDF is `TT1_Report/out/main.pdf` |
-| `TT1_Report/scripts/` | Image extraction, Kaggle evaluation kernels, and baseline scripts |
-| `kaggle_kernel_*/` | Kaggle kernel versions (`script.py` + `kernel-metadata.json`) used to run ProCIR on GPU |
-| `out/` | Raw results: baseline JSON files and run logs |
-| `decuong_MultiViewCIR_v3.tex` | Research proposal (LaTeX source) |
-| `VoThiBichPhuong2470570_MultiViewCIR_v2.pdf` | Research proposal (PDF) |
-| `VoThiBichPhuong2470570_literature_overview.pdf` | Literature review |
+```
+.
+├── report/                     # Internship 1 report (LaTeX, book format)
+│   ├── TT1_report.pdf          # compiled report
+│   ├── main.tex
+│   ├── chapter/ frontmatter/ appendix/ references/
+│   └── figures/
+├── src/
+│   ├── data/                   # extract substitute images (HF parquet -> data/images/)
+│   ├── baselines/              # CLIP / FashionCLIP late-fusion baselines
+│   └── kaggle/<version>/       # Kaggle kernels running ProCIR's evaluate.py on GPU
+├── results/
+│   ├── procir/                 # ProCIR reproduction (Kaggle outputs)
+│   └── baselines/              # baseline JSON results + logs/
+└── docs/
+    ├── proposal/               # research proposal (.tex + .pdf)
+    └── VoThiBichPhuong2470570_literature_overview.pdf
+```
+
+Local-only folders (not in the repo): `data/` (annotations, checkpoint, images, raw zips), `FashionMV/` (clone of the official code), `personal/`, `archive/`.
 
 ## Main results (Recall@K, %)
 
@@ -28,18 +39,20 @@ Summary and reproduction of the paper **FashionMV: Product-Level Composed Image 
 
 \* Subsample of 1,500 triplets (seed 42), gallery of 2,367 products versus 10,720 in the paper, so these numbers are not directly comparable with the paper's. See Chapter 6 of the report.
 
-## Not included
+## Reproducing
 
-Datasets, images and checkpoints are not redistributed. To get them:
+1. Get the data into `data/` (not redistributed here):
+   - Annotations: <https://huggingface.co/datasets/yuandaxia/FashionMV> → `data/FashionMV_hf/data/`
+   - Substitute images: `Marqo/deepfashion-inshop`, `Marqo/fashion200k` parquet → `data/raw/<name>_parquet/`, then run `python src/data/extract_deepfashion.py` and `python src/data/extract_f200k.py`
+2. Baselines (CPU): `python src/baselines/baseline_ext.py --model patrickjohncyh/fashion-clip`
+3. ProCIR (Kaggle GPU): `kaggle kernels push -p src/kaggle/deepfashion` (the kernel downloads the code, checkpoint and images by itself)
 
-- Evaluation code: <https://github.com/yuandaxia2001/FashionMV>
-- Annotations: <https://huggingface.co/datasets/yuandaxia/FashionMV>
-- Checkpoint: <https://huggingface.co/yuandaxia/ProCIR>
-- Substitute images: `Marqo/deepfashion-inshop` and `Marqo/fashion200k` on HuggingFace
+Official code: <https://github.com/yuandaxia2001/FashionMV> · Checkpoint: <https://huggingface.co/yuandaxia/ProCIR>
 
-## Build the report
+## Building the report
 
 ```bash
-docker run --rm -v "$PWD/TT1_Report:/work" -w /work texlive/texlive:latest-full \
-  latexmk -pdf -interaction=nonstopmode -outdir=out main.tex
+docker run --rm -v "$PWD/report:/work" -w /work texlive/texlive:latest-full \
+  latexmk -pdf -interaction=nonstopmode -outdir=build main.tex
+cp report/build/main.pdf report/TT1_report.pdf
 ```

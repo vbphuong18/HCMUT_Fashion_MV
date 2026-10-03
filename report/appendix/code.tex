@@ -1,0 +1,26 @@
+\chapter{Danh mục mã nguồn thực nghiệm}\label{chapter:appendix-code}
+\pagestyle{fancy}
+
+Toàn bộ mã nguồn và kết quả thô của thực nghiệm được công khai tại kho mã \url{https://github.com/vbphuong18/HCMUT_Fashion_MV}: script nằm trong thư mục \texttt{src/}, kết quả (tệp JSON và log) nằm trong thư mục \texttt{results/}. Mã đánh giá ProCIR (\texttt{evaluate.py} và gói \texttt{procir}) là mã gốc của tác giả tại \url{https://github.com/yuandaxia2001/FashionMV}, được sử dụng nguyên trạng, không chỉnh sửa. Bảng~\ref{tab:scripts} liệt kê chức năng của từng script.
+
+\begin{table}[h]
+\centering
+\caption{Danh mục script sử dụng trong thực nghiệm.}
+\label{tab:scripts}
+\small
+\begin{tabular}{p{4.9cm}p{6.6cm}l}
+\toprule
+Tệp & Chức năng & Môi trường \\
+\midrule
+\texttt{src/data/extract\_deepfashion.py} & Trích ảnh DeepFashion từ parquet \texttt{Marqo/deepfashion-inshop}, dựng thư mục theo mã sản phẩm FashionMV & CPU cục bộ \\
+\texttt{src/data/extract\_f200k.py} & Trích ảnh Fashion200K từ parquet \texttt{Marqo/fashion200k}, thống kê độ phủ & CPU cục bộ \\
+\texttt{src/kaggle/deepfashion/} & Kernel Kaggle: tải annotation, checkpoint, ảnh; chạy \texttt{evaluate.py} trên toàn bộ 5.188 triplet DeepFashion (batch 32) & Kaggle GPU \\
+\texttt{src/kaggle/f200k\_v4/} & Kernel Kaggle: lấy mẫu 1.500 triplet Fashion200K khả dụng (seed 42), chạy \texttt{evaluate.py} (batch 8) & Kaggle GPU \\
+\texttt{src/kaggle/\{f200k, f200k\_v3, deepfashion\_v3\}/} & Các phiên bản kernel khác (Bảng~\ref{tab:kaggle-runs}) & Kaggle GPU \\
+\texttt{src/baselines/baseline\_eval.py} & Baseline CLIP/FashionCLIP hợp nhất muộn ($\alpha = 0{,}5$), lần chạy đầu (Fashion200K mẫu 2.000) & CPU cục bộ \\
+\texttt{src/baselines/baseline\_ext.py} & Baseline mở rộng: cùng tập triplet/gallery với ProCIR, khảo sát $\alpha$, đánh giá có/không loại sản phẩm nguồn & CPU cục bộ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Mỗi thư mục trong \texttt{src/kaggle/} gồm \texttt{script.py} và \texttt{kernel-metadata.json}; để tái lập kết quả ProCIR, chạy lệnh \texttt{kaggle kernels push -p src/kaggle/<tên>}; kernel tự tải mọi tài nguyên cần thiết từ HuggingFace và GitHub. Để tái lập kết quả baseline, đặt annotation vào \texttt{data/FashionMV\_hf/}, chạy các script trong \texttt{src/data/} để dựng thư mục ảnh \texttt{data/images/}, rồi chạy \texttt{python src/baselines/baseline\_ext.py --model <tên mô hình>} với \texttt{openai/clip-vit-base-patch32} hoặc \texttt{patrickjohncyh/fashion-clip}.

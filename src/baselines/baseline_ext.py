@@ -16,15 +16,18 @@ import json
 import os
 import random
 import time
+from pathlib import Path
 
 import torch
 import torch.nn.functional as F
 from PIL import Image
 from transformers import CLIPModel, CLIPProcessor
 
-DATA_DIR = "D:/1/Intern12/FashionMV_hf/data/data"
-IMAGE_ROOT = "D:/1/Intern12/images"
-OUT_DIR = "D:/1/Intern12/out"
+ROOT = Path(__file__).resolve().parents[2]  # repository root
+DATA_DIR = str(ROOT / "data" / "FashionMV_hf" / "data" / "data")
+IMAGE_ROOT = str(ROOT / "data" / "images")
+OUT_DIR = str(ROOT / "results" / "baselines")
+CACHE_DIR = str(ROOT / "results" / "baselines" / "cache")
 MAX_VIEWS = 5
 IMG_BATCH = 32
 TXT_BATCH = 64
@@ -149,7 +152,7 @@ def main():
     for name, ds, triplets in settings:
         print(f"== {name}: {len(triplets)} triplets", flush=True)
         pids = sorted({str(t["source_id"]) for t in triplets} | {str(t["target_id"]) for t in triplets})
-        prod = product_embeddings(model, processor, ds, pids, f"{OUT_DIR}/cache_{tag}_{ds}.pt")
+        prod = product_embeddings(model, processor, ds, pids, f"{CACHE_DIR}/cache_{tag}_{ds}.pt")
         txt = text_embeddings(model, processor, [t["modification_text_short"] for t in triplets])
         results[name] = evaluate(triplets, prod, txt)
 

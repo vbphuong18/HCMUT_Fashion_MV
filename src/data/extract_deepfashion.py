@@ -1,12 +1,15 @@
 import glob
 import json
 import os
+from pathlib import Path
 
 import pyarrow.parquet as pq
 
-SRC_GLOB = "D:/1/Intern12/deepfashion_probe/data/*.parquet"
-OUT_ROOT = "D:/1/Intern12/images/deepfashion"
-TRIPLETS = "D:/1/Intern12/FashionMV_hf/data/data/val_triplets.jsonl"
+ROOT = Path(__file__).resolve().parents[2]  # repository root
+# parquet shards downloaded from HuggingFace (Marqo/deepfashion-inshop)
+SRC_GLOB = str(ROOT / "data" / "raw" / "deepfashion_parquet" / "data" / "*.parquet")
+OUT_ROOT = str(ROOT / "data" / "images" / "deepfashion")
+TRIPLETS = str(ROOT / "data" / "FashionMV_hf" / "data" / "data" / "val_triplets.jsonl")
 
 os.makedirs(OUT_ROOT, exist_ok=True)
 
