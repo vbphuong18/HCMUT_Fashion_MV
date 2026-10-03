@@ -1,0 +1,378 @@
+\chapter{Phương pháp của bài báo FashionMV}\label{chapter:method}
+\pagestyle{fancy}
+
+Chương này trình bày chi tiết nội dung kỹ thuật của bài báo FashionMV~\cite{yuan2026fashionmv}. Mục~\ref{sec:method-overview} giới thiệu tổng quan ba đóng góp của bài báo. Mục~\ref{sec:dataset-construction} mô tả pipeline xây dựng bộ dữ liệu FashionMV. Các mục từ~\ref{sec:procir-embedding} đến~\ref{sec:procir-sft} trình bày mô hình ProCIR: cách trích xuất embedding từ MLLM, kiến trúc hội thoại hai lượt, căn chỉnh dựa trên chú thích, chuỗi suy luận với loại bỏ tiệm tiến, hàm mục tiêu và giai đoạn SFT. Mục~\ref{sec:paper-results} tổng hợp kết quả thực nghiệm do tác giả công bố, và Mục~\ref{sec:method-critique} đưa ra nhận xét của học viên về phương pháp.
+
+\section{Tổng quan}\label{sec:method-overview}
+
+Bài báo đề xuất một giải pháp trải dài trên ba tầng:
+\begin{enumerate}
+    \item \textbf{Bài toán} -- chính thức định nghĩa Multi-View CIR, trong đó cả truy vấn và gallery hoạt động ở mức sản phẩm (đã trình bày ở Mục~\ref{sec:problem-definition}).
+    \item \textbf{Dữ liệu} -- xây dựng FashionMV, bộ dữ liệu thời trang đa góc nhìn quy mô lớn đầu tiên cho CIR mức sản phẩm, gồm 127 nghìn sản phẩm, 472 nghìn ảnh và hơn 220 nghìn triplet, thông qua một pipeline hoàn toàn tự động sử dụng các MLLM lớn.
+    \item \textbf{Phương pháp} -- đề xuất ProCIR (\emph{Product-level Composed Image Retrieval}), một khung mô hình thích nghi MLLM Qwen3.5-0.8B cho CIR mức sản phẩm qua ba cơ chế bổ trợ: hội thoại hai lượt (MT), căn chỉnh dựa trên chú thích (Align) và dẫn dắt chuỗi suy luận (CoT), cùng một giai đoạn SFT tuỳ chọn.
+\end{enumerate}
+
+Hình~\ref{fig:model_framework} minh hoạ kiến trúc huấn luyện tổng thể của ProCIR.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{model_framework.png}
+\caption{Kiến trúc huấn luyện ProCIR. Hội thoại hai lượt tách truy vấn thành Lượt 1 (nhận thức thị giác, tạo embedding nguồn $s$) và Lượt 2 (suy luận chỉnh sửa, tạo embedding truy vấn $q$); bộ mã hoá tài liệu tạo embedding đích $d$; căn chỉnh dựa trên chú thích kết nối $s$ và $d$ với embedding chú thích tương ứng (nguồn: Hình 3 trong~\cite{yuan2026fashionmv}).}
+\label{fig:model_framework}
+\end{figure}
+
+\section{Xây dựng bộ dữ liệu FashionMV}\label{sec:dataset-construction}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{data_pipeline.png}
+\caption{Pipeline ba giai đoạn xây dựng FashionMV. Giai đoạn 1: Kimi K2.5 sinh chú thích từ toàn bộ ảnh đa góc nhìn trong một yêu cầu. Giai đoạn 2: Qwen3.5-397B đối chiếu mô tả định hướng với bằng chứng thị giác và loại các sản phẩm có ảo giác. Giai đoạn 3: truy xuất đa đường tạo tập ứng viên; Gemini 3.1 Flash-Lite chọn tối đa 2 đích trong 10 ứng viên và sinh văn bản chỉnh sửa (nguồn: Hình 2 trong~\cite{yuan2026fashionmv}).}
+\label{fig:data_pipeline}
+\end{figure}
+
+\subsection{Nguồn dữ liệu}
+
+FashionMV tổng hợp sản phẩm từ ba bộ dữ liệu thời trang công khai, mỗi sản phẩm có từ 2 đến 5 ảnh chụp từ các góc nhìn khác nhau: DeepFashion (tác vụ In-shop Clothes Retrieval)~\cite{liu2016deepfashion}, Fashion200K~\cite{han2017fashion200k} và FashionGen~\cite{rostamzadeh2018fashiongen} (cả tập train và validation). Sau khi lọc bỏ các mục không phải trang phục, tập thô gồm 144.396 sản phẩm với khoảng 535 nghìn ảnh. Chi tiết về ba bộ dữ liệu nguồn được trình bày ở Mục~\ref{sec:datasets}.
+
+\subsection{Giai đoạn 1: Sinh chú thích đa góc nhìn}
+
+Với mỗi sản phẩm, toàn bộ ảnh đa góc nhìn được đưa vào mô hình Kimi K2.5~\cite{bai2026kimi} \emph{trong một yêu cầu duy nhất}, kèm nhãn số thứ tự ảnh. Mô hình sinh ra ba loại chú thích:
+\begin{itemize}
+    \item \textbf{Chú thích theo từng ảnh} (50--200 từ, trung vị 115 từ): xác định góc nhìn của ảnh (trước, sau, nghiêng, chi tiết\ldots) và các chi tiết đặc thù quan sát được từ góc nhìn đó.
+    \item \textbf{Chú thích dài} (200--400 từ, trung vị 222 từ): tổng hợp mọi góc nhìn thành một mô tả sản phẩm toàn diện.
+    \item \textbf{Chú thích ngắn} ($\sim$50 từ, trung vị 40 từ): nêu bật loại trang phục, phong cách, màu sắc và các đặc trưng phân biệt.
+\end{itemize}
+Việc đưa mọi góc nhìn vào cùng một yêu cầu cho phép mô hình đối chiếu xuyên góc nhìn ngay khi mô tả. Các chú thích này về sau đóng vai trò tín hiệu giám sát cho cơ chế căn chỉnh (Mục~\ref{sec:procir-align}), CoT (Mục~\ref{sec:procir-cot}) và SFT (Mục~\ref{sec:procir-sft}).
+
+\subsection{Giai đoạn 2: Lọc ảo giác định hướng}
+
+Mô tả ảnh thời trang đa góc nhìn đòi hỏi suy luận định hướng trái--phải chính xác: ``bên trái của ảnh'' ở góc nhìn trước tương ứng với ``bên phải của người mặc''. Tác giả phát hiện Kimi K2.5 đôi khi tạo ảo giác ở các mô tả định hướng, đặc biệt với các đặc trưng bất đối xứng như túi ngực đơn hay logo lệch tâm.
+
+\paragraph{Đánh giá của con người.} Trên 1.000 sản phẩm lấy mẫu ngẫu nhiên và gán nhãn thủ công, 6,2\% chứa ảo giác nghiêm trọng, gồm lỗi trái--phải (5,0\%) và các lỗi mô tả lớn khác (1,2\%). Lỗi trái--phải chiếm hơn 80\% tổng số ảo giác nghiêm trọng.
+
+\paragraph{Lọc tự động.} Qwen3.5-397B-A17B được dùng làm bộ kiểm chứng xuyên góc nhìn, kiểm tra mô tả định hướng có nhất quán với bằng chứng thị giác hay không. Trên tập gán nhãn thủ công, bộ phát hiện đạt precision 42,9\% và recall 36,0\% đối với lỗi trái--phải. Các sản phẩm có lỗi được xác nhận bị loại bỏ (Bảng~\ref{tab:hallucination}): tổng cộng 6.307 sản phẩm (4,37\%) bị lọc, giữ lại 138.089 sản phẩm với 510.877 ảnh.
+
+\begin{table}[h]
+\centering
+\caption{Kết quả lọc ảo giác định hướng theo từng bộ dữ liệu (Bảng 4 trong tài liệu bổ sung của~\cite{yuan2026fashionmv}).}
+\label{tab:hallucination}
+\begin{tabular}{lrrrr}
+\toprule
+Bộ dữ liệu & Đã kiểm tra & Lỗi & Giữ lại & Tỷ lệ lỗi \\
+\midrule
+DeepFashion      & 12.711 & 487   & 12.224 & 3,83\% \\
+Fashion200K      & 77.106 & 3.607 & 73.499 & 4,68\% \\
+FashionGen-train & 48.476 & 1.942 & 46.534 & 4,01\% \\
+FashionGen-val   & 6.086  & 271   & 5.815  & 4,45\% \\
+\midrule
+\textbf{Tổng}    & \textbf{144.379} & \textbf{6.307} & \textbf{138.072} & \textbf{4,37\%} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Có thể nhận xét rằng precision và recall của bộ lọc tự động đều dưới 50\%, nghĩa là phần lớn ảo giác trái--phải vẫn còn lại trong dữ liệu sau lọc, đồng thời một phần sản phẩm bị loại là không có lỗi. Tuy vậy, với tỷ lệ lỗi ban đầu thấp (5,0\%) và chi phí loại bỏ nhỏ (4,37\% sản phẩm), đây là một sự đánh đổi chấp nhận được cho một pipeline hoàn toàn tự động.
+
+\subsection{Giai đoạn 3: Xây dựng triplet CIR}
+
+Với mỗi sản phẩm nguồn, các ứng viên đích được truy xuất qua ba đường bổ trợ: tương đồng thị giác, tương đồng chú thích dài và tương đồng chú thích ngắn; hợp của top-20 kết quả mỗi đường tạo thành tập ứng viên. Sau đó, 10 ứng viên được lấy mẫu ngẫu nhiên và trình bày cùng sản phẩm nguồn cho Gemini 3.1 Flash-Lite~\cite{google2026gemini}. Mô hình chọn tối đa 2 ứng viên tốt nhất theo ba tiêu chí: (i) sự khác biệt trải trên ít nhất hai góc nhìn; (ii) khả năng phân biệt rõ ràng; (iii) có chi tiết cấu trúc cụ thể. Với mỗi cặp được chọn, mô hình sinh:
+\begin{itemize}
+    \item một \textbf{văn bản chỉnh sửa ngắn} (16--32 từ, trung vị 23 từ), mô phỏng truy vấn súc tích người dùng thực tế nhập vào ô tìm kiếm -- được dùng để \emph{đánh giá};
+    \item một \textbf{văn bản chỉnh sửa dài} (64--128 từ, trung vị 84 từ), mô tả chi tiết sự khác biệt -- cung cấp tín hiệu huấn luyện phong phú hơn.
+\end{itemize}
+
+\paragraph{So với gán nhãn theo cặp.} Các bộ dữ liệu trước đây (dù do con người gán nhãn như FashionIQ hay sinh tự động như FACap) ghép mỗi sản phẩm nguồn với \emph{một} sản phẩm tương tự rồi sinh văn bản chỉnh sửa từ cặp cô lập này. Cách làm đó có hai hạn chế: không lọc được các cặp không tương thích về phạm trù (ví dụ áo khoác nam ghép với váy nữ), và văn bản sinh ra thường mô tả những điểm chung ở mức phạm trù, dẫn đến mơ hồ đa đáp án đúng. Bằng cách trình bày đồng thời 10 ứng viên, pipeline của FashionMV cho phép mô hình loại cặp không tương thích và tập trung mô tả những thuộc tính phân biệt đích với 9 đối thủ cạnh tranh. Hình~\ref{fig:triplet_examples} minh hoạ một triplet trong bộ dữ liệu.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{triplet_examples.png}
+\caption{Ví dụ một triplet CIR trong FashionMV: sản phẩm nguồn (trái, 4 góc nhìn kèm chú thích ngắn), văn bản chỉnh sửa (giữa) và sản phẩm đích (phải). Văn bản chỉnh sửa đề cập đồng thời đến hoạ tiết mặt trước và dây đan chéo ở mặt sau (nguồn: Mục G, tài liệu bổ sung của~\cite{yuan2026fashionmv}).}
+\label{fig:triplet_examples}
+\end{figure}
+
+Giai đoạn này tạo ra 220.733 triplet bao phủ 127.231 sản phẩm, trong đó 99,83\% triplet liên quan đến từ hai góc nhìn trở lên (Bảng~\ref{tab:view-comb}).
+
+\begin{table}[h]
+\centering
+\caption{Phân bố tổ hợp góc nhìn được văn bản chỉnh sửa đề cập (Bảng 6 trong tài liệu bổ sung của~\cite{yuan2026fashionmv}).}
+\label{tab:view-comb}
+\begin{tabular}{lrr}
+\toprule
+Tổ hợp góc nhìn & Số triplet & Tỷ lệ \\
+\midrule
+sau + trước              & 180.040 & 81,6\% \\
+trước + nghiêng          & 27.556  & 12,5\% \\
+sau + trước + nghiêng    & 6.390   & 2,9\% \\
+sau + nghiêng            & 4.636   & 2,1\% \\
+sau + chi tiết + trước   & 416     & 0,2\% \\
+Tổ hợp khác              & 1.695   & 0,8\% \\
+\midrule
+\textbf{Tổng}            & \textbf{220.733} & \textbf{100\%} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Phân chia và thống kê bộ dữ liệu}
+
+Sản phẩm được chia thành tập huấn luyện và validation ở mức sản phẩm, không chồng lấn. FashionGen giữ phân chia gốc; DeepFashion và Fashion200K được chia ngẫu nhiên. Triplet được xây dựng độc lập trong từng phân vùng -- truy xuất lân cận, chọn ứng viên và sinh văn bản đều diễn ra trong cùng một phân vùng -- cho ra 188.015 triplet huấn luyện và 32.718 triplet validation (Bảng~\ref{tab:splits}). Hình~\ref{fig:views_distribution} cho thấy phân bố số góc nhìn mỗi sản phẩm khác nhau rõ rệt giữa các bộ: phần lớn sản phẩm FashionGen có 4 góc nhìn, DeepFashion tập trung ở 4 góc nhìn, còn Fashion200K trải đều từ 2 đến 5 với nhiều sản phẩm chỉ có 2--3 ảnh.
+
+\begin{table}[h]
+\centering
+\caption{Phân chia triplet và sản phẩm của FashionMV~\cite{yuan2026fashionmv}.}
+\label{tab:splits}
+\begin{tabular}{lrrrr}
+\toprule
+Bộ dữ liệu & Triplet train & Triplet val & Sản phẩm train & Sản phẩm val \\
+\midrule
+DeepFashion   & 16.399 & 5.188  & 8.856  & 2.791 \\
+Fashion200K   & 98.800 & 18.499 & 56.960 & 10.720 \\
+FashionGen    & 72.816 & 9.031  & 42.612 & 5.292 \\
+\midrule
+\textbf{Tổng} & \textbf{188.015} & \textbf{32.718} & \textbf{108.428} & \textbf{18.803} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.62\textwidth]{views_distribution.png}
+\caption{Phân bố số góc nhìn mỗi sản phẩm theo từng bộ dữ liệu con (nguồn: Hình 4 trong tài liệu bổ sung của~\cite{yuan2026fashionmv}).}
+\label{fig:views_distribution}
+\end{figure}
+
+\section{Trích xuất embedding từ MLLM}\label{sec:procir-embedding}
+
+ProCIR sử dụng Qwen3.5-0.8B (Bảng~\ref{tab:qwen35-config}) làm xương sống. Để trích xuất embedding có chiều cố định, một token đặc biệt \texttt{<emb>} được thêm vào từ vựng (trong mã nguồn công bố là \texttt{<emb\_all>}) và gắn vào cuối mỗi lượt trả lời của assistant. Trạng thái ẩn ở tầng cuối tại vị trí này là embedding mức sản phẩm:
+\begin{equation}
+    \mathbf{e} = h_{LLM}[\texttt{<emb>}] \in \mathbb{R}^{d}, \qquad d = 1024.
+    \label{eq:emb}
+\end{equation}
+Mọi ảnh đa góc nhìn được đưa vào như token thị giác trong cùng một yêu cầu; attention nhân quả của mô hình tự nhiên tổng hợp thông tin xuyên góc nhìn mà không cần phép gộp (pooling) tường minh -- tương ứng với chiến lược mã hoá \emph{Joint}. Mỗi lượt assistant luôn có một khối \texttt{<think>...</think>}, để trống khi không dùng CoT. Phía tài liệu (gallery), sản phẩm đích được mã hoá chỉ bằng ảnh, không có văn bản:
+\begin{equation}
+    [I^{tgt}_1, \dots, I^{tgt}_M] \;\to\; \mathbf{d}.
+\end{equation}
+
+\section{Biến thể cơ sở: CIR một lượt hội thoại}
+
+Biến thể cơ sở của ProCIR xử lý truy vấn trong một lượt duy nhất: ảnh nguồn và văn bản chỉnh sửa được nối trong cùng một tin nhắn người dùng,
+\begin{equation}
+    \underbrace{[I^{src}_1, \dots, I^{src}_N]}_{\text{ảnh đa góc nhìn}} \oplus T_{mod} \;\to\; \mathbf{q},
+\end{equation}
+và được huấn luyện bằng hàm SymInfoNCE~\eqref{eq:syminfonce} giữa $\mathbf{q}$ và $\mathbf{d}$:
+\begin{equation}
+    \mathcal{L}_{cir} = \mathrm{SymInfoNCE}(\mathbf{q}, \mathbf{d}, \tau), \qquad \tau = 0{,}07,
+\end{equation}
+với mẫu âm là mọi mẫu khác trong batch, tập hợp xuyên GPU bằng all-gather. Khi huấn luyện, văn bản chỉnh sửa được lấy mẫu ngẫu nhiên từ phiên bản dài hoặc ngắn với xác suất bằng nhau; khi đánh giá chỉ dùng phiên bản ngắn.
+
+\section{Kiến trúc hội thoại hai lượt}\label{sec:two-stage}
+
+Biến thể một lượt gộp lẫn nhận thức thị giác và suy luận chỉnh sửa trong một lần truyền xuôi: văn bản chỉnh sửa có thể cạnh tranh với nội dung thị giác để giành attention, và embedding truy vấn là hỗn hợp đặc trưng thị giác--văn bản, khiến không thể căn chỉnh riêng phần thị giác của sản phẩm nguồn với chú thích của nó. ProCIR giải quyết bằng cách tách truy vấn thành hai lượt hội thoại:
+\begin{align}
+    \text{Lượt 1 (Nhận thức):} &\quad [I^{src}_1, \dots, I^{src}_N] \;\to\; \mathbf{s}, \\
+    \text{Lượt 2 (Suy luận):}  &\quad T_{mod} \;\to\; \mathbf{q}.
+\end{align}
+Hình~\ref{fig:two-stage-seq} minh hoạ chuỗi token thực tế của một truy vấn hai lượt, được dựng lại từ lớp \texttt{CIRQueryCollator} trong mã nguồn đánh giá.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[
+  seg/.style={draw, minimum height=0.75cm, font=\scriptsize, align=center, inner sep=2pt},
+  arr/.style={-{Stealth[length=2mm]}, thick}
+]
+\node[seg, fill=gray!15, minimum width=1.2cm] (u1) at (0,0) {\texttt{user}};
+\node[seg, fill=blue!20, minimum width=2.5cm, right=0pt of u1] (im) {$I^{src}_1 \cdots I^{src}_N$};
+\node[seg, fill=gray!15, minimum width=1.7cm, right=0pt of im] (a1) {\texttt{assistant}\\[-2pt]\tiny\texttt{<think></think>}};
+\node[seg, fill=red!35, minimum width=1.0cm, right=0pt of a1] (e1) {\texttt{<emb>}};
+\node[seg, fill=gray!15, minimum width=1.2cm, right=0pt of e1] (u2) {\texttt{user}};
+\node[seg, fill=orange!25, minimum width=2.2cm, right=0pt of u2] (tm) {$T_{mod}$ (ngắn)};
+\node[seg, fill=gray!15, minimum width=1.7cm, right=0pt of tm] (a2) {\texttt{assistant}\\[-2pt]\tiny\texttt{<think></think>}};
+\node[seg, fill=red!35, minimum width=1.0cm, right=0pt of a2] (e2) {\texttt{<emb>}};
+\draw[decorate, decoration={brace, amplitude=5pt}] (u1.north west) -- (e1.north east) node[midway, above=6pt, font=\scriptsize\bfseries] {Lượt 1 -- Nhận thức};
+\draw[decorate, decoration={brace, amplitude=5pt}] (u2.north west) -- (e2.north east) node[midway, above=6pt, font=\scriptsize\bfseries] {Lượt 2 -- Suy luận};
+\draw[arr] (e1.south) -- ++(0,-0.6) node[below, font=\scriptsize] {$\mathbf{s}$: chỉ thấy ảnh};
+\draw[arr] (e2.south) -- ++(0,-0.6) node[below, font=\scriptsize] {$\mathbf{q}$: thấy toàn bộ ngữ cảnh};
+\end{tikzpicture}
+\caption{Chuỗi token của một truy vấn hai lượt trong ProCIR. Do attention nhân quả, $\mathbf{s}$ tại \texttt{<emb>} thứ nhất không bị ảnh hưởng bởi văn bản chỉnh sửa; $\mathbf{q}$ tại \texttt{<emb>} thứ hai tổng hợp cả ảnh nguồn lẫn văn bản.}
+\label{fig:two-stage-seq}
+\end{figure}
+
+Lượt 1 chỉ xử lý ảnh nguồn và tạo embedding nguồn $\mathbf{s}$ tại \texttt{<emb>} thứ nhất. Lượt 2 nhận văn bản chỉnh sửa và tạo embedding truy vấn $\mathbf{q}$ tại \texttt{<emb>} thứ hai. Thiết kế này mang lại bốn lợi ích:
+\begin{enumerate}
+    \item $\mathbf{s}$ là một biểu diễn \emph{thị giác thuần tuý} của sản phẩm nguồn;
+    \item nhờ đó có thể căn chỉnh $\mathbf{s}$ với chú thích của sản phẩm nguồn (Mục~\ref{sec:procir-align}) -- điều không thể làm với biến thể một lượt;
+    \item $\mathbf{s}$ là sản phẩm phụ ``miễn phí'', có cùng không gian với embedding gallery $\mathbf{d}$, cho phép dùng chính sản phẩm nguồn làm mục trong gallery mà không cần mã hoá thêm -- mã đánh giá công khai thực sự tận dụng điều này khi bổ sung các sản phẩm nguồn chưa có vào gallery;
+    \item trạng thái key--value của Lượt 1 có thể tính trước và lưu cache trước khi người dùng nhập văn bản chỉnh sửa, nên Lượt 2 chỉ cần suy luận gia tăng trên vài chục token -- hữu ích cho truy xuất tương tác độ trễ thấp.
+\end{enumerate}
+
+\section{Căn chỉnh dựa trên chú thích}\label{sec:procir-align}
+
+Để tiêm ngữ nghĩa sản phẩm vào không gian embedding, mỗi chú thích (dài hoặc ngắn, chọn ngẫu nhiên với xác suất bằng nhau ở mỗi bước) được mã hoá qua một lượt truyền xuôi chỉ có văn bản:
+\begin{equation}
+    \mathbf{t}_{cap} = h_{LLM}[T_{cap};\, \texttt{<emb>}] \in \mathbb{R}^{d}.
+\end{equation}
+Ở phía tài liệu, embedding thị giác của sản phẩm đích được căn chỉnh với chú thích của chính nó:
+\begin{equation}
+    \mathcal{L}_{doc} = \mathrm{SymInfoNCE}(\mathbf{d}, \mathbf{t}_{tgt}, \tau).
+\end{equation}
+Với các biến thể hai lượt, embedding nguồn thuần thị giác $\mathbf{s}$ được căn chỉnh thêm với chú thích nguồn:
+\begin{equation}
+    \mathcal{L}_{src} = \mathrm{SymInfoNCE}(\mathbf{s}, \mathbf{t}_{src}, \tau).
+\end{equation}
+Trực giác của cơ chế này là: chú thích dài mô tả tường minh các chi tiết trên mọi góc nhìn (``dây đan chéo ở lưng'', ``túi ngực bên trái người mặc''); buộc embedding thị giác gần với embedding của mô tả đó sẽ khuyến khích mô hình mã hoá chính những chi tiết này -- vốn là những gì văn bản chỉnh sửa thường đề cập. Đồng thời, việc đưa embedding thị giác và văn bản về cùng không gian giúp $\mathbf{q}$ (được tạo sau khi đọc văn bản) dễ dàng ``di chuyển'' theo hướng văn bản chỉ định.
+
+\section{Chuỗi suy luận với loại bỏ tiệm tiến}\label{sec:procir-cot}
+
+Song song với căn chỉnh (tiêm tri thức qua một hàm mất mát phụ), bài báo khảo sát việc tiêm tri thức trực tiếp vào ngữ cảnh: chú thích dài của sản phẩm được đặt bên trong khối suy luận,
+\begin{center}
+\texttt{assistant: <think>\{chú thích dài (lấy mẫu con)\}</think> <emb>},
+\end{center}
+để mô hình ``đọc'' mô tả sản phẩm trước khi tạo embedding. CoT được áp dụng cho phía tài liệu và cho Lượt 1 của truy vấn; Lượt 2 không dùng CoT. Để tránh mô hình phụ thuộc vào chú thích -- vốn không có sẵn khi suy luận -- một tỷ lệ giữ lại $\rho(t)$ kiểm soát phần trăm token chú thích được giữ:
+\begin{equation}
+    \rho(t) = \max\!\left(0,\; 1 - \frac{t}{0{,}5\,T}\right),
+\end{equation}
+với $T$ là tổng số bước huấn luyện. $\rho$ giảm tuyến tính từ 1 về 0 trong nửa đầu quá trình huấn luyện; tại mỗi bước giữ ngẫu nhiên $\lceil \rho \cdot |\text{tokens}| \rceil$ token. Như vậy, mô hình được chuyển dần từ trạng thái có đầy đủ chú thích sang chế độ suy luận không chú thích, với kỳ vọng nội hoá được tri thức ngữ nghĩa.
+
+\section{Hàm mục tiêu huấn luyện}\label{sec:procir-objective}
+
+Hàm mục tiêu đầy đủ kết hợp ba thành phần:
+\begin{equation}
+    \mathcal{L} = \mathcal{L}_{cir} + \lambda_d\,\mathcal{L}_{doc} + \lambda_s\,\mathcal{L}_{src}, \qquad \lambda_d = \lambda_s = 0{,}25,
+    \label{eq:procir-loss}
+\end{equation}
+trong đó $\mathcal{L}_{doc}$ và $\mathcal{L}_{src}$ chỉ được kích hoạt ở các biến thể có Align, và $\mathcal{L}_{src}$ chỉ tồn tại ở biến thể hai lượt (vì cần $\mathbf{s}$). Tổ hợp ba công tắc MT, Align, CoT cho ra 8 biến thể.
+
+\section{Tinh chỉnh có giám sát}\label{sec:procir-sft}
+
+Trước huấn luyện tương phản, Qwen3.5-0.8B có thể được tinh chỉnh có giám sát trên hai loại dữ liệu từ tập huấn luyện FashionMV:
+\begin{enumerate}
+    \item \textbf{Sinh chú thích}: hội thoại một lượt, người dùng cung cấp mọi ảnh đa góc nhìn, assistant sinh chú thích theo từng ảnh trong khối \texttt{<think>} rồi đến một đối tượng JSON chứa chú thích dài và ngắn -- dạy mô hình nhận diện góc nhìn, trích thuộc tính và tổng hợp xuyên góc nhìn.
+    \item \textbf{Sinh triplet CIR}: hội thoại ba lượt -- Lượt 1 với ảnh nguồn (sinh chú thích nguồn, sau đó \texttt{<emb>}), Lượt 2 với ảnh đích (tương tự), Lượt 3 sinh văn bản chỉnh sửa dạng JSON -- giúp mô hình làm quen với suy luận đa lượt và ngữ nghĩa của token embedding.
+\end{enumerate}
+Bài báo lấy ngẫu nhiên 20\% dữ liệu khả dụng (117.610 mẫu sinh chú thích và 187.940 mẫu sinh triplet, tổng 305.550 mẫu) và huấn luyện toàn bộ mô hình trong một epoch với hàm mất mát tự hồi quy chuẩn trên các token của assistant:
+\begin{equation}
+    \mathcal{L}_{sft} = -\sum_{t \in \mathcal{A}} \log p_\theta(x_t \mid x_{<t}).
+\end{equation}
+Checkpoint SFT được dùng làm khởi tạo thay thế cho cả 8 biến thể, tạo thành tổng cộng 16 cấu hình thực nghiệm.
+
+\section{Kết quả thực nghiệm trong bài báo gốc}\label{sec:paper-results}
+
+\subsection{Thiết lập}
+
+Mọi biến thể được huấn luyện một epoch trên 188 nghìn triplet với AdamW~\cite{loshchilov2019adamw} (tốc độ học $10^{-5}$, weight decay 0,01, lịch cosine không warmup), gradient clipping 1,0, độ chính xác bfloat16, batch 16 mỗi GPU trên 10 GPU RTX 3090 (batch hiệu dụng 160, tổng 1.175 bước). Ảnh được giới hạn trong khoảng $128^2$--$512^2$ điểm ảnh, tối đa 5 góc nhìn mỗi sản phẩm. Đánh giá thực hiện độc lập trên ba bộ: DeepFashion (DF), Fashion200K (F200K) và FashionGen-val (FG), mỗi bộ có gallery riêng gồm các sản phẩm validation của nó, chỉ dùng văn bản chỉnh sửa ngắn, báo cáo Recall@5 và Recall@10.
+
+\subsection{So sánh với các mô hình hiện có}
+
+Vì chưa có phương pháp nào giải quyết trực tiếp Multi-View CIR, tác giả thích nghi các mô hình embedding tiêu biểu bằng ba chiến lược mã hoá đa góc nhìn. Gọi $\{\mathbf{e}_1, \dots, \mathbf{e}_N\}$ là các embedding theo từng góc nhìn:
+\begin{align}
+    s_{\mathrm{Joint}}(Q, D) &= \cos\big(\mathbf{e}^Q_{prod}, \mathbf{e}^D_{prod}\big), \\
+    s_{\mathrm{MeanPool}}(Q, D) &= \cos\Big(\tfrac{1}{N_Q}\textstyle\sum_i \mathbf{e}^Q_i,\; \tfrac{1}{N_D}\sum_j \mathbf{e}^D_j\Big), \\
+    s_{\mathrm{MaxSim}}(Q, D) &= \max_{i \in [N_Q],\, j \in [N_D]} \cos\big(\mathbf{e}^Q_i, \mathbf{e}^D_j\big),
+\end{align}
+trong đó Joint đưa mọi góc nhìn vào mô hình đồng thời (đòi hỏi mô hình hỗ trợ đa ảnh nguyên bản). Kết quả được tóm tắt ở Bảng~\ref{tab:paper-comparison}.
+
+\begin{table}[h]
+\centering
+\caption{So sánh với các mô hình hiện có trên tập validation FashionMV (trích Bảng 2 của~\cite{yuan2026fashionmv}; với mỗi mô hình chỉ giữ chiến lược mã hoá có điểm trung bình tốt nhất).}
+\label{tab:paper-comparison}
+\small
+\begin{tabular}{llcccccccc}
+\toprule
+& & \multicolumn{2}{c}{DeepFashion} & \multicolumn{2}{c}{F200K} & \multicolumn{2}{c}{FashionGen} & \multicolumn{2}{c}{Trung bình} \\
+\cmidrule(lr){3-4}\cmidrule(lr){5-6}\cmidrule(lr){7-8}\cmidrule(lr){9-10}
+Mô hình (tham số) & Mã hoá & R@5 & R@10 & R@5 & R@10 & R@5 & R@10 & R@5 & R@10 \\
+\midrule
+CLIP4Cir (0,25B)   & MeanPool & 28,0 & 39,3 & 13,3 & 19,3 & 16,2 & 23,6 & 19,2 & 27,4 \\
+SPRC (1,2B)        & MaxSim   & 55,8 & 67,7 & 34,4 & 43,7 & 42,7 & 53,0 & 44,3 & 54,8 \\
+RzenEmbed (8B)     & MeanPool & 47,5 & 58,0 & 28,0 & 36,5 & 32,5 & 42,2 & 36,0 & 45,6 \\
+Doubao-E-V (--)    & MaxSim   & 82,3 & 90,8 & 62,2 & 72,6 & 67,2 & 77,1 & 70,6 & 80,2 \\
+Qwen3-V-2B (2B)    & Joint    & 75,7 & 86,4 & 61,1 & 72,3 & 63,0 & 74,1 & 66,6 & 77,6 \\
+Qwen3-V-8B (8B)    & Joint    & 87,4 & 93,2 & 73,8 & 82,1 & 74,7 & 83,5 & 78,6 & 86,3 \\
+\midrule
+\textbf{ProCIR (0,8B)} & Joint & \textbf{89,2} & \textbf{94,9} & \textbf{77,6} & \textbf{86,6} & \textbf{75,0} & \textbf{85,3} & \textbf{80,6} & \textbf{88,9} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Mô hình 0,8B của bài báo vượt mọi baseline trên mọi bộ dữ liệu, kể cả Qwen3-VL-Embedding 8B lớn hơn 10 lần (cao hơn +1,8/+3,8/+0,3 điểm R@5 trên DF/F200K/FG khi cùng dùng Joint). Các phương pháp CIR một-ảnh (CLIP4Cir, SPRC) kém hơn rõ rệt, cho thấy kiến trúc thiết kế cho truy vấn một ảnh không đủ cho truy xuất sản phẩm đa góc nhìn. Một phát hiện đáng chú ý khác là: với các mô hình hiểu đa ảnh tốt (Qwen3-V-8B), Joint vượt cả MeanPool và MaxSim; nhưng với các mô hình yếu hơn, xu hướng đảo ngược -- Joint của RzenEmbed (18,6 R@5 trung bình) chỉ bằng khoảng một nửa MeanPool (36,0), và Joint của Doubao-E-V (58,0) cũng kém MeanPool (68,3) và MaxSim (70,6). Điều này cho thấy mã hoá đồng thời nhiều góc nhìn không phải lúc nào cũng có lợi, mà phụ thuộc vào năng lực hiểu đa ảnh của mô hình.
+
+\subsection{Kết quả ablation}
+
+Bảng~\ref{tab:ablation} trình bày đầy đủ 16 cấu hình. Thứ tự các hàng được học viên đối chiếu lại với các phép tính chênh lệch nêu trong văn bản bài báo (ví dụ ``thêm Align vào MT+CoT cho +11,8/+9,5/+13,3 điểm R@5'') để xác định tổ hợp cơ chế của từng hàng.
+
+\begin{table}[h]
+\centering
+\caption{Kết quả ablation trên tập validation (R@5 / R@10, trích Bảng 3 của~\cite{yuan2026fashionmv}). Thời gian huấn luyện trên 10$\times$RTX 3090; các hàng SFT đã bao gồm 4 giờ 29 phút tiền huấn luyện SFT. In đậm: tốt nhất trong nhóm.}
+\label{tab:ablation}
+\small
+\begin{tabular}{cccccccr}
+\toprule
+MT & Align & CoT & DeepFashion & F200K & FashionGen & TB R@5 & Thời gian \\
+\midrule
+\multicolumn{8}{l}{\emph{Khởi tạo Pretrained}} \\
+   &       &     & 77,0 / 87,8 & 61,4 / 73,6 & 59,7 / 72,5 & 66,0 & 7h25m \\
+   & \tick &     & 78,7 / 88,7 & 61,5 / 74,1 & 62,6 / 74,5 & 67,6 & 8h13m \\
+   &       & \tick & 77,9 / 87,9 & 60,5 / 71,6 & 56,3 / 68,6 & 64,9 & 8h31m \\
+   & \tick & \tick & 77,5 / 87,4 & 61,8 / 73,1 & 57,4 / 69,6 & 65,6 & 9h20m \\
+\tick &    &     & 77,8 / 88,3 & 60,7 / 73,0 & 59,4 / 72,3 & 66,0 & 7h20m \\
+\tick & \tick &  & 79,5 / 89,0 & 61,8 / 73,8 & 62,7 / 74,9 & 68,0 & 8h53m \\
+\tick &    & \tick & 72,3 / 84,2 & 59,1 / 71,2 & 54,4 / 67,1 & 61,9 & 8h27m \\
+\tick & \tick & \tick & \textbf{84,1 / 91,5} & \textbf{68,6 / 79,0} & \textbf{67,7 / 77,8} & \textbf{73,5} & 10h04m \\
+\midrule
+\multicolumn{8}{l}{\emph{Khởi tạo SFT}} \\
+   &       &     & 84,5 / 92,7 & 69,5 / 81,7 & 65,5 / 78,4 & 73,2 & 11h54m \\
+   & \tick &     & 88,2 / 94,2 & 76,8 / 86,1 & 74,5 / 84,5 & 79,8 & 12h42m \\
+   &       & \tick & 83,4 / 91,1 & 68,1 / 78,2 & 62,4 / 73,2 & 71,3 & 13h00m \\
+   & \tick & \tick & 83,7 / 91,3 & 69,1 / 78,9 & 63,8 / 74,7 & 72,2 & 13h49m \\
+\tick &    &     & 82,7 / 92,3 & 68,2 / 81,0 & 65,6 / 78,7 & 72,2 & 11h49m \\
+\tick & \tick &  & \textbf{89,2 / 94,9} & \textbf{77,6 / 86,6} & \textbf{75,0 / 85,3} & \textbf{80,6} & 13h22m \\
+\tick &    & \tick & 83,4 / 91,4 & 70,1 / 80,0 & 67,0 / 77,6 & 73,5 & 12h56m \\
+\tick & \tick & \tick & 88,2 / 94,0 & 75,6 / 84,3 & 73,3 / 82,4 & 79,0 & 14h33m \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Bài báo rút ra ba phát hiện chính:
+
+\paragraph{Phát hiện 1: MT + Align + CoT tối đa hoá việc tiêm tri thức khi không có SFT.} Trong nhóm Pretrained, tổ hợp đủ ba cơ chế đạt kết quả tốt nhất trên mọi bộ (R@5 trung bình 73,5), vượt xa các biến thể thiếu bất kỳ cơ chế nào. Ba cơ chế bổ trợ nhau: MT tách nhận thức khỏi suy luận và mở đường cho căn chỉnh phía nguồn; Align neo giữ không gian thị giác--văn bản; CoT tiêm chú thích vào quá trình suy luận.
+
+\paragraph{Phát hiện 2: Căn chỉnh là cơ chế đơn lẻ quan trọng nhất.} Thêm Align vào MT+CoT (nhóm Pretrained) mang lại +11,8/+9,5/+13,3 điểm R@5 trên DF/F200K/FG. Ngược lại, \emph{không có} Align, kiến trúc hai lượt còn kém biến thể một lượt (R@5 72,3 so với 77,0 trên DF) -- tức là kiến trúc tách bạch chỉ phát huy tác dụng khi có neo giữ xuyên phương thức tường minh. CoT không kèm Align có tác động hạn chế hoặc thậm chí tiêu cực.
+
+\paragraph{Phát hiện 3: CoT trở nên không cần thiết sau SFT.} Trong nhóm Pretrained, thêm CoT vào MT+Align tăng R@5 +4,6/+6,8/+5,0 điểm. Nhưng sau SFT, thêm CoT vào MT+Align lại \emph{giảm} $-1{,}0/-2{,}0/-1{,}7$ điểm. Cấu hình tốt nhất tổng thể là \textbf{MT+Align+SFT} (không CoT) -- chính là checkpoint được công bố và được tái lập trong báo cáo này. Điều này cho thấy SFT và CoT là hai con đường tiêm tri thức có chức năng chồng lấn.
+
+\subsection{Phân tích bổ sung trong bài báo}
+
+\paragraph{Độ khó của các bộ dữ liệu.} DeepFashion dễ nhất: gallery nhỏ nhất (2.791 sản phẩm) và ảnh độ phân giải cao ($>512 \times 512$). Fashion200K khó hơn do gallery lớn nhất (10.720 sản phẩm) và số góc nhìn trung bình thấp nhất ($\sim$3,3). FashionGen-val khó nhất do độ phân giải thấp ($256 \times 256$), dù có nhiều góc nhìn nhất ($\sim$4,1). Hai yếu tố \emph{kích thước gallery} và \emph{độ phân giải ảnh} được chính tác giả chỉ ra ở đây là hai yếu tố trung tâm trong phân tích sai lệch tái lập ở Chương~\ref{chapter:experiments}.
+
+\paragraph{SFT cải thiện mọi biến thể.} Khởi tạo SFT tăng trung bình +8,5 điểm R@5 trên cả 8 biến thể và 3 bộ dữ liệu; biến thể cơ sở tăng +7,5/+8,1/+5,8 điểm. Tuy nhiên SFT đòi hỏi giám sát đa mức độ chi tiết (chú thích theo ảnh, chú thích sản phẩm, văn bản chỉnh sửa) -- vốn là sản phẩm phụ của pipeline dữ liệu -- và bản thân mô hình SFT không có khả năng tạo embedding; huấn luyện tương phản vẫn không thể thiếu.
+
+\paragraph{Chi phí huấn luyện.} Biến thể nhanh nhất (chỉ MT) mất khoảng 7 giờ 20 phút, cấu hình đắt nhất (MT+Align+CoT+SFT) mất khoảng 14 giờ 33 phút trên 10 GPU RTX 3090. Chênh lệch đến từ số lần truyền xuôi mỗi bước: Align thêm một (phía tài liệu) hoặc hai (cả hai phía, khi có MT) lần truyền xuôi chỉ văn bản; CoT kéo dài chuỗi token.
+
+\paragraph{Ví dụ định tính.} Hình~\ref{fig:retrieval_case} trích một ví dụ truy xuất trong tài liệu bổ sung của bài báo. Đáng chú ý, ở ví dụ này kết quả \#1 của ProCIR chính là \emph{sản phẩm nguồn}, và sản phẩm đích đúng đứng ở hạng 2. Quan sát này là điểm khởi đầu cho một phân tích về giao thức đánh giá được trình bày ở Mục~\ref{sec:source-in-gallery}.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{retrieval_case.png}
+\caption{Một ví dụ truy xuất của ProCIR trên DeepFashion: sản phẩm nguồn kèm chú thích (trên trái), văn bản chỉnh sửa (giữa), sản phẩm đích (trên phải) và 9 kết quả đầu tiên (dưới; khung xanh là đích đúng, ở hạng 2). Kết quả hạng 1 trùng với sản phẩm nguồn (nguồn: Mục H, tài liệu bổ sung của~\cite{yuan2026fashionmv}).}
+\label{fig:retrieval_case}
+\end{figure}
+
+\section{Nhận xét về phương pháp}\label{sec:method-critique}
+
+Từ việc nghiên cứu bài báo và mã nguồn đi kèm, học viên rút ra một số nhận xét sau.
+
+\paragraph{Điểm mạnh.}
+\begin{itemize}
+    \item \textbf{Định nghĩa bài toán có ý nghĩa thực tiễn rõ ràng.} Đơn vị truy xuất là sản phẩm phù hợp với nhu cầu thương mại điện tử, và công thức suy biến về CIR chuẩn khi $N_P = 1$ giúp bài toán mới tương thích ngược.
+    \item \textbf{Pipeline dữ liệu có thiết kế cẩn thận.} Cơ chế đối chiếu 10 ứng viên giải quyết trực tiếp vấn đề mơ hồ đa đáp án đúng; bước lọc ảo giác dựa trên đánh giá thủ công có số liệu cụ thể.
+    \item \textbf{Ablation có hệ thống.} 16 cấu hình với chi phí huấn luyện đầy đủ cho phép rút ra các kết luận rõ ràng về vai trò của từng cơ chế, đặc biệt là sự phụ thuộc lẫn nhau giữa MT và Align.
+    \item \textbf{Hiệu quả tham số.} Một mô hình 0,8B vượt các mô hình embedding 8B, cho thấy giá trị của thích nghi chuyên biệt so với mở rộng quy mô.
+    \item \textbf{Công khai tài nguyên.} Annotation, checkpoint và mã đánh giá đều được phát hành, cho phép tái lập độc lập.
+\end{itemize}
+
+\paragraph{Hạn chế và điểm cần làm rõ.}
+\begin{itemize}
+    \item \textbf{Phụ thuộc vào các mô hình đóng/lớn trong khâu dữ liệu.} Kimi K2.5, Qwen3.5-397B và Gemini 3.1 Flash-Lite đều là mô hình rất lớn; cả triplet lẫn chú thích (được dùng cho Align, CoT, SFT) đều do MLLM sinh, nên chất lượng phụ thuộc hoàn toàn vào các mô hình này, và bộ lọc ảo giác chỉ có recall 36,0\%.
+    \item \textbf{Tập đánh giá cũng do mô hình sinh.} Văn bản chỉnh sửa trong tập validation được sinh bởi cùng pipeline với tập huấn luyện; chưa có đánh giá trên truy vấn do người thật viết.
+    \item \textbf{Giao thức đánh giá chưa được mô tả đầy đủ.} Bài báo không nêu rõ sản phẩm nguồn có bị loại khỏi danh sách xếp hạng hay không. Đọc mã \texttt{evaluate.py} cho thấy gallery gồm mọi sản phẩm xuất hiện trong các triplet validation, \emph{kể cả sản phẩm nguồn}, và không có bước loại bỏ. Như ví dụ ở Hình~\ref{fig:retrieval_case}, sản phẩm nguồn có thể chiếm hạng 1, làm giảm R@1. Ảnh hưởng của chi tiết này được định lượng ở Chương~\ref{chapter:experiments}.
+    \item \textbf{Mã huấn luyện chưa công bố}, nên chưa thể kiểm chứng độc lập các kết quả ablation.
+    \item \textbf{Chưa có phân tích về cơ chế tổng hợp đa góc nhìn bên trong mô hình.} ProCIR dựa hoàn toàn vào attention nhân quả để ``tự'' tổng hợp các góc nhìn; bài báo chưa phân tích mô hình chú ý vào góc nhìn nào khi văn bản đề cập đến một chi tiết cụ thể, cũng chưa khảo sát độ bền khi thiếu góc nhìn hay khi thứ tự góc nhìn thay đổi.
+\end{itemize}

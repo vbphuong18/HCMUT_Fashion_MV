@@ -1,0 +1,52 @@
+# Whitelist: ignore everything at the root by default, then allow chosen paths.
+# This keeps datasets (*.zip, images/), checkpoints (FashionMV_hf/) and personal
+# documents (CV, transcripts) out of the public repo even if new files appear.
+/*
+!/.gitignore
+!/README.md
+!/TT1_Report/
+!/kaggle_kernel_*/
+!/out/
+!/decuong_MultiViewCIR_v3.tex
+!/VoThiBichPhuong2470570_literature_overview.pdf
+!/VoThiBichPhuong2470570_MultiViewCIR_v2.pdf
+
+# ---- TT1_Report: keep LaTeX sources, figures, scripts and the final PDF ----
+/TT1_Report/out/*
+!/TT1_Report/out/main.pdf
+/TT1_Report/out_timeline/
+/TT1_Report/out_translation/
+/TT1_Report/_backup_v1/
+# Full Vietnamese translation of the paper: derivative of a copyrighted work
+/TT1_Report/paper_translation.tex
+
+# ---- Kaggle kernels: keep script + metadata + ProCIR result JSON, drop downloads ----
+/kaggle_kernel_*/output/*
+!/kaggle_kernel_*/output/results/
+
+# ---- out/: keep result JSONs and run logs, drop embedding caches & old builds ----
+/out/*
+!/out/*.json
+!/out/*_run.log
+!/out/ext_*.log
+
+# ---- LaTeX build artifacts anywhere ----
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.lot
+*.out
+*.toc
+*.synctex.gz
+*.log
+!/out/*_run.log
+!/out/ext_*.log
+
+# ---- Python / OS ----
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db

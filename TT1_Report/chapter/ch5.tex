@@ -1,0 +1,130 @@
+\chapter{Cơ sở thực nghiệm}\label{chapter:experimental-basis}
+\pagestyle{fancy}
+
+Chương này trình bày các thành phần làm nền cho thực nghiệm: các bộ dữ liệu (Mục~\ref{sec:datasets}), phương pháp và giao thức đánh giá (Mục~\ref{sec:evaluation}), và quy trình chuẩn bị dữ liệu ảnh từ nguồn thay thế mà học viên phải xây dựng do nguồn ảnh gốc không khả dụng (Mục~\ref{sec:data-prep}).
+
+\section{Giới thiệu về tập dữ liệu}\label{sec:datasets}
+
+FashionMV chỉ phát hành phần \emph{chú thích văn bản} (triplet và caption, dạng JSONL trên HuggingFace); ảnh sản phẩm phải được tải từ ba bộ dữ liệu gốc. Vì vậy, hiểu rõ đặc điểm của từng bộ gốc là cần thiết để đánh giá ảnh hưởng của nguồn ảnh lên kết quả.
+
+\subsection{DeepFashion (In-shop Clothes Retrieval)}
+
+DeepFashion~\cite{liu2016deepfashion} là bộ dữ liệu thời trang quy mô lớn do Phòng thí nghiệm MMLab (Đại học Trung văn Hồng Kông) công bố năm 2016, gồm nhiều benchmark con. FashionMV sử dụng benchmark \emph{In-shop Clothes Retrieval}, gồm ảnh sản phẩm chụp trong studio của các cửa hàng trực tuyến, mỗi mặt hàng có nhiều ảnh chụp người mẫu từ các góc nhìn khác nhau với tên tệp mang nhãn góc nhìn (ví dụ \texttt{02\_1\_front.jpg}, \texttt{02\_2\_side.jpg}, \texttt{02\_3\_back.jpg}, \texttt{02\_4\_full.jpg}). Mỗi sản phẩm trong FashionMV được định danh bằng đường dẫn thư mục dạng \texttt{WOMEN/Tees\_Tanks/id\_00006581/12}, tức giới tính / danh mục / mã mặt hàng / mã biến thể.
+
+Benchmark này có hai phiên bản ảnh: bản chuẩn đã thu nhỏ và bản độ phân giải cao (\texttt{img\_highres}). Theo bài báo FashionMV, ảnh DeepFashion được dùng có độ phân giải trên $512 \times 512$. Tập validation của FashionMV trên DeepFashion gồm 5.188 triplet và 2.791 sản phẩm -- gallery nhỏ nhất trong ba bộ.
+
+\subsection{Fashion200K}
+
+Fashion200K~\cite{han2017fashion200k} gồm khoảng 200 nghìn ảnh thời trang thu thập từ các trang mua sắm trực tuyến, thuộc năm danh mục (váy liền, áo, quần, chân váy, áo khoác), mỗi ảnh kèm mô tả sản phẩm. Bộ dữ liệu này đã được TIRG~\cite{vo2019tirg} sử dụng như một benchmark CIR mức ảnh với văn bản chỉnh sửa sinh tự động từ khác biệt thuộc tính (``thay \emph{đỏ} bằng \emph{xanh}''). Trong FashionMV, các ảnh cùng mã sản phẩm được gom nhóm thành một sản phẩm đa góc nhìn (thư mục đặt tên theo mã số, ví dụ \texttt{90456812}). Tập validation có 18.499 triplet và 10.720 sản phẩm -- gallery lớn nhất -- với số góc nhìn trung bình thấp nhất ($\sim$3,3 ảnh mỗi sản phẩm).
+
+\subsection{FashionGen}
+
+FashionGen~\cite{rostamzadeh2018fashiongen} là bộ dữ liệu được công bố cho thử thách sinh ảnh thời trang, gồm khoảng 293 nghìn ảnh của khoảng 78 nghìn sản phẩm chụp từ nhiều góc, mỗi sản phẩm kèm mô tả chuyên nghiệp. Ảnh được phân phối dưới dạng tệp HDF5 ở độ phân giải $256 \times 256$; FashionMV dùng tệp \texttt{fashiongen\_256\_256\_validation.h5} cho tập đánh giá. Đây là bộ khó nhất theo bài báo do độ phân giải thấp. Tại thời điểm thực hiện Thực tập, trang tải chính thức của FashionGen \textbf{không còn hoạt động}, và chính kho mã của FashionMV cũng ghi chú rằng tác giả không cung cấp liên kết tải thay thế. Do đó FashionGen nằm ngoài phạm vi đánh giá của báo cáo.
+
+\subsection{Tập validation FashionMV được sử dụng}
+
+Bảng~\ref{tab:val-stats} thống kê tập validation do học viên tính trực tiếp từ tệp \texttt{val\_triplets.jsonl}. Mỗi bản ghi gồm năm trường: \texttt{source\_id}, \texttt{target\_id}, \texttt{dataset}, \texttt{views\_involved} (danh sách góc nhìn mà văn bản chỉnh sửa đề cập) và \texttt{modification\_text\_short}. Đáng chú ý là tập validation công bố \emph{chỉ chứa văn bản chỉnh sửa ngắn}, phù hợp với giao thức chỉ đánh giá bằng văn bản ngắn của bài báo.
+
+\begin{table}[h]
+\centering
+\caption{Thống kê tập validation FashionMV (tính từ \texttt{val\_triplets.jsonl}).}
+\label{tab:val-stats}
+\begin{tabular}{lrrr}
+\toprule
+& DeepFashion & Fashion200K & FashionGen-val \\
+\midrule
+Số triplet & 5.188 & 18.499 & 9.031 \\
+Số sản phẩm (gallery) & 2.791 & 10.720 & 5.292 \\
+Triplet / sản phẩm & 1,86 & 1,73 & 1,71 \\
+Độ dài văn bản chỉnh sửa (trung vị, từ) & 23 & 24 & 24 \\
+\midrule
+\multicolumn{4}{l}{\emph{Tổ hợp góc nhìn được đề cập (\texttt{views\_involved})}} \\
+sau + trước & 74,2\% & 90,6\% & 71,2\% \\
+trước + nghiêng & 15,8\% & 5,6\% & 21,0\% \\
+sau + trước + nghiêng & 6,9\% & 1,9\% & 4,5\% \\
+khác & 3,1\% & 1,9\% & 3,3\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Có thể thấy hầu hết văn bản chỉnh sửa đề cập đồng thời mặt trước và mặt sau của sản phẩm (từ 71\% đến hơn 90\% tuỳ bộ). Điều này khẳng định về mặt dữ liệu rằng một mô hình chỉ nhìn một ảnh sẽ thiếu thông tin cho phần lớn truy vấn -- chính là động lực của bài toán Multi-View CIR.
+
+\section{Phương pháp đánh giá}\label{sec:evaluation}
+
+\subsection{Độ đo Recall@K}
+
+Độ đo chính của bài toán là \textbf{Recall@K} (R@K): tỷ lệ truy vấn mà sản phẩm đích nằm trong K kết quả đầu tiên của danh sách xếp hạng. Với tập truy vấn $\mathcal{Q}$, gallery $\mathcal{G}$ và $\mathrm{rank}(q)$ là thứ hạng của sản phẩm đích của truy vấn $q$:
+\begin{equation}
+    \mathrm{R@K} = \frac{1}{|\mathcal{Q}|} \sum_{q \in \mathcal{Q}} \mathbb{1}\big[\mathrm{rank}(q) \le K\big] \times 100\%.
+    \label{eq:recall}
+\end{equation}
+Vì mỗi truy vấn chỉ có đúng một đích, R@K tương đương \emph{hit rate} tại K. Bài báo báo cáo R@5 và R@10; báo cáo này bổ sung R@1 (do mã đánh giá gốc cũng tính R@1) vì R@1 nhạy với vị trí của sản phẩm nguồn trong danh sách xếp hạng (Mục~\ref{sec:source-in-gallery}). Độ tương đồng là cosine giữa các embedding đã chuẩn hoá $L_2$.
+
+\subsection{Giao thức đánh giá của mã nguồn gốc}\label{sec:protocol}
+
+Học viên đọc kỹ mã \texttt{evaluate.py} và gói \texttt{procir} của tác giả để nắm chính xác giao thức. Quy trình gồm ba pha:
+
+\begin{enumerate}
+    \item \textbf{Mã hoá gallery.} Lớp \texttt{ProductValDataset} duyệt tệp \texttt{val\_triplets.jsonl} và lấy \emph{tập hợp mọi mã sản phẩm xuất hiện ở vị trí nguồn hoặc đích} của các triplet được chọn. Sản phẩm nào có thư mục ảnh tồn tại sẽ được đưa vào gallery, với tối đa \texttt{MAX\_VIEWS = 5} ảnh đầu tiên theo thứ tự tên tệp. Mỗi sản phẩm được mã hoá một lượt (chỉ ảnh, Hình~\ref{fig:mllm}) để lấy embedding $\mathbf{d}$.
+    \item \textbf{Mã hoá truy vấn.} Lớp \texttt{CIRValDataset} giữ lại các triplet mà cả sản phẩm nguồn lẫn đích đều có ảnh. Mỗi truy vấn được dựng thành hội thoại hai lượt (Hình~\ref{fig:two-stage-seq}) với văn bản chỉnh sửa ngắn; mô hình trả về $\mathbf{s}$ (tại \texttt{<emb>} đầu) và $\mathbf{q}$ (tại \texttt{<emb>} cuối). Nếu một sản phẩm nguồn chưa có trong gallery, $\mathbf{s}$ của nó được bổ sung vào gallery (``source reuse'').
+    \item \textbf{Tính Recall.} Với mỗi bộ dữ liệu, ma trận tương đồng giữa các $\mathbf{q}$ và toàn bộ gallery của bộ đó được tính, rồi R@1, R@5, R@10 được tính theo~\eqref{eq:recall}.
+\end{enumerate}
+
+Ảnh được xử lý với số điểm ảnh trong khoảng $[128^2, 512^2]$ (hằng số \texttt{IMAGE\_MIN\_PIXELS} và \texttt{IMAGE\_MAX\_PIXELS}). Từ giao thức trên, có hai hệ quả quan trọng đối với việc tái lập:
+
+\paragraph{Hệ quả 1 -- Gallery phụ thuộc vào tập triplet được đánh giá.} Gallery không phải một danh mục cố định mà được dựng từ chính các triplet. Nếu chỉ đánh giá trên một mẫu con triplet, gallery tự động co lại tương ứng. Ngoài ra, sản phẩm không có ảnh sẽ biến mất khỏi gallery.
+
+\paragraph{Hệ quả 2 -- Sản phẩm nguồn nằm trong gallery.} Mã không loại sản phẩm nguồn khỏi danh sách xếp hạng của truy vấn. Vì sản phẩm đích thường rất giống sản phẩm nguồn ngoại trừ các chi tiết được chỉnh sửa, sản phẩm nguồn là một ``đối thủ'' mạnh, có thể chiếm hạng 1.
+
+\subsection{Ảnh hưởng của kích thước gallery đến Recall@K}\label{sec:gallery-size-theory}
+
+R@K phụ thuộc trực tiếp vào số lượng sản phẩm gây nhiễu (\emph{distractor}) trong gallery. Một mô hình xếp hạng ngẫu nhiên có R@K kỳ vọng bằng $K / |\mathcal{G}|$. Với một mô hình bất kỳ, nếu coi mỗi distractor có xác suất $p$ (độc lập) được xếp trên đích, thì
+\begin{equation}
+    \mathbb{E}\big[\#\{\text{distractor xếp trên đích}\}\big] = p\,(|\mathcal{G}| - 1),
+\end{equation}
+tức là số đối thủ vượt mặt đích tăng tuyến tính theo kích thước gallery. Thu nhỏ gallery $c$ lần sẽ giảm số đối thủ này khoảng $c$ lần, làm R@K tăng lên một cách hệ thống mà không phản ánh năng lực mô hình. Vì vậy, kết quả trên các gallery có kích thước khác nhau \emph{không thể so sánh trực tiếp}, và mọi so sánh giữa các mô hình phải được thực hiện trên \emph{cùng một gallery}. Nguyên tắc này được áp dụng triệt để khi so sánh ProCIR với các baseline ở Chương~\ref{chapter:experiments}.
+
+\section{Chuẩn bị dữ liệu ảnh từ nguồn thay thế}\label{sec:data-prep}
+
+\subsection{Vấn đề với nguồn ảnh gốc}
+
+Kho mã FashionMV hướng dẫn tải ảnh DeepFashion từ trang chính thức của MMLab (qua Google Drive) và ảnh Fashion200K từ kho GitHub của tác giả gốc (cũng dẫn tới Google Drive). Trong quá trình thực hiện, các liên kết Google Drive này chặn công cụ tải tự động do giới hạn hạn mức truy cập của tệp chia sẻ công khai, và việc tải thủ công các tệp nén nhiều GB cũng không ổn định. Như đã nêu, FashionGen hoàn toàn không còn nguồn tải chính thức.
+
+\subsection{Nguồn thay thế trên HuggingFace}
+
+Học viên sử dụng hai bản sao công khai trên HuggingFace do tổ chức Marqo phát hành: \texttt{Marqo/deepfashion-inshop} và \texttt{Marqo/fashion200k}. Cả hai lưu ảnh dưới dạng tệp parquet, mỗi dòng gồm byte ảnh và một mã \texttt{item\_ID}. Học viên viết các script trích xuất (Phụ lục~\ref{chapter:appendix-code}) để ánh xạ \texttt{item\_ID} về mã sản phẩm của FashionMV và dựng lại cấu trúc thư mục \texttt{images/<dataset>/<product\_id>/} mà \texttt{evaluate.py} yêu cầu:
+\begin{itemize}
+    \item \textbf{DeepFashion}: \texttt{item\_ID} có dạng mã sản phẩm với dấu ``\texttt{/}'' thay bằng ``\texttt{\_}'' cộng hai hậu tố (số thứ tự ảnh và góc nhìn); tiền tố trước hai dấu ``\texttt{\_}'' cuối cùng được so khớp với mã sản phẩm đã chuẩn hoá.
+    \item \textbf{Fashion200K}: \texttt{item\_ID} có dạng \texttt{<product\_id>\_<chỉ số ảnh>}; phần trước dấu ``\texttt{\_}'' cuối cùng là mã sản phẩm.
+\end{itemize}
+Chỉ các ảnh thuộc sản phẩm có mặt trong tập validation mới được trích xuất, giúp giảm dung lượng lưu trữ.
+
+\subsection{Độ phủ dữ liệu}
+
+Bảng~\ref{tab:coverage} tổng hợp độ phủ thu được.
+
+\begin{table}[h]
+\centering
+\caption{Độ phủ ảnh từ nguồn thay thế so với yêu cầu của tập validation FashionMV.}
+\label{tab:coverage}
+\begin{tabular}{lrrrrr}
+\toprule
+Bộ dữ liệu & SP cần & SP có ảnh & Độ phủ SP & Số ảnh & Triplet khả dụng \\
+\midrule
+DeepFashion & 2.791  & 2.791 & 100\%  & 11.305 & 5.188 / 5.188 (100\%) \\
+Fashion200K & 10.720 & 6.908 & 64,4\% & 20.923 & 8.920 / 18.499 (48,2\%) \\
+FashionGen  & 5.292  & 0     & 0\%    & 0      & 0 / 9.031 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+DeepFashion đạt độ phủ đầy đủ (trung bình 4,05 ảnh mỗi sản phẩm). Với Fashion200K, bản sao chỉ chứa ảnh của 6.908 trong 10.720 sản phẩm cần thiết; vì một triplet chỉ khả dụng khi \emph{cả} nguồn và đích đều có ảnh, tỷ lệ triplet khả dụng giảm xuống còn 48,2\% (xấp xỉ bình phương độ phủ sản phẩm, $0{,}644^2 \approx 0{,}41$, cộng thêm ảnh hưởng của việc một số sản phẩm xuất hiện trong nhiều triplet). Các sản phẩm Fashion200K có ảnh trung bình có 3,03 ảnh.
+
+\subsection{Khác biệt về độ phân giải ảnh}\label{sec:resolution}
+
+Học viên kiểm tra kích thước ảnh của nguồn thay thế bằng cách lấy mẫu ngẫu nhiên:
+\begin{itemize}
+    \item \textbf{DeepFashion (Marqo)}: 300/300 ảnh mẫu có kích thước đúng $224 \times 224$ -- bản sao đã thu nhỏ và cắt vuông toàn bộ ảnh. Trong khi đó, bài báo dùng ảnh trên $512 \times 512$.
+    \item \textbf{Fashion200K (Marqo)}: kích thước thay đổi, trung vị $214 \times 449$ (khoảng 98 nghìn điểm ảnh); chỉ 3,9\% ảnh vượt quá $512^2$ điểm ảnh.
+\end{itemize}
+Theo cấu hình thị giác của Qwen3.5 (Bảng~\ref{tab:qwen35-config}), mỗi token thị giác tương ứng một vùng $32 \times 32$ điểm ảnh. Do đó, một ảnh DeepFashion $224 \times 224$ chỉ tạo ra $7 \times 7 = 49$ token thị giác, trong khi một ảnh độ phân giải cao được giới hạn ở $512^2$ điểm ảnh tạo ra tới khoảng 256 token -- \textbf{gấp khoảng 5 lần}. Với Fashion200K, ảnh thay thế tạo ra trung vị khoảng 96 token mỗi ảnh. Sự chênh lệch này có ý nghĩa đặc biệt vì các văn bản chỉnh sửa trong FashionMV thường đề cập các chi tiết nhỏ (khuy, đường may, khoá kéo, hoạ tiết); với ít token hơn, các chi tiết này có thể không còn phân biệt được. Hệ quả lên kết quả tái lập được phân tích ở Mục~\ref{sec:discussion}.

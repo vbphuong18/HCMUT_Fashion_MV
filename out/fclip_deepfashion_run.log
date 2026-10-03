@@ -1,0 +1,12 @@
+Loading patrickjohncyh/fashion-clip on cpu...
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/398 [00:00<?, ?it/s]Loading weights:   3%|3         | 13/398 [00:00<00:03, 128.26it/s]Loading weights:   8%|8         | 32/398 [00:00<00:02, 150.27it/s]Loading weights:  12%|#1        | 47/398 [00:00<00:02, 126.12it/s]Loading weights:  15%|#5        | 60/398 [00:00<00:03, 107.21it/s]Loading weights:  18%|#8        | 72/398 [00:00<00:03, 91.56it/s] Loading weights:  21%|##        | 82/398 [00:00<00:03, 86.08it/s]Loading weights:  23%|##2       | 91/398 [00:00<00:03, 80.25it/s]Loading weights:  25%|##5       | 100/398 [00:01<00:03, 80.47it/s]Loading weights:  27%|##7       | 109/398 [00:01<00:03, 79.37it/s]Loading weights: 100%|##########| 398/398 [00:01<00:00, 324.47it/s]
+[deepfashion] usable triplets (images available): 5188 / 5188
+[deepfashion] embedding 11305 images for 2791 products...
+[deepfashion] image embedding done in 1579.2s
+[deepfashion] gallery built: 2791 products
+[deepfashion] embedding 5188 modification texts...
+[deepfashion] text embedding done in 149.3s
+[deepfashion] R@1=0.87 R@5=47.96 R@10=64.42 (queries=5188, gallery=2791)
+
+Saved to D:/1/Intern12/out/baseline_patrickjohncyh_fashion-clip.json

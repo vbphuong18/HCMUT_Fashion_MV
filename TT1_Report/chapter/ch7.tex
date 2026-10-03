@@ -1,0 +1,47 @@
+\chapter{Tổng kết}\label{chapter:conclusion}
+\pagestyle{fancy}
+
+\section{Kết quả đạt được}
+
+Thực tập 1 đã hoàn thành ba mục tiêu đề ra ở Chương~\ref{chapter:introduction}.
+
+\paragraph{Về tổng hợp bài báo.} Báo cáo đã trình bày một cách có hệ thống công trình FashionMV~\cite{yuan2026fashionmv}: bài toán Multi-View CIR và hiện tượng khiếm khuyết góc nhìn; pipeline ba giai đoạn xây dựng bộ dữ liệu FashionMV; mô hình ProCIR với ba cơ chế hội thoại hai lượt, căn chỉnh dựa trên chú thích và chuỗi suy luận với loại bỏ tiệm tiến, cùng giai đoạn SFT tuỳ chọn; và các kết quả thực nghiệm gồm so sánh với sáu mô hình hiện có và ablation 16 cấu hình. Công trình được đặt trong bối cảnh rộng hơn qua phần tổng quan lịch sử bài toán CIR (Chương~\ref{chapter:overview}) và cơ sở lý thuyết về Transformer, attention tuyến tính, học tương phản, CLIP và MLLM (Chương~\ref{chapter:background}). Ngoài ra, học viên đã đọc mã nguồn đánh giá để làm rõ những chi tiết giao thức không được nêu trong bài báo, và đưa ra các nhận xét phản biện về phương pháp (Mục~\ref{sec:method-critique}).
+
+\paragraph{Về tái lập thực nghiệm.} Học viên đã xây dựng quy trình thay thế nguồn ảnh gốc không khả dụng bằng các bản sao trên HuggingFace, đạt độ phủ 100\% sản phẩm với DeepFashion và 64,4\% với Fashion200K, và chạy thành công mã đánh giá gốc với checkpoint công khai trên GPU miễn phí của Kaggle. Kết quả tái lập đạt R@5/R@10 = 74,42/85,25 trên toàn bộ 5.188 triplet DeepFashion và 87,93/94,53 trên mẫu 1.500 triplet Fashion200K. Các sai lệch so với bài báo -- thấp hơn trên DeepFashion, cao hơn trên Fashion200K -- đều được truy nguyên đến các nguyên nhân cụ thể và định lượng được: ảnh thay thế DeepFashion chỉ có độ phân giải $224 \times 224$ (cung cấp ít token thị giác hơn khoảng 5 lần so với ảnh gốc), và gallery Fashion200K bị thu nhỏ 4,5 lần do đánh giá trên mẫu con.
+
+\paragraph{Về mô hình cơ sở.} Hai baseline zero-shot CLIP và FashionCLIP được đánh giá trên \emph{đúng} tập triplet và gallery của ProCIR. Thứ tự hiệu năng CLIP $<$ FashionCLIP $<$ ProCIR được quan sát nhất quán trên cả hai bộ dữ liệu, với khoảng cách lớn giữa ProCIR và baseline tốt nhất, khẳng định giá trị của kiến trúc CIR chuyên biệt trên nền MLLM so với hợp nhất muộn tuyến tính. Khảo sát trọng số hợp nhất và phân tích vai trò của sản phẩm nguồn trong gallery cung cấp thêm hiểu biết về giao thức đánh giá mà bài báo gốc chưa đề cập.
+
+\paragraph{Về kinh nghiệm thực tiễn.} Quá trình thực hiện cho thấy tái lập một MLLM có kiến trúc attention lai trên tài nguyên miễn phí là khả thi nhưng đòi hỏi nhiều lần điều chỉnh (cỡ mẫu, batch, thư viện kernel), và nhấn mạnh tầm quan trọng của việc ghi lại đầy đủ các chi tiết như nguồn ảnh, độ phân giải và cách dựng gallery khi báo cáo kết quả truy xuất.
+
+\section{Những hạn chế tồn tại}
+
+\begin{itemize}
+    \item \textbf{Chưa đánh giá FashionGen.} Không có nguồn ảnh FashionGen khả dụng, nên chỉ đánh giá được 2/3 bộ dữ liệu của bài báo.
+    \item \textbf{Fashion200K chỉ đánh giá trên mẫu con.} Mẫu 1.500/18.499 triplet với gallery 2.367 sản phẩm khiến kết quả trên bộ này không so sánh trực tiếp được với số liệu bài báo; ngoài ra tập triplet khả dụng (48,2\%) đã là một tập con chọn lọc theo độ phủ của nguồn ảnh thay thế.
+    \item \textbf{Độ phân giải ảnh thấp hơn bản gốc.} Ảnh DeepFashion thay thế ở $224 \times 224$; tác động của độ phân giải đã được lập luận định lượng qua số token thị giác nhưng chưa được kiểm chứng trực tiếp bằng thực nghiệm đối chứng với ảnh gốc.
+    \item \textbf{Không tái lập được quá trình huấn luyện.} Mã huấn luyện chưa được công bố, nên các kết luận ablation của bài báo chưa được kiểm chứng độc lập.
+    \item \textbf{Baseline còn đơn giản.} Hai baseline là mô hình zero-shot với hợp nhất muộn; chưa đánh giá các baseline mạnh hơn trong bài báo như SPRC hay Qwen3-VL-Embedding do giới hạn tài nguyên.
+    \item \textbf{Ảnh hưởng của việc thiếu kernel tối ưu chưa được kiểm chứng.} Về nguyên tắc, chạy attention tuyến tính bằng triển khai tham chiếu chỉ ảnh hưởng tốc độ, không ảnh hưởng kết quả số học (ngoài sai số dấu phẩy động), nhưng điều này chưa được đối chiếu trực tiếp.
+\end{itemize}
+
+\section{Định hướng phát triển}
+
+Từ các kết quả và hạn chế trên, học viên đề xuất các hướng phát triển sau cho giai đoạn Thực tập 2:
+
+\begin{enumerate}
+    \item \textbf{Hoàn thiện tái lập.} Tìm nguồn ảnh độ phân giải cao cho DeepFashion và nguồn ảnh FashionGen (qua các kênh học thuật), đánh giá Fashion200K trên gallery đầy đủ khi có tài nguyên GPU phù hợp, và chạy đối chứng cùng một tập triplet ở hai độ phân giải để định lượng trực tiếp ảnh hưởng của độ phân giải.
+    \item \textbf{Chuẩn hoá giao thức đánh giá.} Báo cáo song song kết quả có và không loại sản phẩm nguồn khỏi danh sách xếp hạng, và luôn báo cáo kèm kích thước gallery.
+    \item \textbf{Phân tích cơ chế tổng hợp đa góc nhìn.} Khảo sát bản đồ attention của ProCIR để xem mô hình chú ý vào góc nhìn nào khi văn bản đề cập một chi tiết (ví dụ phần lưng), cũng như độ bền của mô hình khi thiếu góc nhìn, khi đảo thứ tự góc nhìn hoặc khi chỉ có một ảnh.
+    \item \textbf{Đề xuất cải tiến.} Dựa trên các phân tích trên, nghiên cứu cơ chế tổng hợp đa góc nhìn có nhận biết góc nhìn (\emph{view-aware}) -- ví dụ gắn nhãn góc nhìn tường minh cho từng ảnh hoặc dùng trường \texttt{views\_involved} làm tín hiệu giám sát phụ -- nhằm giải quyết trực tiếp hơn hiện tượng khiếm khuyết góc nhìn, theo hướng đã nêu trong đề cương nghiên cứu.
+\end{enumerate}
+
+\section{Kế hoạch và tiến độ thực hiện}
+
+Thực tập 1 được thực hiện trong bốn tuần, từ ngày 07/09/2026 đến ngày 03/10/2026, theo sáu nhóm công việc: khảo sát tài liệu, nghiên cứu bài báo FashionMV, viết đề cương nghiên cứu, chuẩn bị dữ liệu và môi trường, thực nghiệm, và viết báo cáo (Hình~\ref{fig:timeline}). Toàn bộ công việc do học viên thực hiện cá nhân dưới sự hướng dẫn của giảng viên.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{timeline_tt1.pdf}
+\caption{Kế hoạch và tiến độ thực hiện Thực tập 1.}
+\label{fig:timeline}
+\end{figure}

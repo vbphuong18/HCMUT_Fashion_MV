@@ -1,0 +1,42 @@
+\chapter*{Thuật ngữ \& từ viết tắt}
+\markboth{Thuật ngữ \& từ viết tắt}{Thuật ngữ \& từ viết tắt}
+\vspace{0.5cm}
+
+\section*{Từ viết tắt}
+\begin{abbrv}
+    \item[CIR] Composed Image Retrieval -- truy xuất ảnh có điều kiện
+    \item[MV-CIR] Multi-View Composed Image Retrieval -- truy xuất ảnh có điều kiện đa góc nhìn (mức sản phẩm)
+    \item[ZS-CIR] Zero-Shot Composed Image Retrieval
+    \item[ProCIR] Product-level Composed Image Retrieval -- mô hình đề xuất của bài báo FashionMV
+    \item[MLLM] Multimodal Large Language Model -- mô hình ngôn ngữ lớn đa phương thức
+    \item[LLM] Large Language Model -- mô hình ngôn ngữ lớn
+    \item[VLM] Vision--Language Model -- mô hình thị giác--ngôn ngữ
+    \item[CLIP] Contrastive Language--Image Pre-training
+    \item[ViT] Vision Transformer
+    \item[MT] Multi-Turn -- kiến trúc hội thoại hai lượt của ProCIR
+    \item[Align] Caption-based Alignment -- căn chỉnh dựa trên chú thích
+    \item[CoT] Chain-of-Thought -- chuỗi suy luận
+    \item[SFT] Supervised Fine-Tuning -- tinh chỉnh có giám sát
+    \item[InfoNCE] Info Noise-Contrastive Estimation -- hàm mất mát tương phản
+    \item[RoPE] Rotary Position Embedding
+    \item[KV] Key--Value (bộ nhớ đệm khoá--giá trị khi suy luận)
+    \item[R@K] Recall at K -- tỷ lệ truy vấn có đích nằm trong top-K kết quả
+    \item[DF] DeepFashion
+    \item[F200K] Fashion200K
+    \item[FG] FashionGen
+    \item[I2T / T2I] Image-to-Text / Text-to-Image retrieval
+    \item[GPU] Graphics Processing Unit
+    \item[HF] HuggingFace
+\end{abbrv}
+
+\section*{Thuật ngữ}
+\begin{abbrv}
+    \item[Triplet] Bộ ba (sản phẩm nguồn, văn bản chỉnh sửa, sản phẩm đích) -- đơn vị dữ liệu của CIR
+    \item[Gallery] Tập đối tượng (ảnh hoặc sản phẩm) mà hệ thống truy xuất tìm kiếm trên đó
+    \item[Distractor] Đối tượng trong gallery không phải đích, có thể bị xếp hạng nhầm trên đích
+    \item[Embedding] Vector biểu diễn có chiều cố định của một đối tượng trong không gian chung
+    \item[View Incompleteness] Khiếm khuyết góc nhìn -- hiện tượng ảnh tham khảo không chứa chi tiết được văn bản chỉnh sửa đề cập
+    \item[Late fusion] Hợp nhất muộn -- kết hợp embedding ảnh và văn bản sau khi mã hoá độc lập
+    \item[Zero-shot] Áp dụng mô hình cho tác vụ mà không huấn luyện thêm trên dữ liệu của tác vụ đó
+    \item[Joint / MeanPool / MaxSim] Ba chiến lược mã hoá đa góc nhìn: mã hoá đồng thời / lấy trung bình embedding / lấy độ tương đồng cặp lớn nhất
+\end{abbrv}

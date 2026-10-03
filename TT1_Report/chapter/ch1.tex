@@ -1,0 +1,69 @@
+\chapter{Giới thiệu đề tài}\label{chapter:introduction}
+\pagestyle{fancy}
+
+\section{Bối cảnh và động lực nghiên cứu}
+
+Thương mại điện tử ngành thời trang là một trong những lĩnh vực có khối lượng sản phẩm lớn và tốc độ thay đổi nhanh nhất: mỗi mùa, hàng chục nghìn mẫu mã mới được đưa lên các sàn bán lẻ trực tuyến, mỗi mẫu lại có nhiều biến thể về màu sắc, chất liệu và kiểu dáng. Trong bối cảnh đó, khả năng giúp người dùng \emph{tìm đúng} sản phẩm mình muốn trở thành một yếu tố cạnh tranh then chốt. Các công cụ tìm kiếm truyền thống dựa trên từ khoá bộc lộ nhiều hạn chế: người dùng thường không biết gọi tên chính xác một chi tiết thiết kế (``cổ yếm'', ``dây đan chéo hở lưng'', ``gấu xếp ly bất đối xứng''), còn mô tả sản phẩm do người bán cung cấp thì thiếu nhất quán. Tìm kiếm bằng hình ảnh (\emph{image search}) khắc phục được một phần vấn đề, nhưng lại không cho phép người dùng diễn đạt \emph{sự khác biệt} mong muốn so với ảnh mẫu.
+
+Thực tế, nhu cầu tìm kiếm phổ biến của người mua sắm thời trang có dạng ``\emph{tôi muốn một chiếc áo giống chiếc này, nhưng đổi sang màu trắng, tay ngắn hơn và có khoá kéo ở lưng}''. Truy vấn như vậy kết hợp hai nguồn thông tin bổ trợ: một \textbf{ảnh tham khảo} cung cấp phần lớn ngữ cảnh thị giác, và một \textbf{văn bản chỉnh sửa} (\emph{modification text}) mô tả những thay đổi cần áp dụng. Bài toán truy xuất ảnh đích từ một truy vấn kết hợp như vậy được gọi là \textbf{truy xuất ảnh có điều kiện} -- \emph{Composed Image Retrieval} (CIR)~\cite{vo2019tirg}. CIR đã phát triển nhanh chóng trong khoảng bảy năm trở lại đây, từ các mô hình hợp nhất đặc trưng có giám sát~\cite{vo2019tirg,anwaar2021composeae}, các phương pháp dựa trên không gian biểu diễn CLIP~\cite{baldrati2022clip4cir,bai2024sprc}, các phương pháp không cần dữ liệu gán nhãn (\emph{zero-shot})~\cite{saito2023pic2word,baldrati2023searle,gu2024lincir}, cho đến các phương pháp sử dụng mô hình ngôn ngữ lớn làm xương sống~\cite{huynh2025collm}.
+
+Tuy nhiên, như bài báo FashionMV~\cite{yuan2026fashionmv} (Yuan và cộng sự, 2026) chỉ ra, toàn bộ dòng nghiên cứu này đều dựa trên một giả định ngầm: \textbf{truy vấn chỉ chứa đúng một ảnh tham khảo}, và đích truy xuất cũng là một ảnh đơn lẻ. Giả định này mâu thuẫn với cách sản phẩm thời trang thực sự được trình bày trên các trang thương mại điện tử -- mỗi sản phẩm thường có từ hai đến năm ảnh chụp từ các góc nhìn khác nhau (mặt trước, mặt sau, mặt bên, cận cảnh chi tiết, toàn thân). Khi văn bản chỉnh sửa đề cập tới một chi tiết chỉ quan sát được từ một góc nhìn nhất định (ví dụ phần lưng áo) mà ảnh tham khảo lại không chứa góc nhìn đó, mô hình về bản chất không có đủ căn cứ để suy luận. Bài báo gọi hiện tượng này là \textbf{View Incompleteness} (\emph{khiếm khuyết góc nhìn}).
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.92\textwidth]{view_incompleteness.png}
+\caption{Một sản phẩm thời trang được hiển thị từ bốn góc nhìn. Đường cổ chữ V sâu chỉ quan sát được ở góc nhìn \emph{Front}, trong khi dây đan chéo hở lưng chỉ quan sát được ở góc nhìn \emph{Back} -- không một ảnh đơn lẻ nào nắm bắt đồng thời cả hai đặc trưng định danh này (nguồn: Hình 1 trong~\cite{yuan2026fashionmv}).}
+\label{fig:view_incompleteness}
+\end{figure}
+
+Hình~\ref{fig:view_incompleteness} minh hoạ cụ thể vấn đề: nếu chỉ dùng ảnh mặt trước làm ảnh tham khảo, mô hình không thể ``nhìn thấy'' phần dây đan chéo ở lưng để đối chiếu với một văn bản chỉnh sửa có đề cập đến đặc trưng này. Để giải quyết, FashionMV đề xuất định nghĩa lại bài toán ở \textbf{mức sản phẩm} -- \textbf{Multi-View CIR} -- trong đó cả truy vấn lẫn gallery đều là các sản phẩm được biểu diễn bởi toàn bộ tập ảnh đa góc nhìn. Đi kèm định nghĩa bài toán, bài báo công bố bộ dữ liệu FashionMV (127 nghìn sản phẩm, 472 nghìn ảnh, hơn 220 nghìn triplet CIR) và mô hình \textbf{ProCIR} xây dựng trên mô hình ngôn ngữ lớn đa phương thức Qwen3.5-0.8B~\cite{qwen2026qwen35}.
+
+Thực tập 1 chọn bài báo FashionMV làm đối tượng nghiên cứu vì ba lý do chính:
+\begin{enumerate}
+    \item \textbf{Tính mới của bài toán.} Đây là công trình đầu tiên -- và tại thời điểm khảo sát là duy nhất -- chính thức hoá bài toán CIR ở mức sản phẩm đa góc nhìn. Nắm vững công trình này là nền tảng trực tiếp cho hướng nghiên cứu của học viên ở các giai đoạn tiếp theo.
+    \item \textbf{Khả năng tái lập.} Tác giả công bố công khai bộ chú thích (annotation), checkpoint mô hình ProCIR và mã đánh giá, tạo điều kiện kiểm chứng độc lập các kết quả được công bố.
+    \item \textbf{Giá trị khoa học của việc kiểm chứng.} Tái lập một công trình mới, sử dụng kiến trúc MLLM lai (\emph{hybrid}) giữa attention tuyến tính và attention đầy đủ, trên hạ tầng tính toán hạn chế giúp làm rõ những yếu tố thực tế (nguồn dữ liệu, độ phân giải ảnh, kích thước gallery, giới hạn GPU) ảnh hưởng đến kết quả đánh giá -- những yếu tố thường không được đề cập trong bài báo gốc. Đây cũng là một vấn đề được cộng đồng học máy quan tâm rộng rãi~\cite{pineau2021reproducibility}.
+\end{enumerate}
+
+\section{Mục tiêu của đề tài}
+
+Mục tiêu tổng quát của Thực tập 1 là \emph{nắm vững và kiểm chứng độc lập} công trình FashionMV, từ đó xác định các hạn chế và hướng mở rộng cho giai đoạn nghiên cứu tiếp theo. Cụ thể, đề tài hướng đến ba mục tiêu sau:
+
+\begin{enumerate}
+    \item \textbf{Tổng hợp bài báo.} Trình bày lại một cách có hệ thống nội dung bài báo FashionMV: bài toán Multi-View CIR, pipeline xây dựng bộ dữ liệu, kiến trúc và các cơ chế huấn luyện của ProCIR, cùng các kết quả thực nghiệm và phân tích ablation do tác giả công bố. Đặt công trình trong bối cảnh rộng hơn của các nghiên cứu về CIR và biểu diễn đa phương thức.
+    \item \textbf{Tái lập thực nghiệm.} Chạy lại quy trình đánh giá của ProCIR bằng checkpoint và mã nguồn công khai của tác giả trên tập validation của FashionMV; đối chiếu kết quả thu được với số liệu được công bố và phân tích nguyên nhân của các sai lệch.
+    \item \textbf{Đánh giá mô hình cơ sở.} Triển khai và đánh giá các mô hình cơ sở (baseline) trên cùng thiết lập, nhằm có điểm tham chiếu độc lập để so sánh với ProCIR và kiểm tra tính hợp lý của pipeline đánh giá.
+\end{enumerate}
+
+\section{Phạm vi và giới hạn của đề tài}
+
+\paragraph{Phạm vi.} Đề tài tập trung vào giai đoạn \emph{đánh giá} (inference/evaluation) của ProCIR, sử dụng checkpoint 0.8B tốt nhất do tác giả phát hành (cấu hình MT+Align+SFT theo ký hiệu của bài báo). Các mô hình cơ sở được lựa chọn là CLIP ViT-B/32~\cite{radford2021clip} và FashionCLIP~\cite{chia2022fashionclip} trong chế độ zero-shot với chiến lược hợp nhất muộn (\emph{late fusion}). Phép đo đánh giá chính là Recall@K (K = 1, 5, 10), theo đúng giao thức của bài báo.
+
+\paragraph{Giới hạn.} Trong quá trình thực hiện, đề tài gặp một số ràng buộc khách quan định hình phạm vi thực nghiệm:
+\begin{itemize}
+    \item \textbf{Mã huấn luyện chưa được công bố.} Kho mã nguồn chính thức chỉ cung cấp mã đánh giá và checkpoint (mục ``Training Code -- Coming Soon''), do đó việc tái lập được hiểu là tái lập kết quả đánh giá, không phải huấn luyện lại mô hình từ đầu.
+    \item \textbf{Nguồn ảnh.} FashionMV chỉ phát hành chú thích văn bản, không kèm ảnh. Nguồn ảnh gốc của DeepFashion và Fashion200K không tải tự động được, phải thay thế bằng các bản sao (mirror) công khai trên HuggingFace; trang tải chính thức của FashionGen đã ngừng hoạt động nên bộ dữ liệu này nằm ngoài phạm vi đánh giá.
+    \item \textbf{Tài nguyên tính toán.} Học viên không có GPU riêng; thực nghiệm ProCIR được chạy trên GPU miễn phí của Kaggle (giới hạn khoảng 12 giờ mỗi phiên và 30 giờ mỗi tuần), dẫn đến việc Fashion200K chỉ được đánh giá trên một mẫu con.
+\end{itemize}
+Các giới hạn này được trình bày chi tiết và phân tích ảnh hưởng định lượng ở Chương~\ref{chapter:experimental-basis} và Chương~\ref{chapter:experiments}.
+
+\section{Đóng góp của báo cáo}
+
+Ngoài việc tổng hợp bài báo, báo cáo có các đóng góp thực nghiệm sau:
+\begin{itemize}
+    \item Xây dựng quy trình chuẩn bị dữ liệu ảnh từ nguồn thay thế (parquet trên HuggingFace $\to$ thư mục ảnh theo mã sản phẩm) tương thích với mã đánh giá gốc, cùng thống kê độ phủ ảnh cho từng bộ dữ liệu.
+    \item Tái lập kết quả ProCIR trên toàn bộ 5.188 triplet validation của DeepFashion và trên mẫu con 1.500 triplet của Fashion200K; phân tích hai nguồn sai lệch chính theo hai chiều ngược nhau (độ phân giải ảnh và kích thước gallery).
+    \item Đánh giá hai baseline zero-shot CLIP và FashionCLIP trên cùng tập triplet và cùng gallery với ProCIR, kèm khảo sát trọng số hợp nhất $\alpha$ và phân tích ảnh hưởng của việc sản phẩm nguồn nằm trong gallery -- một chi tiết của giao thức đánh giá chưa được thảo luận trong bài báo gốc.
+\end{itemize}
+
+\section{Cấu trúc báo cáo}
+
+Phần còn lại của báo cáo được tổ chức như sau:
+\begin{itemize}
+    \item \textbf{Chương~\ref{chapter:overview}} trình bày tổng quan về bài toán truy xuất ảnh có điều kiện: định nghĩa hình thức, lịch sử phát triển, các ứng dụng tiêu biểu và những thách thức còn tồn tại.
+    \item \textbf{Chương~\ref{chapter:background}} trình bày cơ sở lý thuyết (Transformer, Vision Transformer, học tương phản, CLIP, mô hình ngôn ngữ lớn đa phương thức, attention tuyến tính) và khảo sát các nghiên cứu liên quan về CIR cũng như biểu diễn đa phương thức trong miền thời trang.
+    \item \textbf{Chương~\ref{chapter:method}} trình bày chi tiết phương pháp của bài báo FashionMV: định nghĩa bài toán Multi-View CIR, pipeline xây dựng bộ dữ liệu, kiến trúc ProCIR với ba cơ chế bổ trợ, và các kết quả do tác giả công bố.
+    \item \textbf{Chương~\ref{chapter:experimental-basis}} giới thiệu các bộ dữ liệu, giao thức và độ đo đánh giá, cùng quy trình chuẩn bị dữ liệu ảnh thay thế.
+    \item \textbf{Chương~\ref{chapter:experiments}} trình bày thiết lập, kết quả tái lập ProCIR, kết quả các mô hình cơ sở và thảo luận.
+    \item \textbf{Chương~\ref{chapter:conclusion}} tổng kết kết quả đạt được, những hạn chế tồn tại và định hướng phát triển.
+\end{itemize}

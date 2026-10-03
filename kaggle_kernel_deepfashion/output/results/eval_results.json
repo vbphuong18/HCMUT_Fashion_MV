@@ -1,0 +1,7 @@
+{
+  "DeepFashion_R@1": 33.58,
+  "DeepFashion_R@5": 74.42,
+  "DeepFashion_R@10": 85.25,
+  "Average_R@5": 74.42,
+  "Average_R@10": 85.25
+}

@@ -1,0 +1,218 @@
+\documentclass[a4paper,12pt,print,oneside]{book}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[unicode,hyperfootnotes=false]{hyperref}
+\usepackage{vntex}
+\usepackage[vietnamese=nohyphenation]{hyphsubst}
+\usepackage[english, vietnamese]{babel}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{tabularx}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{rotating}
+\usepackage{pifont}
+\usepackage{booktabs,longtable}
+\usepackage{lastpage}
+\usepackage[numbers]{natbib}
+
+\usepackage{titletoc}
+\renewcommand{\chaptername}{Chương}
+\setcounter{tocdepth}{2}
+\titlecontents{chapter}[0pt]{\addvspace{3pt}\bfseries}{\chaptername~\thecontentslabel\quad}{}{\hfill\contentspage}[\addvspace{5pt}]
+\titlecontents{section}[2em]{\addvspace{2pt}}{\thecontentslabel\quad}{}{\titlerule*[0.5pc]{.}\contentspage}
+\titlecontents{subsection}[4em]{\addvspace{0pt}}{\thecontentslabel\quad}{}{\titlerule*[0.5pc]{.}\contentspage}
+
+\newcommand{\tick}{\ding{51}}
+\newcommand{\cross}{\ding{55}}
+
+\setlength{\textwidth}{160mm}
+\setlength{\oddsidemargin}{4.6mm}
+\setlength{\evensidemargin}{-5.4mm}
+\setlength{\topmargin}{-5.4mm}
+\setlength{\textheight}{231.9mm}
+\setlength{\headheight}{16pt}
+
+\usepackage{lmodern}
+\usepackage{setspace}
+\setstretch{1.1}
+\setlength{\parindent}{2.5em}
+\setlength{\parskip}{.5em}
+
+\makeatletter
+\setlength{\@fptop}{0pt}
+\makeatother
+
+\usepackage{microtype}
+\usepackage{url}
+\usepackage{mathtools}
+
+\usepackage{xcolor}
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\graphicspath{{Images/}}
+
+\captionsetup[figure]{labelfont={small,bf},textfont={small,it},belowskip=-1pt,aboveskip=7pt}
+\captionsetup[table]{labelfont={small,bf},textfont={small,it},belowskip=-1pt,aboveskip=7pt}
+
+%%%%%% fancy header/footer %%%%%%
+\usepackage{fancyhdr}
+\renewcommand{\sectionmark}[1]{\markright{\thesection\ #1}}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyhead[R]{\bfseries \nouppercase{\rightmark}}
+\fancyhead[C]{\thepage}
+\fancypagestyle{plain}{
+	\fancyhf{}
+	\renewcommand{\headrulewidth}{0pt}
+	\renewcommand{\footrulewidth}{0pt}
+	\fancyhead[C]{\thepage}}
+
+\hypersetup{
+    pdfborder={0 0 0},
+	colorlinks=true,
+	linkcolor=black,
+	citecolor=blue,
+	urlcolor=brown}
+\urlstyle{same}
+
+\makeatletter
+\def\cleardoublepage{\clearpage\if@twoside \ifodd\c@page\else
+    \hbox{}
+    \thispagestyle{empty}
+    \newpage
+    \if@twocolumn\hbox{}\newpage\fi\fi\fi}
+\makeatother \clearpage{\pagestyle{plain}\cleardoublepage}
+
+%%%%% CHAPTER HEADER (khung đen kiểu đồ án) %%%%%
+\usepackage{color}
+\usepackage{tikz}
+\usetikzlibrary{calc,arrows.meta,positioning,decorations.pathreplacing}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage{multirow}
+\usepackage[explicit]{titlesec}
+% Tiêu đề chương đơn giản, chắc chắn không bị vỡ layout dù tên chương dài:
+% "Chương N" (cỡ vừa) trên một dòng, tên chương (đậm, lớn) trên dòng dưới,
+% có một đường kẻ ngang phân tách.
+\titleformat{\chapter}[block]
+	{\normalfont}
+	{\Large\bfseries Chương \thechapter}
+ 	{8pt}
+ 	{\Huge\bfseries #1}
+	[\vspace{4pt}\titlerule]
+
+\titlespacing*{\chapter}{0pt}{20pt}{25pt}
+\titlespacing*{\section}{0pt}{12pt}{*0}
+\titlespacing*{\subsection}{0pt}{12pt}{*0}
+\titlespacing*{\subsubsection}{0pt}{12pt}{*0}
+
+%% --------------- danh sách viết tắt ---------------
+\usepackage{enumitem}
+\newlist{abbrv}{itemize}{1}
+\setlist[abbrv,1]{label=,labelwidth=1in,align=parleft,itemsep=0.1\baselineskip,leftmargin=!}
+
+%%%%%%%%%%%%%%% code listing style %%%%%%%%%%%%%%%
+\usepackage{listings}
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2
+}
+\lstset{style=mystyle}
+
+\begin{document}
+
+\onehalfspacing
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%% HEAD: Book-Begin
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{frontmatter/titlepage}
+
+\frontmatter
+    \pagenumbering{roman}
+    \setcounter{page}{1}
+
+    \include{frontmatter/acknowledgements}
+    \include{frontmatter/abstracts_vie}
+    \include{frontmatter/abstracts_eng}
+    \include{frontmatter/commitment}
+
+    \pagestyle{plain}
+
+    \cleardoublepage
+    \phantomsection
+    \addcontentsline{toc}{chapter}{Mục lục}
+    \tableofcontents
+    \cleardoublepage
+
+    \phantomsection
+    \addcontentsline{toc}{chapter}{Danh sách hình vẽ}
+    \listoffigures
+    \cleardoublepage
+
+    \phantomsection
+    \addcontentsline{toc}{chapter}{Danh sách bảng}
+    \listoftables
+    \cleardoublepage
+
+    \phantomsection
+    \addcontentsline{toc}{chapter}{Thuật ngữ \& từ viết tắt}
+    \include{frontmatter/abbreviation}
+    \if@openright\cleardoublepage\else\clearpage\fi
+
+\setlength{\parskip}{1em}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%% MAIN: Các chương nội dung
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\mainmatter
+    \pagestyle{fancy}
+	\include{chapter/ch1} % Giới thiệu đề tài
+        \newpage
+	\include{chapter/ch2} % Tổng quan bài toán CIR
+        \newpage
+	\include{chapter/ch3} % Cơ sở lý thuyết
+        \newpage
+	\include{chapter/ch4} % Phương pháp FashionMV / ProCIR
+        \newpage
+	\include{chapter/ch5} % Cơ sở thực nghiệm
+        \newpage
+	\include{chapter/ch6} % Thực nghiệm và đánh giá
+        \newpage
+	\include{chapter/ch7} % Tổng kết
+        \newpage
+
+	\appendix
+		\include{appendix/code}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%% TAIL: Tài liệu tham khảo
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\backmatter
+    \cleardoublepage
+    \phantomsection
+    \addcontentsline{toc}{chapter}{Tài liệu tham khảo}
+    \bibliographystyle{references/IEEEtran}
+    \bibliography{references/refs}
+%     \include{frontmatter/profile}
+
+\end{document}

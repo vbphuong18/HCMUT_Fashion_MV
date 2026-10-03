@@ -1,0 +1,13 @@
+Loading openai/clip-vit-base-patch32 on cpu...
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/398 [00:00<?, ?it/s]Loading weights: 100%|##########| 398/398 [00:00<00:00, 25548.02it/s]
+[f200k] usable triplets (images available): 8920 / 18499
+[f200k] subsampled to 2000 (seed=42, matches ProCIR f200k-v3 run)
+[f200k] embedding 9065 images for 2968 products...
+[f200k] image embedding done in 1431.0s
+[f200k] gallery built: 2968 products
+[f200k] embedding 2000 modification texts...
+[f200k] text embedding done in 148.3s
+[f200k] R@1=0.45 R@5=20.0 R@10=30.75 (queries=2000, gallery=2968)
+
+Saved to D:/1/Intern12/out/baseline_openai_clip-vit-base-patch32.json

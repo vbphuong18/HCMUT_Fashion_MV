@@ -1,0 +1,26 @@
+\chapter{Danh mục mã nguồn thực nghiệm}\label{chapter:appendix-code}
+\pagestyle{fancy}
+
+Toàn bộ script do học viên viết để thực hiện thực nghiệm nằm trong thư mục \texttt{scripts/} đi kèm báo cáo; kết quả thô (tệp JSON và log) nằm trong thư mục \texttt{out/}. Mã đánh giá ProCIR (\texttt{evaluate.py} và gói \texttt{procir}) là mã gốc của tác giả tại \url{https://github.com/yuandaxia2001/FashionMV} và được sử dụng nguyên trạng, không chỉnh sửa. Bảng~\ref{tab:scripts} liệt kê chức năng của từng script.
+
+\begin{table}[h]
+\centering
+\caption{Danh mục script sử dụng trong thực nghiệm.}
+\label{tab:scripts}
+\small
+\begin{tabular}{p{4.6cm}p{6.4cm}l}
+\toprule
+Tệp & Chức năng & Môi trường \\
+\midrule
+\texttt{extract\_deepfashion.py} & Trích ảnh DeepFashion từ parquet \texttt{Marqo/deepfashion-inshop}, dựng thư mục theo mã sản phẩm FashionMV & CPU cục bộ \\
+\texttt{extract\_f200k.py} & Trích ảnh Fashion200K từ parquet \texttt{Marqo/fashion200k}, thống kê độ phủ & CPU cục bộ \\
+\texttt{kaggle\_script\_deepfashion.py} & Kernel Kaggle: tải annotation, checkpoint, ảnh; chạy \texttt{evaluate.py} trên toàn bộ 5.188 triplet DeepFashion (batch 32) & Kaggle GPU \\
+\texttt{kaggle\_script\_f200k\_v4.py} & Kernel Kaggle: lấy mẫu 1.500 triplet Fashion200K khả dụng (seed 42), chạy \texttt{evaluate.py} (batch 8) & Kaggle GPU \\
+\texttt{kernel-metadata\_*.json} & Cấu hình kernel Kaggle (bật GPU và Internet) & Kaggle \\
+\texttt{baseline\_eval.py} & Baseline CLIP/FashionCLIP hợp nhất muộn ($\alpha = 0{,}5$), lần chạy đầu (Fashion200K mẫu 2.000) & CPU cục bộ \\
+\texttt{baseline\_ext.py} & Baseline mở rộng: cùng tập triplet/gallery với ProCIR, khảo sát $\alpha$, đánh giá có/không loại sản phẩm nguồn & CPU cục bộ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Để tái lập kết quả ProCIR, chỉ cần đẩy kernel lên Kaggle bằng lệnh \texttt{kaggle kernels push} với tệp metadata tương ứng; kernel tự tải mọi tài nguyên cần thiết từ HuggingFace và GitHub. Để tái lập kết quả baseline, chạy \texttt{extract\_*.py} để dựng thư mục ảnh rồi chạy \texttt{python baseline\_ext.py --model <tên mô hình>} với \texttt{openai/clip-vit-base-patch32} hoặc \texttt{patrickjohncyh/fashion-clip}.

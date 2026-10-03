@@ -1,0 +1,254 @@
+\chapter{Thực nghiệm và đánh giá}\label{chapter:experiments}
+\pagestyle{fancy}
+
+Chương này trình bày toàn bộ thực nghiệm của Thực tập 1: thiết lập và quá trình chạy (Mục~\ref{sec:setup}), các nhóm mô hình (Mục~\ref{sec:model-groups}), kết quả tái lập ProCIR (Mục~\ref{sec:repro-results}), kết quả các mô hình cơ sở (Mục~\ref{sec:baseline-results}) và thảo luận (Mục~\ref{sec:discussion}). Mọi số liệu trong chương được ghi nhận từ các tệp kết quả của các lần chạy thực tế (thư mục \texttt{out/} và đầu ra kernel Kaggle).
+
+\section{Thiết lập thực nghiệm}\label{sec:setup}
+
+\subsection{Hạ tầng tính toán}
+
+Học viên không có GPU riêng. Một phép đo thử trên CPU của máy cá nhân cho thấy việc chạy ProCIR trên toàn bộ tập validation DeepFashion sẽ kéo dài nhiều ngày, do mỗi truy vấn đòi hỏi một lượt truyền xuôi của MLLM 0,8B trên chuỗi chứa hàng trăm token thị giác. Do đó, thực nghiệm được chia trên hai môi trường:
+\begin{itemize}
+    \item \textbf{Kaggle Notebook (GPU miễn phí)} cho ProCIR. Kernel được viết thành script Python và đẩy lên bằng Kaggle API, tự động: cài đặt thư viện (\texttt{transformers}$\ge$5.0, \texttt{huggingface\_hub} 1.33.0, \texttt{pyarrow}), sao chép kho mã FashionMV, tải annotation và checkpoint từ HuggingFace, tải và trích ảnh từ bản sao parquet, rồi gọi \texttt{evaluate.py} nguyên bản. Giới hạn của môi trường là khoảng 12 giờ mỗi phiên và hạn mức khoảng 30 giờ GPU mỗi tuần cho mỗi tài khoản.
+    \item \textbf{CPU máy cá nhân} cho các baseline CLIP và FashionCLIP. Các mô hình này nhẹ (ViT-B/32, 49 token mỗi ảnh) nên chạy được trên CPU trong khoảng 10--30 phút cho mỗi lượt mã hoá gallery.
+\end{itemize}
+
+\subsection{Quá trình chạy ProCIR trên Kaggle}
+
+Bảng~\ref{tab:kaggle-runs} tóm tắt các phiên bản kernel đã được lưu lại. Với DeepFashion, lần chạy trên toàn bộ tập validation hoàn tất thành công. Với Fashion200K, các lần chạy với cỡ dữ liệu và batch lớn đều không hoàn tất: lần chạy toàn bộ tập vượt quá thời lượng cho phép của phiên, còn lần chạy mẫu 2.000 triplet với batch 48 bị ngắt giữa chừng. Nguyên nhân chính là kiến trúc lai của Qwen3.5 (Mục~\ref{sec:linear-attn}): kernel thành công trên DeepFashion không cài các thư viện \texttt{causal-conv1d} và \texttt{flash-linear-attention}, nên 18 tầng attention tuyến tính chạy bằng triển khai tham chiếu PyTorch chậm; các phiên bản sau có thử cài đặt nhưng không đảm bảo bản biên dịch tương thích với môi trường Kaggle (lệnh cài đặt được đặt ở chế độ không bắt buộc thành công). Lần chạy cuối cùng giảm cỡ mẫu xuống 1.500 triplet và batch xuống 8 để hạn chế cả rủi ro thời gian lẫn bộ nhớ, và đã hoàn tất.
+
+\begin{table}[h]
+\centering
+\caption{Các phiên bản kernel Kaggle chạy ProCIR.}
+\label{tab:kaggle-runs}
+\small
+\begin{tabular}{llrrl}
+\toprule
+Kernel & Bộ dữ liệu & Số triplet & Batch & Kết quả \\
+\midrule
+\texttt{deepfashion} & DeepFashion & 5.188 (toàn bộ) & 32 & Thành công \\
+\texttt{f200k} & Fashion200K & 8.920 (toàn bộ khả dụng) & 32 & Không hoàn tất trong phiên \\
+\texttt{f200k\_v3} & Fashion200K & 2.000 (mẫu, seed 42) & 48 & Bị ngắt giữa chừng \\
+\texttt{f200k\_v4} & Fashion200K & 1.500 (mẫu, seed 42) & 8 & Thành công \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Phép lấy mẫu dùng \texttt{random.sample} với seed cố định 42 trên danh sách 8.920 triplet khả dụng theo thứ tự tệp gốc. Học viên đã tái hiện lại phép lấy mẫu này và xác nhận một tính chất quan trọng: \textbf{mẫu 1.500 triplet là tập con đúng của mẫu 2.000 triplet} (cả 1.500 triplet đều nằm trong mẫu 2.000). Theo giao thức ở Mục~\ref{sec:protocol}, gallery của lần chạy 1.500 triplet gồm \textbf{2.367 sản phẩm} (1.231 sản phẩm đích khác nhau), trong khi gallery của mẫu 2.000 triplet gồm 2.968 sản phẩm.
+
+\subsection{Thiết lập mô hình cơ sở}\label{sec:baseline-setup}
+
+Vì CLIP và FashionCLIP không được thiết kế cho CIR, truy vấn được tạo bằng chiến lược \textbf{hợp nhất muộn} phổ biến trong các công trình CIR trước thời MLLM:
+\begin{equation}
+    \mathbf{q} = \mathrm{normalize}\big(\alpha\, \bar{\mathbf{v}}_{src} + (1 - \alpha)\, \mathbf{t}_{mod}\big),
+    \label{eq:late-fusion}
+\end{equation}
+trong đó $\mathbf{t}_{mod}$ là embedding (đã chuẩn hoá $L_2$) của văn bản chỉnh sửa ngắn, và $\bar{\mathbf{v}}_{P}$ là embedding sản phẩm, được tính bằng trung bình (rồi chuẩn hoá) embedding của tối đa 5 ảnh đầu tiên của sản phẩm -- tương ứng chiến lược \textbf{MeanPool} của bài báo và cùng giới hạn \texttt{MAX\_VIEWS} với mã gốc. Gallery được dựng \emph{giống hệt} giao thức của \texttt{evaluate.py}: gồm mọi sản phẩm nguồn và đích của tập triplet được đánh giá, mỗi sản phẩm biểu diễn bởi $\bar{\mathbf{v}}_P$. Hàm tính Recall được viết lại đúng theo \texttt{compute\_recall} của mã gốc. Giá trị mặc định là $\alpha = 0{,}5$; ở Mục~\ref{sec:baseline-results}, học viên khảo sát thêm $\alpha \in \{0; 0{,}25; 0{,}5; 0{,}75; 1\}$.
+
+\section{Các nhóm mô hình thực nghiệm}\label{sec:model-groups}
+
+Bảng~\ref{tab:model-groups} tóm tắt ba nhóm mô hình được so sánh.
+
+\begin{table}[h]
+\centering
+\caption{Các nhóm mô hình trong thực nghiệm.}
+\label{tab:model-groups}
+\small
+\begin{tabular}{p{3.3cm}p{2.2cm}p{3.4cm}p{4.2cm}}
+\toprule
+Mô hình & Tham số & Mã hoá đa góc nhìn & Vai trò \\
+\midrule
+ProCIR (checkpoint MT+Align+SFT) & 0,8B & Joint, hội thoại hai lượt & Mô hình được tái lập \\
+FashionCLIP + hợp nhất muộn & $\sim$0,15B & MeanPool & Baseline thích nghi miền \\
+CLIP ViT-B/32 + hợp nhất muộn & $\sim$0,15B & MeanPool & Baseline tổng quát \\
+Số liệu bài báo (Bảng~\ref{tab:paper-comparison}) & -- & -- & Tham chiếu \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Nhóm 1 -- ProCIR.} Checkpoint công khai \texttt{yuandaxia/ProCIR} tương ứng cấu hình tốt nhất trong ablation (MT+Align+SFT). Mô hình được chạy bằng mã đánh giá gốc, không chỉnh sửa.
+
+\paragraph{Nhóm 2 -- Baseline zero-shot dựa trên CLIP.} CLIP ViT-B/32 (\texttt{openai/clip-vit-base-patch32}) và FashionCLIP (\texttt{patrickjohncyh/fashion-clip}) cùng kiến trúc, khác nhau ở dữ liệu huấn luyện. So sánh hai mô hình này tách bạch lợi ích của thích nghi miền thời trang; so sánh chúng với ProCIR cho thấy lợi ích của kiến trúc CIR chuyên biệt trên nền MLLM. Hai baseline này gần với nhóm ``CIR một-ảnh + MeanPool'' trong bài báo (CLIP4Cir), nhưng không được huấn luyện trên dữ liệu CIR.
+
+\paragraph{Nhóm 3 -- Số liệu tham chiếu.} Các số liệu do bài báo công bố, dùng để đối chiếu kết quả tái lập.
+
+\section{Kết quả tái lập ProCIR}\label{sec:repro-results}
+
+Bảng~\ref{tab:repro} so sánh kết quả tái lập với số liệu bài báo.
+
+\begin{table}[h]
+\centering
+\caption{Kết quả ProCIR: bài báo gốc so với tái lập (\%).}
+\label{tab:repro}
+\begin{tabular}{lcccccrr}
+\toprule
+& \multicolumn{2}{c}{Bài báo} & \multicolumn{3}{c}{Tái lập} & & \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-6}
+Bộ dữ liệu & R@5 & R@10 & R@1 & R@5 & R@10 & \#Triplet & Gallery \\
+\midrule
+DeepFashion & 89,2 & 94,9 & 33,58 & 74,42 & 85,25 & 5.188 & 2.791 \\
+Fashion200K & 77,6 & 86,6 & 41,27 & 87,93 & 94,53 & 1.500 & 2.367 \\
+FashionGen  & 75,0 & 85,3 & -- & -- & -- & -- & -- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    ybar, bar width=13pt, width=0.85\textwidth, height=6cm,
+    ymin=0, ymax=105, ylabel={Recall (\%)},
+    symbolic x coords={DF R@5, DF R@10, F200K R@5, F200K R@10},
+    xtick=data, xticklabel style={font=\small},
+    nodes near coords, nodes near coords style={font=\scriptsize},
+    legend style={at={(0.5,1.03)}, anchor=south, legend columns=2, font=\small},
+    enlarge x limits=0.18
+]
+\addplot[fill=gray!45] coordinates {(DF R@5,89.2) (DF R@10,94.9) (F200K R@5,77.6) (F200K R@10,86.6)};
+\addplot[fill=blue!55] coordinates {(DF R@5,74.42) (DF R@10,85.25) (F200K R@5,87.93) (F200K R@10,94.53)};
+\legend{Bài báo (gallery đầy đủ), Tái lập}
+\end{axis}
+\end{tikzpicture}
+\caption{So sánh kết quả ProCIR trong bài báo và kết quả tái lập. Sai lệch theo hai chiều ngược nhau: thấp hơn trên DeepFashion, cao hơn trên Fashion200K.}
+\label{fig:repro-bar}
+\end{figure}
+
+Có thể thấy kết quả tái lập \emph{lệch theo hai chiều ngược nhau}: trên DeepFashion, R@5 thấp hơn bài báo 14,8 điểm và R@10 thấp hơn 9,7 điểm; trên Fashion200K, R@5 lại \emph{cao hơn} 10,3 điểm và R@10 cao hơn 7,9 điểm. Trung bình hai bộ của kết quả tái lập (R@5 = 81,18; R@10 = 89,89) tình cờ gần với trung bình ba bộ của bài báo (80,6; 88,9), nhưng sự trùng hợp này không có ý nghĩa vì hai sai lệch ngược chiều triệt tiêu nhau và tập dữ liệu khác nhau. Nguyên nhân của từng sai lệch được phân tích ở Mục~\ref{sec:discussion}.
+
+\section{Kết quả các mô hình cơ sở}\label{sec:baseline-results}
+
+\subsection{So sánh trên cùng tập triplet và gallery}
+
+Bảng~\ref{tab:baseline} so sánh ProCIR với hai baseline trên \emph{cùng} tập triplet và \emph{cùng} gallery: toàn bộ 5.188 triplet DeepFashion (gallery 2.791 sản phẩm) và đúng mẫu 1.500 triplet Fashion200K mà ProCIR được đánh giá (gallery 2.367 sản phẩm). Với baseline, báo cáo hai giá trị trọng số hợp nhất: $\alpha = 0{,}5$ (mặc định, trọng số bằng nhau) và $\alpha = 0{,}25$ (giá trị tốt nhất của FashionCLIP trong khảo sát ở Mục~\ref{sec:alpha}). Kết quả của cả hai baseline ở $\alpha = 0{,}5$ trên DeepFashion và trên mẫu 2.000 triplet Fashion200K trùng khớp hoàn toàn với lần chạy đầu bằng script \texttt{baseline\_eval.py}, cho thấy pipeline baseline cho kết quả ổn định.
+
+\begin{table}[h]
+\centering
+\caption{So sánh ProCIR (tái lập) với các baseline zero-shot trên cùng tập triplet và gallery (\%). Giao thức giữ sản phẩm nguồn trong gallery như mã gốc.}
+\label{tab:baseline}
+\begin{tabular}{lcccccc}
+\toprule
+& \multicolumn{3}{c}{DeepFashion (gallery 2.791)} & \multicolumn{3}{c}{Fashion200K (gallery 2.367)} \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-7}
+Mô hình & R@1 & R@5 & R@10 & R@1 & R@5 & R@10 \\
+\midrule
+CLIP, $\alpha = 0{,}25$       & 6,40 & 21,53 & 30,47 & 6,07 & 19,60 & 28,73 \\
+CLIP, $\alpha = 0{,}5$        & 0,44 & 22,11 & 33,85 & 0,53 & 22,87 & 33,60 \\
+FashionCLIP, $\alpha = 0{,}25$ & 23,82 & 55,17 & 67,27 & 18,60 & 51,00 & 62,80 \\
+FashionCLIP, $\alpha = 0{,}5$ & 0,87 & 47,96 & 64,42 & 0,13 & 48,33 & 63,00 \\
+\midrule
+\textbf{ProCIR (tái lập)} & \textbf{33,58} & \textbf{74,42} & \textbf{85,25} & \textbf{41,27} & \textbf{87,93} & \textbf{94,53} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Trên cả hai bộ dữ liệu và ở cả hai giá trị $\alpha$, thứ tự hiệu năng là \textbf{CLIP $<$ FashionCLIP $<$ ProCIR}:
+\begin{itemize}
+    \item \textbf{FashionCLIP vượt CLIP rõ rệt} -- ở $\alpha = 0{,}5$, R@5 tăng từ 22,11 lên 47,96 trên DeepFashion và từ 22,87 lên 48,33 trên Fashion200K. Cùng kiến trúc và cùng cách hợp nhất, khác biệt này hoàn toàn đến từ việc thích nghi miền thời trang của bộ mã hoá.
+    \item \textbf{ProCIR vượt xa cả hai baseline} -- trên DeepFashion, R@5 của ProCIR (74,42) cao hơn cấu hình baseline tốt nhất (FashionCLIP, $\alpha = 0{,}25$: 55,17) 19,25 điểm; trên Fashion200K, khoảng cách là 36,93 điểm (87,93 so với 51,00). Vì so sánh được thực hiện trên cùng tập triplet và cùng gallery, khoảng cách này phản ánh trực tiếp năng lực mô hình, không bị nhiễu bởi kích thước gallery.
+    \item \textbf{R@1 của baseline gần như bằng 0 ở $\alpha = 0{,}5$}, trong khi R@5 vẫn ở mức vài chục phần trăm. Hiện tượng bất thường này được giải thích ở Mục~\ref{sec:source-in-gallery}.
+\end{itemize}
+
+\subsection{Ảnh hưởng của trọng số hợp nhất $\alpha$}\label{sec:alpha}
+
+Hình~\ref{fig:alpha} biểu diễn R@5 trên DeepFashion theo $\alpha$, với $\alpha = 0$ tương ứng truy vấn chỉ bằng văn bản và $\alpha = 1$ tương ứng truy vấn chỉ bằng ảnh nguồn.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    width=0.82\textwidth, height=6.2cm,
+    xlabel={Trọng số ảnh nguồn $\alpha$}, ylabel={R@5 trên DeepFashion (\%)},
+    xtick={0,0.25,0.5,0.75,1}, xticklabels={0, 0.25, 0.5, 0.75, 1},
+    ymin=0, ymax=85, grid=major, grid style={gray!25},
+    legend style={font=\scriptsize, at={(0.5,-0.28)}, anchor=north, legend columns=3},
+    every axis plot/.append style={thick, mark size=2pt}
+]
+\addplot[blue!70, mark=*] coordinates {(0,38.90) (0.25,55.17) (0.5,47.96) (0.75,25.98) (1,13.84)};
+\addplot[blue!70, dashed, mark=o] coordinates {(0,39.11) (0.25,57.90) (0.5,52.68) (0.75,30.38) (1,16.63)};
+\addplot[orange!85!black, mark=square*] coordinates {(0,12.49) (0.25,21.53) (0.5,22.11) (0.75,13.51) (1,8.73)};
+\addplot[orange!85!black, dashed, mark=square] coordinates {(0,12.55) (0.25,22.78) (0.5,25.44) (0.75,16.31) (1,10.64)};
+\addplot[red!70!black, densely dotted, very thick, mark=none] coordinates {(0,74.42) (1,74.42)};
+\legend{FashionCLIP, FashionCLIP (loại nguồn), CLIP, CLIP (loại nguồn), ProCIR (tái lập)}
+\end{axis}
+\end{tikzpicture}
+\caption{R@5 của baseline hợp nhất muộn trên DeepFashion theo trọng số $\alpha$ (nét liền: giao thức gốc, giữ sản phẩm nguồn trong gallery; nét đứt: loại sản phẩm nguồn khỏi danh sách xếp hạng; đường chấm: ProCIR tái lập theo giao thức gốc).}
+\label{fig:alpha}
+\end{figure}
+
+Ba quan sát rút ra:
+\begin{itemize}
+    \item \textbf{Văn bản mang nhiều thông tin hơn ảnh nguồn.} Truy vấn chỉ bằng văn bản ($\alpha = 0$) đạt R@5 = 38,90 với FashionCLIP và 12,49 với CLIP, cao hơn so với chỉ dùng ảnh nguồn ($\alpha = 1$: 13,84 và 8,73). Điều này phù hợp với cách FashionMV xây dựng dữ liệu: văn bản chỉnh sửa được sinh để mô tả những đặc điểm phân biệt đích với 9 ứng viên cạnh tranh, nên tự nó đã chứa nhiều thông tin về đích.
+    \item \textbf{Kết hợp có lợi, với trọng số vừa phải cho ảnh.} Kết hợp hai nguồn luôn tốt hơn dùng riêng từng nguồn. FashionCLIP đạt tốt nhất ở $\alpha = 0{,}25$; với CLIP, hai giá trị $\alpha = 0{,}25$ và $0{,}5$ cho kết quả xấp xỉ nhau. Khi $\alpha$ vượt quá 0,5, hiệu năng của cả hai mô hình giảm mạnh vì embedding truy vấn bị kéo về sát sản phẩm nguồn.
+    \item \textbf{Ngay cả cấu hình baseline tốt nhất vẫn kém ProCIR khoảng 19 điểm R@5.} Phép cộng tuyến tính hai vector không thể biểu diễn các chỉnh sửa có cấu trúc như ``bỏ túi ngực, giữ nguyên màu, thêm khoá kéo ở lưng'', trong khi ProCIR xử lý văn bản trong ngữ cảnh đầy đủ của các token thị giác nhờ attention của MLLM.
+\end{itemize}
+
+\section{Thảo luận}\label{sec:discussion}
+
+\subsection{Sai lệch trên DeepFashion: ảnh hưởng của độ phân giải}
+
+Kết quả tái lập trên DeepFashion thấp hơn bài báo 14,8 điểm R@5 dù đánh giá trên \emph{toàn bộ} tập validation với gallery đúng kích thước (2.791 sản phẩm). Vì checkpoint, mã đánh giá, tập triplet và gallery đều giống bài báo, khác biệt có hệ thống duy nhất được xác định là \textbf{nguồn ảnh}: bản sao \texttt{Marqo/deepfashion-inshop} chứa ảnh $224 \times 224$, trong khi bài báo dùng ảnh trên $512 \times 512$. Như đã tính ở Mục~\ref{sec:resolution}, mỗi ảnh $224 \times 224$ chỉ cho 49 token thị giác thay vì khoảng 256 token -- giảm khoảng 5 lần lượng thông tin thị giác mà LLM nhận được. Văn bản chỉnh sửa trong FashionMV thường đề cập các chi tiết nhỏ (khuy cài, đường may, khoá kéo, kiểu cổ), vốn là những thông tin dễ mất nhất khi thu nhỏ ảnh. Ngoài ra, ảnh thay thế có dạng vuông trong khi ảnh gốc có tỷ lệ dọc, và mô hình được huấn luyện trên ảnh độ phân giải cao, nên ảnh đầu vào thấp hơn tạo ra sự lệch phân bố giữa huấn luyện và đánh giá.
+
+Lập luận này phù hợp với chính phân tích của bài báo: FashionGen -- bộ có độ phân giải thấp nhất ($256 \times 256$) -- luôn là bộ khó nhất dù có nhiều góc nhìn nhất. Tuy nhiên, cần lưu ý đây là lập luận dựa trên cơ chế; một thí nghiệm đối chứng trên cùng tập triplet với ảnh gốc độ phân giải cao là cần thiết để khẳng định định lượng.
+
+\subsection{Sai lệch trên Fashion200K: ảnh hưởng của kích thước gallery}
+
+Ngược với DeepFashion, kết quả trên Fashion200K \emph{cao hơn} bài báo 10,3 điểm R@5. Kết quả này \textbf{không} có nghĩa mô hình hoạt động tốt hơn công bố. Theo giao thức ở Mục~\ref{sec:protocol}, gallery được dựng từ chính các triplet được đánh giá; với mẫu 1.500 triplet, gallery chỉ còn 2.367 sản phẩm so với 10.720 sản phẩm trong bài báo -- \textbf{nhỏ hơn 4,5 lần}. Theo phân tích ở Mục~\ref{sec:gallery-size-theory}, số đối thủ có khả năng vượt mặt đích giảm tương ứng, làm R@K tăng một cách hệ thống.
+
+Thực nghiệm baseline cung cấp bằng chứng trực tiếp cho hiệu ứng này. Vì mẫu 1.500 triplet là tập con của mẫu 2.000 triplet, có thể so sánh cùng một mô hình trên hai gallery có kích thước khác nhau (Bảng~\ref{tab:gallery-effect}).
+
+\begin{table}[h]
+\centering
+\caption{Ảnh hưởng của kích thước gallery lên R@K của cùng một mô hình trên Fashion200K ($\alpha = 0{,}5$, giao thức gốc).}
+\label{tab:gallery-effect}
+\begin{tabular}{lrrcc}
+\toprule
+Mô hình & \#Triplet & Gallery & R@5 & R@10 \\
+\midrule
+FashionCLIP & 2.000 & 2.968 & 44,55 & 59,05 \\
+FashionCLIP & 1.500 & 2.367 & 48,33 & 63,00 \\
+\midrule
+CLIP        & 2.000 & 2.968 & 20,00 & 30,75 \\
+CLIP        & 1.500 & 2.367 & 22,87 & 33,60 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Chỉ thu nhỏ gallery 1,25 lần (từ 2.968 xuống 2.367 sản phẩm) đã làm R@5 của FashionCLIP tăng 3,78 điểm. Với mức thu nhỏ 4,5 lần so với gallery đầy đủ, việc R@5 của ProCIR cao hơn bài báo khoảng 10 điểm là hoàn toàn có thể giải thích bằng hiệu ứng gallery, \emph{kể cả khi} ảnh thay thế (trung vị $214 \times 449$) cũng có độ phân giải thấp hơn bản gốc và lẽ ra kéo kết quả xuống như ở DeepFashion. Ngoài ra, tập triplet khả dụng (48,2\%) là một tập con chọn lọc theo độ phủ của nguồn ảnh thay thế, có thể thiên lệch nhẹ so với phân bố gốc. Do đó, con số 87,93/94,53 chỉ có giá trị khi so sánh với các mô hình khác \emph{trên cùng gallery} (Bảng~\ref{tab:baseline}), không thể so sánh trực tiếp với 77,6/86,6 của bài báo.
+
+\subsection{Sản phẩm nguồn trong gallery}\label{sec:source-in-gallery}
+
+Hiện tượng R@1 của baseline gần bằng 0 ở $\alpha = 0{,}5$ (Bảng~\ref{tab:baseline}) có nguyên nhân từ Hệ quả 2 của giao thức (Mục~\ref{sec:protocol}): sản phẩm nguồn nằm trong gallery và không bị loại khỏi danh sách xếp hạng. Với hợp nhất muộn, truy vấn chứa trực tiếp embedding của sản phẩm nguồn, nên sản phẩm nguồn có độ tương đồng rất cao với truy vấn. Bảng~\ref{tab:source} định lượng hiện tượng này.
+
+\begin{table}[h]
+\centering
+\caption{Tỷ lệ truy vấn có sản phẩm nguồn ở hạng 1, và R@K khi giữ / loại sản phẩm nguồn khỏi danh sách xếp hạng (DeepFashion, \%).}
+\label{tab:source}
+\begin{tabular}{lccccc}
+\toprule
+& & \multicolumn{2}{c}{R@1} & \multicolumn{2}{c}{R@5} \\
+\cmidrule(lr){3-4}\cmidrule(lr){5-6}
+Mô hình & Nguồn ở hạng 1 & Giữ & Loại & Giữ & Loại \\
+\midrule
+CLIP, $\alpha = 0{,}25$        & 30,47 & 6,40 & 8,81 & 21,53 & 22,78 \\
+CLIP, $\alpha = 0{,}5$         & 97,84 & 0,44 & 8,91 & 22,11 & 25,44 \\
+FashionCLIP, $\alpha = 0{,}25$ & 39,34 & 23,82 & 31,11 & 55,17 & 57,90 \\
+FashionCLIP, $\alpha = 0{,}5$  & 97,57 & 0,87 & 21,34 & 47,96 & 52,68 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Ở $\alpha = 0{,}5$, sản phẩm nguồn chiếm hạng 1 ở 97,57\% truy vấn với FashionCLIP và 97,84\% với CLIP; khi loại nguồn khỏi danh sách xếp hạng, R@1 của FashionCLIP tăng từ 0,87 lên 21,34. R@5 và R@10 bị ảnh hưởng ít hơn nhiều, vì việc sản phẩm nguồn chiếm một vị trí chỉ đẩy đích lùi đúng một hạng.
+
+Với ProCIR, hiện tượng này cũng tồn tại -- Hình~\ref{fig:retrieval_case} trong tài liệu bổ sung của chính bài báo là một ví dụ ProCIR xếp sản phẩm nguồn ở hạng 1 và đích ở hạng 2. Khoảng cách lớn giữa R@1 (33,58) và R@5 (74,42) của ProCIR trên DeepFashion gợi ý rằng một phần truy vấn có thể bị ảnh hưởng tương tự. Do việc chạy lại ProCIR đòi hỏi GPU, báo cáo chưa định lượng được R@1 của ProCIR khi loại nguồn; đây là một việc cần làm tiếp theo. Điều quan trọng rút ra là: bài báo chỉ báo cáo R@5 và R@10 (ít nhạy với hiện tượng này), nhưng khi so sánh với các công trình dùng giao thức loại nguồn cần đặc biệt lưu ý sự khác biệt về giao thức.
+
+\subsection{Bài học về tái lập}
+
+Quá trình tái lập cho thấy một số yếu tố thường bị bỏ qua nhưng ảnh hưởng mạnh đến kết quả truy xuất:
+\begin{itemize}
+    \item \textbf{Nguồn và độ phân giải ảnh} -- với MLLM có độ phân giải động, độ phân giải ảnh quyết định trực tiếp số token thị giác; bộ dữ liệu chỉ phát hành annotation mà không kèm ảnh khiến kết quả phụ thuộc vào nguồn ảnh người dùng tự tìm.
+    \item \textbf{Kích thước và cách dựng gallery} -- gallery dựng từ chính tập triplet khiến mọi phép lấy mẫu con đều làm thay đổi độ khó của bài toán; kích thước gallery nên luôn được báo cáo kèm kết quả.
+    \item \textbf{Chi tiết giao thức} -- việc giữ hay loại sản phẩm nguồn có thể thay đổi R@1 của baseline từ gần 0 lên hơn 20\%.
+    \item \textbf{Môi trường phần mềm} -- các kiến trúc mới như attention lai cần kernel chuyên dụng; thiếu kernel không làm sai kết quả nhưng có thể làm thời gian chạy vượt quá giới hạn tài nguyên, buộc phải thu nhỏ thực nghiệm.
+\end{itemize}
+

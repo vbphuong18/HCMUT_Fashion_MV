@@ -1,0 +1,14 @@
+\chapter*{Abstract}
+\markboth{Abstract}{Abstract}
+\addcontentsline{toc}{chapter}{Abstract}
+\onehalfspacing
+\vspace{1.0cm}
+
+\begin{otherlanguage}{english}
+Composed Image Retrieval (CIR) retrieves a target image from a query consisting of a reference image and a modification text. All prior CIR methods assume a single reference image, whereas fashion products in e-commerce are displayed from multiple viewpoints. The \textbf{FashionMV} paper (Yuan et al., 2026) names this mismatch \emph{View Incompleteness}, formally defines the product-level \textbf{Multi-View CIR} task, builds the FashionMV dataset (127K products, 472K images, 220K+ triplets) and proposes \textbf{ProCIR}, a Qwen3.5-0.8B-based MLLM framework with three mechanisms: two-stage dialogue, caption-based alignment and chain-of-thought guidance.
+
+This Internship 1 report systematically reviews the paper and its theoretical background, then reproduces its experiments using the authors' public checkpoint and evaluation code. Since the original image sources were unavailable, substitute HuggingFace mirrors were used and evaluation was run on free Kaggle GPUs. The reproduced ProCIR reaches R@5/R@10 = 74.42/85.25 on all 5,188 DeepFashion triplets (paper: 89.2/94.9) and 87.93/94.53 on a 1,500-triplet Fashion200K subsample (paper: 77.6/86.6). The two opposite deviations are traced to quantifiable causes: the substitute DeepFashion images are only $224 \times 224$ (about 5$\times$ fewer visual tokens), and the Fashion200K gallery shrinks about 4.5$\times$ under subsampling. Two zero-shot late-fusion baselines, CLIP and FashionCLIP, are evaluated on exactly the same triplets and galleries as ProCIR; the ordering CLIP $<$ FashionCLIP $<$ ProCIR holds consistently, with a gap of over 19 R@5 points between ProCIR and the best baseline configuration on DeepFashion. The report further shows that the official protocol keeps the source product in the gallery: for the baselines, the source product ranks first for almost every query, driving R@1 close to zero -- a protocol detail that should be standardized when comparing methods.
+
+\bigskip
+\noindent\textbf{Keywords:} composed image retrieval, multi-view CIR, multimodal large language model, fashion image retrieval, reproducibility.
+\end{otherlanguage}

@@ -1,0 +1,13 @@
+Loading patrickjohncyh/fashion-clip on cpu...
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/398 [00:00<?, ?it/s]Loading weights:  11%|#         | 42/398 [00:00<00:00, 405.51it/s]Loading weights:  21%|##        | 83/398 [00:00<00:00, 407.46it/s]Loading weights:  31%|###1      | 124/398 [00:00<00:00, 385.46it/s]Loading weights:  41%|####      | 163/398 [00:00<00:00, 367.73it/s]Loading weights:  50%|#####     | 200/398 [00:00<00:00, 340.92it/s]Loading weights: 100%|##########| 398/398 [00:00<00:00, 651.02it/s]
+[f200k] usable triplets (images available): 8920 / 18499
+[f200k] subsampled to 2000 (seed=42, matches ProCIR f200k-v3 run)
+[f200k] embedding 9065 images for 2968 products...
+[f200k] image embedding done in 629.6s
+[f200k] gallery built: 2968 products
+[f200k] embedding 2000 modification texts...
+[f200k] text embedding done in 52.6s
+[f200k] R@1=0.15 R@5=44.55 R@10=59.05 (queries=2000, gallery=2968)
+
+Saved to D:/1/Intern12/out/baseline_patrickjohncyh_fashion-clip.json

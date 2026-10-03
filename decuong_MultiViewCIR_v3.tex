@@ -1,0 +1,676 @@
+\documentclass[a4paper]{article}
+\usepackage{a4wide,amssymb,epsfig,latexsym,multicol,array,hhline,fancyhdr}
+\usepackage{vntex}
+\usepackage{amsmath}
+\usepackage{lastpage}
+\usepackage[lined,boxed,commentsnumbered]{algorithm2e}
+\usepackage{enumerate}
+\usepackage{color}
+\usepackage{graphicx}							% Standard graphics package
+\usepackage{array}
+\usepackage{tabularx, caption}
+\usepackage{multirow}
+\usepackage{multicol}
+\usepackage{rotating}
+\usepackage{graphics}
+\usepackage{geometry}
+\usepackage{setspace}
+\usepackage{epsfig}
+\usepackage{tikz}
+\usepackage{tkz-graph}
+\usepackage{enumitem}
+\usepackage{algorithmic}
+\usepackage{xcolor}
+\usepackage{algorithm}
+\usetikzlibrary{arrows,snakes,backgrounds}
+\usetikzlibrary{arrows.meta,positioning,fit,calc}
+\usepackage{hyperref}
+\hypersetup{urlcolor=blue,linkcolor=black,citecolor=black,colorlinks=true}
+%\usepackage{pstcol} 								% PSTricks with the standard color package
+\usepackage{listings}
+\usepackage{booktabs,longtable}
+
+% Lề trái/phải 2,3 cm để các bảng longtable (độ rộng cột cố định) vừa khung chữ
+\geometry{left=2.3cm,right=2.3cm}
+
+\newtheorem{theorem}{{\bf Theorem}}
+\newtheorem{property}{{\bf Property}}
+\newtheorem{proposition}{{\bf Proposition}}
+\newtheorem{corollary}[proposition]{{\bf Corollary}}
+\newtheorem{lemma}[proposition]{{\bf Lemma}}
+
+%\usepackage{fancyhdr}
+\setlength{\headheight}{40pt}
+\pagestyle{fancy}
+\fancyhead{} % clear all header fields
+\fancyhead[L]{
+ \renewcommand{\arraystretch}{1}
+ \begin{tabular}{rl}
+    \begin{picture}(25,15)(0,0)
+    \put(0,-8){\includegraphics[width=8mm, height=8mm]{hcmut.png}}
+    %\put(0,-8){\epsfig{width=10mm,figure=hcmut.eps}}
+   \end{picture}&
+	%\includegraphics[width=8mm, height=8mm]{hcmut.png} & %
+	\begin{tabular}{l}
+		\textbf{Trường Đại học Bách Khoa, TP. Hồ Chí Minh}\\
+		\textbf{Khoa Khoa học và Kỹ thuật Máy tính}
+	\end{tabular}
+ \end{tabular}
+}
+\fancyhead[R]{
+	\begin{tabular}{l}
+		\tiny \bf \\
+		\tiny \bf
+	\end{tabular}  }
+\fancyfoot{} % clear all footer fields
+\fancyfoot[L]{\scriptsize Đề cương nghiên cứu - Học kỳ 261}
+\fancyfoot[R]{\scriptsize Trang {\thepage}/\pageref{LastPage}}
+\renewcommand{\headrulewidth}{0.3pt}
+\renewcommand{\footrulewidth}{0.3pt}
+
+
+%%%
+\setcounter{secnumdepth}{4}
+\setcounter{tocdepth}{3}
+\makeatletter
+\newcounter {subsubsubsection}[subsubsection]
+\renewcommand\thesubsubsubsection{\thesubsubsection .\@alph\c@subsubsubsection}
+\newcommand\subsubsubsection{\@startsection{subsubsubsection}{4}{\z@}%
+                                     {-3.25ex\@plus -1ex \@minus -.2ex}%
+                                     {1.5ex \@plus .2ex}%
+                                     {\normalfont\normalsize\bfseries}}
+\newcommand*\l@subsubsubsection{\@dottedtocline{3}{10.0em}{4.1em}}
+\newcommand*{\subsubsubsectionmark}[1]{}
+\makeatother
+
+% Define a custom color
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+% Define a custom style
+\lstdefinestyle{myStyle}{
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,
+    breaklines=true,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2,
+}
+% Use \lstset to make myStyle the global default
+\lstset{style=myStyle}
+
+%%% Thiết lập riêng cho nội dung đề cương
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+\setlist{itemsep=2pt,topsep=4pt}
+\setlength{\emergencystretch}{3em}
+\setlength{\LTleft}{0pt}
+\newcommand{\emb}{\texttt{<emb>}}
+
+\begin{document}
+
+\begin{titlepage}
+\begin{center}
+ĐẠI HỌC QUỐC GIA THÀNH PHỐ HỒ CHÍ MINH \\
+TRƯỜNG ĐẠI HỌC BÁCH KHOA \\
+KHOA KHOA HỌC VÀ KỸ THUẬT MÁY TÍNH
+\end{center}
+
+\vspace{1cm}
+
+\begin{figure}[h!]
+\begin{center}
+\includegraphics[width=3cm]{hcmut.png}
+\end{center}
+\end{figure}
+
+\vspace{1cm}
+
+
+\begin{center}
+\begin{tabular}{c}
+\multicolumn{1}{c}{\textbf{{\Large THỰC TẬP 1 + 2}}}\\
+
+~~\\
+\hline
+\\
+\multicolumn{1}{l}{\textbf{{\Large Đề cương nghiên cứu tổng quan}}}\\
+\\
+\parbox{0.92\textwidth}{\centering\textbf{\LARGE Nghiên cứu truy xuất sản phẩm thời trang đa phương thức có điều kiện ở mức sản phẩm với dữ liệu đa góc nhìn (Multi-View CIR)}}\\
+\\
+\hline
+\end{tabular}
+\end{center}
+
+\vspace{3cm}
+
+\begin{table}[h]
+\begin{tabular}{rrl}
+\hspace{5 cm} & Giảng viên: & PGS.TS. Võ Thị Ngọc Châu\\
+& Học viên: & Võ Thị Bích Phượng - 2470570\\
+\end{tabular}
+\end{table}
+
+
+\begin{center}
+{\footnotesize TP. HỒ CHÍ MINH, THÁNG 9/2026}
+\end{center}
+\end{titlepage}
+
+
+%\thispagestyle{empty}
+
+\newpage
+\tableofcontents
+\newpage
+
+\renewcommand{\arraystretch}{1.25}
+
+%================ 1 =================
+\section{Bối cảnh và Đặt vấn đề}
+
+Trong Thương mại điện tử (TMĐT) ngành hàng dệt may và thời trang, người dùng cuối, chẳng hạn đối tác mua sỉ (B2B buyers/merchandisers), có xu hướng tìm kiếm sản phẩm bằng cách kết hợp một hình ảnh tham khảo với một đoạn văn bản điều chỉnh (\textit{modifier text}), ví dụ: ``tìm mẫu áo giống ảnh này nhưng đổi sang khoá kéo lộ ở lưng và thêm túi ngực''. Đây là bài toán \textbf{Composed Image Retrieval (CIR)}: truy xuất ảnh đích dựa trên cặp truy vấn (ảnh, văn bản).
+
+\subsection{Hạn chế cốt lõi: giả định một ảnh tham khảo duy nhất}
+
+Toàn bộ dòng nghiên cứu CIR, từ TIRG (2019) tới các mô hình dựa trên MLLM năm 2025--2026, đều mặc định truy vấn chỉ gồm \textbf{một ảnh tham khảo}. Yuan et al.~[1] gọi đây là hiện tượng \textbf{View Incompleteness} (khiếm khuyết góc nhìn) và chỉ ra rằng nó mâu thuẫn với thực tế TMĐT: sản phẩm thời trang được trưng bày từ nhiều góc (trước, sau, nghiêng, cận cảnh), và người mua suy luận trên toàn bộ tập ảnh đó chứ không phải một ảnh đơn lẻ.
+
+Ví dụ điển hình: một chiếc đầm có cổ chữ V sâu chỉ quan sát được ở góc chụp trước, trong khi dây đan chéo hở lưng chỉ quan sát được ở góc chụp sau. Không một ảnh đơn nào đồng thời chứa hai đặc trưng định danh này. Khi văn bản điều chỉnh đề cập tới vùng không quan sát được (ví dụ yêu cầu ``thiết kế hở lưng'' trong khi chỉ có ảnh mặt trước), kết quả truy xuất thiếu căn cứ về mặt bản chất.
+
+Về mặt định lượng, từ quy mô công bố của FashionMV (127K sản phẩm, 472K ảnh -- xem Bảng~\ref{tab:data}), số ảnh trung bình mỗi sản phẩm khoảng $472\text{K}/127\text{K} \approx 3{,}7$. Đây là số trung bình suy ra từ số liệu tổng, không phải phân bố chi tiết. Tỉ lệ sản phẩm chỉ có 1--2 ảnh sẽ được thống kê trực tiếp trên tập dữ liệu ở Tháng 1 (Bảng~\ref{tab:plan}) và báo cáo ở báo cáo giữa kỳ TT1; con số này là cơ sở thực nghiệm cho khoảng trống G2 (Mục~\ref{sec:gap}).
+
+\subsection{Bài toán Multi-View CIR và công trình nền tảng}
+
+Yuan et al.~[1] định nghĩa hình thức bài toán \textbf{Multi-View CIR}, tổng quát hoá CIR từ mức ảnh lên mức sản phẩm: mỗi sản phẩm $P$ được biểu diễn bởi tập ảnh đa góc $\mathcal{V}^P = \{I^P_1, \dots, I^P_{N_P}\}$, được tổng hợp thành một embedding duy nhất; công thức suy biến về CIR chuẩn khi $N_P = 1$. Kèm theo đó, nhóm tác giả công bố:
+\begin{itemize}
+\item \textbf{FashionMV} -- bộ dữ liệu đa góc nhìn quy mô lớn đầu tiên cho CIR mức sản phẩm: 127K sản phẩm, 472K ảnh, hơn 220K triplet, xây dựng tự động qua ba giai đoạn dùng các mô hình đa phương thức lớn.
+\item \textbf{ProCIR} -- khung mô hình trên nền MLLM (Qwen3.5-0.8B) với ba cơ chế: đối thoại hai giai đoạn (MT), căn chỉnh dựa trên caption (Align), dẫn dắt chuỗi suy luận (CoT), cùng bước tinh chỉnh có giám sát (SFT) tuỳ chọn.
+\end{itemize}
+Kết quả tốt nhất của ProCIR vượt mọi baseline, kể cả mô hình nhúng đa phương thức lớn gấp 10 lần tham số. Dữ liệu, mã nguồn và trọng số đều đã công khai, tạo nền tảng thuận lợi để đề tài kế thừa và mở rộng.
+
+\subsection{Vì sao chọn hướng này}
+\begin{enumerate}[label=(\roman*)]
+\item Bài toán vừa được định nghĩa (tháng 4/2026). Theo khảo sát của đề tài \textbf{tính đến tháng 9/2026} (nguồn: arXiv, Google Scholar, kỷ yếu CVPR, ICCV, ECCV, ACM MM 2025--2026; từ khoá: \textit{multi-view composed image retrieval}, \textit{product-level composed retrieval}, \textit{multi-image reference CIR}), FashionMV/ProCIR là công trình duy nhất đặt bài toán ở mức sản phẩm đa góc nhìn. Các công trình CIR thời trang cùng thời điểm như FIRE-CIR~[21] vẫn giữ giả định một ảnh tham khảo. Khảo sát sẽ được cập nhật trước báo cáo giữa kỳ.
+\item Dữ liệu và mã nguồn công khai, giảm mạnh rủi ro tái lập.
+\item Bối cảnh đa góc nhìn khớp trực tiếp với nhu cầu tra cứu sản phẩm theo mã hàng của B2B buyers nêu ở đầu mục này.
+\end{enumerate}
+
+%================ 2 =================
+\section{Mục tiêu và Phạm vi nghiên cứu}
+
+\subsection{Mục tiêu tổng quát}
+Nghiên cứu thực nghiệm và mở rộng có hệ thống phương pháp truy xuất sản phẩm thời trang đa phương thức ở mức sản phẩm (Multi-View CIR), tập trung vào hai điểm yếu phương pháp của công trình nền tảng: (i) chưa có cơ chế lựa chọn góc nhìn \textbf{tường minh} theo ngữ nghĩa văn bản điều chỉnh, và cơ chế ngầm hiện có chưa được kiểm chứng; (ii) chưa khai thác mẫu âm khó (hard negative) vốn có sẵn trong quy trình xây dựng dữ liệu. Đồng thời, đề tài bổ sung hai đánh giá mà công trình gốc chưa thực hiện: độ bền theo số lượng góc nhìn và khả năng chuyển giao sang benchmark do người gán nhãn.
+
+\subsection{Mục tiêu cụ thể}
+\begin{enumerate}[label=(\alph*)]
+\item Khảo sát và phân loại các hướng tiếp cận CIR, xác định vị trí của Multi-View CIR trong bức tranh chung.
+\item Tái lập (reproduce) một cấu hình tham chiếu của ProCIR trên tài nguyên hạn chế làm mốc so sánh; mọi biến thể khởi tạo từ cùng một checkpoint và cùng quy trình huấn luyện.
+\item \textbf{Chẩn đoán} cơ chế lựa chọn góc nhìn ngầm của ProCIR: đo mức độ chú ý từ văn bản điều chỉnh tới từng góc nhìn và so với góc nhìn mà văn bản đề cập.
+\item Đề xuất và hiện thực module lựa chọn góc nhìn tường minh có điều kiện trên văn bản điều chỉnh (View-Aware Selection).
+\item Đề xuất chiến lược khai thác mẫu âm khó từ các ứng viên bị loại trong quy trình dựng FashionMV, kèm cơ chế lọc mẫu âm giả (false negative).
+\item Xây dựng bộ đánh giá độ bền theo số lượng góc nhìn (view-dropout khi suy luận) và thử nghiệm view-dropout khi huấn luyện như một biện pháp tăng độ bền.
+\item Đánh giá khả năng chuyển giao sang FashionIQ (benchmark do người gán nhãn) nhằm định lượng độ lệch của dữ liệu sinh bởi mô hình.
+\item Đặt kết quả FashionIQ vào bối cảnh bằng cách \textbf{chạy lại trong cùng hạ tầng} hai mốc tham chiếu CLIP zero-shot và CLIP4Cir (Recall@10, Recall@50). Số liệu công bố của TIRG, CoSMo, ARTEMIS, FashionVLP chỉ được trình bày để tham khảo bối cảnh, \textbf{không dùng để rút kết luận} (xem nguyên tắc ở Mục~\ref{sec:config}).
+\end{enumerate}
+
+\subsection{Phạm vi nghiên cứu}
+\begin{itemize}
+\item \textbf{Trong phạm vi:} Thiết kế module mô hình, hàm mất mát, quy trình huấn luyện và ablation; đánh giá học thuật trên FashionMV và FashionIQ.
+\item \textbf{Ngoài phạm vi:} Xây dựng lại dataset từ đầu (kế thừa FashionMV đã công bố); khắc phục lỗi dữ liệu nền G4 (chỉ ghi nhận, xem Mục~\ref{sec:gap}); triển khai hệ thống Backend production; huấn luyện MLLM nền tảng từ đầu. Đề tài chỉ tinh chỉnh trên mô hình đã huấn luyện trước.
+\item \textbf{Ràng buộc tài nguyên:} Toàn bộ thực nghiệm chạy trên \textbf{một GPU đơn (24GB VRAM)} thay vì cụm 10 GPU như công trình gốc. Ràng buộc này định hình các lựa chọn kỹ thuật và ngân sách tính toán ở Mục~\ref{sec:config}--\ref{sec:budget}.
+\item \textbf{Định vị đóng góp:} Từng kỹ thuật thành phần (attention pooling có điều kiện, khai thác mẫu âm khó) đã phổ biến ở các bài toán truy xuất khác. Đóng góp của đề tài nằm ở việc chẩn đoán, điều chỉnh và kiểm chứng chúng cho bài toán Multi-View CIR vừa được định nghĩa, cùng hai đánh giá độc lập G2, G3.
+\end{itemize}
+
+%================ 3 =================
+\section{Tổng quan tình hình nghiên cứu (Literature Review)}
+
+\subsection{Các thế hệ phương pháp CIR}
+
+\textbf{(i) Hợp nhất đặc trưng có giám sát.} Vo et al.~[2] đề xuất TIRG với cổng phần dư (residual gating) hợp nhất vector ảnh và vector văn bản điều chỉnh. Các công trình kế tiếp cải tiến cơ chế hợp nhất bằng điều biến nội dung--phong cách~[3] hoặc attention tường minh~[4].
+
+\textbf{(ii) Combiner trên nền CLIP.} CLIP~[5] đưa lĩnh vực sang không gian nhúng được căn chỉnh sẵn. Baldrati et al.~[6] (CLIP4Cir) xây một Combiner Network nhỏ trên đặc trưng CLIP và trở thành baseline được dùng rộng rãi. Trong miền thời trang, FashionVLP~[7] khai thác thông tin thị giác đa mức ngữ cảnh từ một ảnh.
+
+\textbf{(iii) Zero-shot CIR.} Nhằm tránh chi phí gán nhãn triplet, Pic2Word~[10] và SEARLE~[11] ánh xạ ảnh thành pseudo-word token trong không gian embedding của CLIP; LinCIR~[12] huấn luyện chỉ bằng dữ liệu văn bản qua self-masking projection.
+
+\textbf{(iv) CIR dựa trên LLM/MLLM và suy luận mịn.} CoLLM~[13] dùng LLM làm backbone sinh embedding cho ảnh và văn bản, đánh dấu bước chuyển từ backbone CLIP sang MLLM. FineCIR~[22] phân tích tường minh ngữ nghĩa điều chỉnh mịn trong văn bản. FIRE-CIR~[21] (CVPR 2026) phân rã văn bản điều chỉnh thành các câu hỏi thị giác theo thuộc tính và kiểm chứng bằng chứng thị giác trên ảnh tham khảo và ảnh ứng viên, chủ yếu dùng cho bước xếp hạng lại. Cả hai đều hướng tới việc ``văn bản chỉ vào đâu trên ảnh'' -- cùng tinh thần với module lựa chọn góc nhìn của đề tài -- nhưng vẫn thao tác trên một ảnh tham khảo.
+
+\textbf{(v) Mở rộng phạm vi bài toán.} Các hướng gần đây mở rộng CIR sang ngữ nghĩa mịn, tương tác đa lượt và miền video. Yuan et al.~[1] mở rộng theo một trục khác: phía đầu vào thị giác, từ một ảnh lên tập ảnh đa góc của một sản phẩm.
+
+\subsection{Biểu diễn thị giác--ngôn ngữ trong miền thời trang}
+Dữ liệu thời trang chứa các thuộc tính mịn (chất liệu, kiểu cắt, phom dáng), đặt yêu cầu cao lên biểu diễn đa phương thức. Fashion-CLIP~[8] tinh chỉnh CLIP trên dữ liệu TMĐT thời trang. Về phía đa góc nhìn, FashionViL~[9] nhận ra rằng dữ liệu TMĐT gắn nhiều ảnh với một mô tả và đề xuất Multi-View Contrastive Learning; tuy nhiên cơ chế này chỉ khuyến khích tính nhất quán ngữ nghĩa giữa từng ảnh, còn khi truy xuất vẫn thao tác trên từng ảnh riêng lẻ. Nói cách khác, các phương pháp hiện có coi ảnh đa góc như một dạng tăng cường dữ liệu cho mô hình đơn ảnh, chứ không tổng hợp thành một biểu diễn ở mức sản phẩm.
+
+\subsection{Các bộ dữ liệu CIR}
+FashionIQ~[14] thu thập mô tả tương đối từ người gán nhãn và là benchmark CIR thời trang phổ biến nhất. FACap~[15] dựng hơn 227K triplet thời trang mịn bằng quy trình tự động VLM+LLM. Điểm chung: đều tuân theo mô hình một góc nhìn, mỗi triplet định nghĩa ở mức ảnh. Đáng chú ý, FACap lấy nguồn từ Fashion200K và DeepFashion-MultiModal (đều có nhiều ảnh mỗi sản phẩm) nhưng chủ động loại bỏ các cặp cùng sản phẩm, làm mất cấu trúc đa góc nhìn. FashionMV~[1] là bộ dữ liệu đầu tiên gắn kết ảnh đa góc thành nhóm ở mức sản phẩm.
+
+Bảng~\ref{tab:src} tổng hợp đặc điểm đa góc nhìn của ba tập dữ liệu nguồn mà pipeline FashionMV kế thừa. Sự không đồng đều giữa ba nguồn -- đặc biệt là tỉ lệ sản phẩm thiếu góc nhìn -- là một phần cơ sở cho khoảng trống G2.
+
+\begin{table}[h]
+\centering
+\caption{Ba tập dữ liệu nguồn cấu thành FashionMV}\label{tab:src}
+\begin{tabularx}{\textwidth}{L{2.6cm}YY}
+\toprule
+\textbf{Dataset} & \textbf{Đặc điểm} & \textbf{Ghi chú đa góc nhìn}\\
+\midrule
+DeepFashion~[16] & $\sim$800K ảnh, gán nhãn phong phú (category, attribute, landmark) & Nhiều ảnh/mục nhưng không đảm bảo phủ đủ các góc chuẩn hoá (trước/sau/nghiêng)\\
+Fashion200K~[17] & $\sim$200K ảnh sản phẩm thương mại kèm mô tả ngắn & Chủ yếu ảnh đơn góc; chỉ một phần mục có ảnh phụ\\
+Fashion-Gen~[18] & $\sim$293K ảnh độ phân giải cao, mô tả chi tiết do chuyên gia biên soạn & Có ảnh đa góc cho một phần sản phẩm, phân bố không đồng đều giữa các mục\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Bảng tổng hợp Literature Review}
+
+\begin{longtable}{L{2.4cm}L{3.6cm}L{9.2cm}}
+\caption{Tổng hợp các hướng tiếp cận CIR và giới hạn đối với bài toán đề tài}\label{tab:lr}\\
+\toprule
+\textbf{Nhóm} & \textbf{Công trình} & \textbf{Giới hạn đối với Multi-View CIR}\\
+\midrule\endfirsthead
+\toprule
+\textbf{Nhóm} & \textbf{Công trình} & \textbf{Giới hạn đối với Multi-View CIR}\\
+\midrule\endhead
+Hợp nhất có giám sát & TIRG~[2], CoSMo~[3], ARTEMIS~[4] & Không dựa trên mô hình thị giác--ngôn ngữ đã căn chỉnh sẵn; chỉ nhận một ảnh tham khảo\\
+Combiner trên CLIP & CLIP4Cir~[6], FashionVLP~[7], Fashion-CLIP~[8] & Kiến trúc gắn chặt với truy vấn đơn ảnh; chỉ hỗ trợ tổng hợp hậu kỳ (MeanPool/MaxSim)\\
+Zero-shot CIR & Pic2Word~[10], SEARLE~[11], LinCIR~[12] & Ánh xạ một ảnh thành một pseudo-word token; không có khái niệm sản phẩm\\
+CIR dựa trên MLLM / suy luận mịn & CoLLM~[13], FineCIR~[22], FIRE-CIR~[21] & Vẫn ở mức ảnh; định vị vùng điều chỉnh trong \textit{một} ảnh, chưa xử lý lựa chọn giữa nhiều góc nhìn\\
+Đa góc nhìn trong thời trang & FashionViL~[9] & Dùng đa góc như tăng cường dữ liệu; truy xuất vẫn ở mức ảnh\\
+Multi-View CIR & FashionMV / ProCIR~[1] & Công trình duy nhất hiện có (tính đến 09/2026); các khoảng trống được phân tích ở Mục~\ref{sec:gap}\\
+\bottomrule
+\end{longtable}
+
+%================ 4 =================
+\section{Khoảng trống nghiên cứu và Phương pháp đề xuất}
+
+\subsection{Phân tích công trình nền tảng ProCIR}
+ProCIR~[1] dùng Qwen3.5-0.8B làm backbone, thêm token đặc biệt \emb{} mà trạng thái ẩn tại vị trí đó đóng vai trò embedding mức sản phẩm. Toàn bộ ảnh đa góc được đưa vào như visual token trong một lượt; causal self-attention tổng hợp thông tin xuyên góc nhìn mà không cần pooling tường minh. Đối thoại hai giai đoạn tách Turn~1 (nhận thức -- chỉ ảnh) và Turn~2 (suy luận -- thêm văn bản điều chỉnh); theo nhóm tác giả, Turn~1 tạo ra một embedding thuần thị giác, điều kiện cần để căn chỉnh ảnh--văn bản phía nguồn. Hàm mất mát tổng:
+\[
+\mathcal{L} = \mathcal{L}_{\text{cir}} + \lambda_d\,\mathcal{L}_{\text{doc}} + \lambda_s\,\mathcal{L}_{\text{src}}, \qquad \lambda_d=\lambda_s=0{,}25,
+\]
+trong đó cả ba thành phần dựa trên SymInfoNCE với nhiệt độ $\tau = 0{,}07$, mẫu âm lấy từ các mẫu còn lại trong cùng batch.
+
+Ablation của nhóm tác giả trên 16 cấu hình (8 biến thể $\times$ 2 cách khởi tạo) cho thấy: căn chỉnh (Align) là cơ chế quan trọng nhất; đối thoại hai giai đoạn (MT) là điều kiện tiên quyết để Align phát huy; SFT và CoT là hai đường bơm tri thức dư thừa một phần -- khi mô hình đã qua SFT thì lợi ích biên của CoT giảm.
+
+\subsection{Khoảng trống nghiên cứu (Research Gap)}\label{sec:gap}
+
+\begin{longtable}{L{0.8cm}L{4.2cm}L{10.2cm}}
+\caption{Năm khoảng trống nghiên cứu và bằng chứng}\label{tab:gap}\\
+\toprule
+\textbf{Mã} & \textbf{Khoảng trống} & \textbf{Bằng chứng / Lập luận}\\
+\midrule\endfirsthead
+\toprule
+\textbf{Mã} & \textbf{Khoảng trống} & \textbf{Bằng chứng / Lập luận}\\
+\midrule\endhead
+G1 & Chưa có cơ chế lựa chọn góc nhìn \textbf{tường minh}; cơ chế ngầm chưa được kiểm chứng & Trong ProCIR, text token của Turn~2 attend được tới visual token nên việc chọn góc nhìn theo văn bản \textit{có thể} đã diễn ra ngầm. Tuy nhiên chưa có phân tích nào cho thấy attention có dồn vào đúng góc nhìn văn bản đề cập. Văn bản điều chỉnh thường chỉ đích danh 1--2 góc; 81,6\% triplet chỉ liên quan tổ hợp trước+sau. Với dữ liệu huấn luyện thu gọn, một inductive bias tường minh có thể có lợi -- giả thuyết này được kiểm định bằng thí nghiệm chẩn đoán (Mục~\ref{sec:diag}) \textit{trước} khi xây module.\\
+G2 & Chưa đánh giá độ bền khi thiếu góc nhìn & Công thức suy biến về CIR chuẩn khi $N_P=1$, nhưng không có thực nghiệm theo số lượng góc nhìn. FashionMV có trung bình $\approx$3,7 ảnh/sản phẩm; tỉ lệ sản phẩm chỉ 1--2 ảnh sẽ được thống kê ở Tháng 1.\\
+G3 & Chưa kiểm chứng chéo trên benchmark do người gán nhãn & Toàn bộ FashionMV do mô hình sinh, đánh giá cũng chỉ trên tập validation của chính nó; không có số liệu trên FashionIQ.\\
+G4 & Chất lượng dữ liệu còn hạn chế & Bộ lọc ảo giác hướng trái/phải chỉ đạt precision 42,9\% và recall 36,0\%; đánh giá thủ công cho thấy 6,2\% sản phẩm có ảo giác nghiêm trọng, trong đó lỗi trái--phải chiếm hơn 80\%.\\
+G5 & Bỏ phí mẫu âm khó có sẵn & Giai đoạn 3 của pipeline đưa 10 ứng viên cùng danh mục, cùng giới tính cho mô hình chọn \textit{tối đa 2} target. Các ứng viên bị loại là nguồn mẫu âm khó tiềm năng nhưng bị bỏ đi; huấn luyện chỉ dùng in-batch negative. Lưu ý: do giới hạn ``tối đa 2'', ứng viên bị loại \textit{không chắc chắn} sai -- cần lọc mẫu âm giả (Mục~\ref{sec:hn}).\\
+\bottomrule
+\end{longtable}
+
+\textbf{Phạm vi giải quyết.} Đề tài giải quyết G1 và G5 bằng đóng góp phương pháp; G2 và G3 bằng đóng góp đánh giá (G2 kèm thử nghiệm view-dropout khi huấn luyện); G4 chỉ được ghi nhận như giới hạn của dữ liệu nền và khảo sát định tính trên mẫu nhỏ.
+
+\subsection{Phương pháp đề xuất: MV-SHN}
+Đề tài đề xuất \textbf{MV-SHN} (\textit{Multi-View Selection with Hard Negatives}), gồm một bước chẩn đoán và hai đóng góp phương pháp trên nền ProCIR, minh hoạ ở Hình~\ref{fig:arch}.
+
+\subsubsection{Bước 0 -- Chẩn đoán cơ chế chọn góc nhìn ngầm (kiểm định G1)}\label{sec:diag}
+
+\textbf{Nhãn góc nhìn.} Với mỗi ảnh nguồn, xác định loại góc $c(I_i) \in \{\text{front}, \text{back}, \text{side}, \text{detail}\}$: ưu tiên metadata của FashionMV (nếu có); nếu không, dùng phân loại zero-shot bằng CLIP với prompt mô tả góc chụp, kiểm định trên 200 ảnh gán nhãn thủ công (yêu cầu độ chính xác $\geq 85\%$). Với mỗi văn bản điều chỉnh $T$, gán góc mục tiêu $\hat{y}(T)$ bằng luật từ khoá (ví dụ \textit{back, open back, zipper at back} $\rightarrow$ back; \textit{neckline, collar, front pocket} $\rightarrow$ front); triplet không khớp luật nào bị loại khỏi tập chẩn đoán.
+
+\textbf{Phân bố chú ý của baseline.} Gọi $\Omega_i$ là tập vị trí visual token của góc nhìn $i$ và $\mathcal{T}$ là tập vị trí text token của Turn~2. Mức chú ý của văn bản vào góc nhìn $i$, với $a_{p,k}$ là trọng số attention từ vị trí $p$ tới vị trí $k$, lấy trung bình trên $K$ tầng cuối và mọi head:
+\[
+A_i = \frac{\sum_{p\in\mathcal{T}}\sum_{k\in\Omega_i} a_{p,k}}{\sum_{j=1}^{N_P}\sum_{p\in\mathcal{T}}\sum_{k\in\Omega_j} a_{p,k}}.
+\]
+\textbf{Chỉ số View Hit Rate (VHR):}
+\[
+\text{VHR} = \Pr\big[c(I_{\arg\max_i w_i}) = \hat{y}(T)\big],
+\]
+với $w_i = A_i$ cho baseline và $w_i = \alpha_i$ cho module đề xuất. Mốc ngẫu nhiên là $1/N_P$ trên mỗi truy vấn.
+
+\textbf{Quy tắc quyết định (định trước):} nếu $\text{VHR}_{\text{baseline}} \geq 0{,}8$, cơ chế ngầm đã chọn đúng góc nhìn; khi đó G1 được định vị lại theo hướng khả năng diễn giải và giám sát yếu (G5 vẫn là ưu tiên số một). Ngược lại, kết quả là bằng chứng trực tiếp cho G1.
+
+\subsubsection{Đóng góp 1 -- View-Aware Selection (giải quyết G1)}\label{sec:vas}
+
+\textbf{Biểu diễn từng góc nhìn $v_i$.} Mỗi ảnh $I_i$ được mã hoá \textit{độc lập} qua vision encoder của backbone (ViT + khối merger chiếu sang không gian ẩn của LLM, kích thước $d$), thu được $Z_i \in \mathbb{R}^{L_i \times d}$. Lấy $v_i = \frac{1}{L_i}\sum_{l} Z_i[l] \in \mathbb{R}^{d}$. Vì $v_i$ tính \textit{trước} LLM, nó không bị rò rỉ thông tin giữa các góc nhìn do causal attention.
+
+\textbf{Biểu diễn văn bản $t$.} Văn bản điều chỉnh $T$ được đưa qua LLM (dùng chung trọng số và LoRA) trong một lượt chỉ-văn-bản; $t \in \mathbb{R}^{d}$ là trung bình trạng thái ẩn tầng cuối trên các text token. Chi phí thấp vì văn bản ngắn.
+
+\textbf{Trọng số và biểu diễn có điều kiện:}
+\[
+\alpha_i = \frac{\exp\!\big(\phi(v_i)^\top \psi(t)/\sqrt{d_k}\big)}{\sum_{j=1}^{N_P}\exp\!\big(\phi(v_j)^\top \psi(t)/\sqrt{d_k}\big)},\qquad \bar{s} = \sum_{i=1}^{N_P}\alpha_i v_i,
+\]
+với $\phi,\psi: \mathbb{R}^{d}\to\mathbb{R}^{d_k}$ là hai phép chiếu tuyến tính học được.
+
+\textbf{Kết nối phần dư khởi tạo bằng 0.} Gọi $h_{\emb}$ là embedding truy vấn của ProCIR (trạng thái ẩn tại \emb{} sau Turn~2). Embedding truy vấn cuối cùng:
+\[
+q = h_{\emb} + g \cdot W_o\,\bar{s}, \qquad g \in \mathbb{R},\; g_{\text{init}} = 0,
+\]
+với $W_o \in \mathbb{R}^{d\times d}$ khởi tạo ngẫu nhiên nhỏ (để gradient vẫn lan tới $g$ ngay từ bước đầu). Tại thời điểm khởi tạo $q$ trùng khớp ProCIR, nên module không thể phá vỡ biểu diễn đã học ở bước đầu (cùng nguyên lý cổng khởi tạo 0 trong LLaMA-Adapter~[30]). Tổng tham số thêm vào khoảng $2dd_k + d^2$, không đáng kể so với backbone.
+
+\textbf{Phía đích.} Embedding sản phẩm đích $e$ tính đúng như ProCIR, không qua module. Lý do: sản phẩm đích không có văn bản điều chỉnh, và biểu diễn đích cần \textit{độc lập với truy vấn} để có thể lập chỉ mục trước (điều kiện cho hướng mở rộng ANN ở Mục~\ref{sec:ext}). Việc lựa chọn góc nhìn được hiểu là mã hoá \textit{ý định} của truy vấn.
+
+\textbf{Trường hợp suy biến.} Khi $N_P=1$: $\alpha_1=1$, $\bar{s}=v_1$, module suy biến thành một phép bổ sung đặc trưng toàn cục của ảnh duy nhất.
+
+\textbf{Biến thể giám sát yếu (tuỳ chọn).} Trên các triplet có nhãn $\hat{y}(T)$, thêm $\mathcal{L}_{\text{view}} = -\log \sum_{i:\,c(I_i)=\hat{y}(T)} \alpha_i$ với trọng số $\lambda_v$ nhỏ, được đánh giá riêng trong ablation.
+
+\textbf{Giả thuyết kiểm định:} (H1) $\text{VHR}_{\text{VAS}} > \text{VHR}_{\text{baseline}}$; (H2) $\Delta\text{R@10} > 0$ với khoảng tin cậy bootstrap 95\% không chứa 0, đặc biệt trên tập con triplet có văn bản đề cập góc sau.
+
+\subsubsection{Đóng góp 2 -- Hard Negative Mining có lọc mẫu âm giả (giải quyết G5)}\label{sec:hn}
+
+Quy trình dựng FashionMV chọn target từ nhóm 10 ứng viên cùng danh mục, cùng giới tính. Các ứng viên không được chọn là nguồn mẫu âm khó: giống về danh mục, khác về chi tiết cấu tạo. Mẫu âm khó đã được chứng minh cải thiện chất lượng biểu diễn trong học tương phản~[25]. Hàm mất mát mở rộng:
+\[
+\mathcal{L}^{\text{HN}}_{\text{cir}} = -\log\frac{\exp(q^\top e^{+}/\tau)}{\exp(q^\top e^{+}/\tau) + \sum_{k\in\mathcal{B}}\exp(q^\top e^{-}_{k}/\tau) + \sum_{m\in\mathcal{H}}\exp(q^\top e^{-}_{m}/\tau)},
+\]
+trong đó $e^{+}$ là embedding sản phẩm đích, $e^{-}_{k}$ và $e^{-}_{m}$ là embedding các mẫu âm, $\mathcal{B}$ là tập mẫu âm trong batch và $\mathcal{H}$ là tập mẫu âm khó (sau lọc) của truy vấn.
+
+\textbf{Lọc mẫu âm giả.} Vì mô hình dựng dữ liệu chỉ được chọn tối đa 2 target, một số ứng viên bị loại có thể vẫn thoả văn bản điều chỉnh. Đề tài áp dụng hai tầng lọc:
+\begin{enumerate}[label=(F\arabic*)]
+\item \textbf{Lọc theo điểm dương} (theo tinh thần NV-Retriever~[27]): dùng baseline tái lập, giữ ứng viên $m$ chỉ khi $s(q, e_m) < \rho \cdot s(q, e^{+})$, với $\rho = 0{,}95$.
+\item \textbf{Lọc gần trùng lặp:} loại ứng viên có độ tương đồng caption với caption của target $\geq \tau_c$ (chọn $\tau_c$ trên tập dev).
+\end{enumerate}
+Biến thể ``không lọc'' được đưa vào ablation để định lượng tác động của mẫu âm giả. Hướng thay thế nếu lọc cứng loại quá nhiều ứng viên là debiased contrastive loss~[26].
+
+\textbf{Batch contrastive lớn trên 1 GPU: GradCache.} Với InfoNCE, số mẫu âm do \textit{số mẫu cùng tham gia một ma trận similarity} quyết định; gradient accumulation \textit{không} làm tăng con số này. Đề tài dùng GradCache~[23]: (1) tính embedding của toàn bộ $q$, $e^{+}$, $e^{-}_{\mathcal{H}}$ theo từng chunk ở chế độ không gradient; (2) tính loss và gradient theo embedding trên toàn batch; (3) chạy lại từng chunk có gradient và lan truyền ngược gradient đã lưu. Đỉnh bộ nhớ chỉ phụ thuộc kích thước chunk, nhờ đó batch contrastive $B=64$ khả thi trên 24GB; cái giá là thời gian tính toán (Mục~\ref{sec:budget}). Hàng đợi embedding kiểu MoCo~[24] là phương án dự phòng.
+
+Trong bối cảnh này, mẫu âm khó đóng vai trò bổ trợ cho GradCache: $B=64$ vẫn nhỏ hơn batch 160 của công trình gốc, và mẫu âm khó cung cấp tín hiệu phân biệt mịn mà in-batch negative ngẫu nhiên không có.
+
+\subsubsection{Cải tiến phụ -- View-dropout khi huấn luyện (hỗ trợ G2)}
+Trong huấn luyện, với xác suất $p_{\text{vd}}$, giữ ngẫu nhiên $k\sim\mathcal{U}\{1,\dots,N_P\}$ góc nhìn của sản phẩm nguồn. Biện pháp này gần như không tốn chi phí (còn giảm số visual token) và biến G2 từ một phép đánh giá thành một đóng góp có kiểm chứng.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[
+  font=\footnotesize,
+  box/.style={draw, rounded corners=2pt, align=center, minimum height=0.9cm, minimum width=2.6cm, fill=blue!6},
+  new/.style={draw=orange!80!black, very thick, rounded corners=2pt, align=center, minimum height=0.9cm, minimum width=2.6cm, fill=orange!8},
+  io/.style={draw, align=center, minimum height=0.8cm, minimum width=2.6cm, fill=gray!8},
+  arr/.style={-{Stealth[length=2mm]}, thick}]
+% --- source / query side
+\node[io]  (txt) at (7.4,0)    {Văn bản điều chỉnh $T$};
+\node[io]  (src) at (0,-1.7)   {Ảnh đa góc nguồn\\$I^{src}_1,\dots,I^{src}_N$};
+\node[box] (t1)  at (3.7,-1.7) {MLLM Encoder\\Turn 1: Perception};
+\node[box] (t2)  at (7.4,-1.7) {MLLM Encoder\\Turn 2: Reasoning};
+\node[new] (res) at (11.4,-1.7){$q = h_{\texttt{<emb>}} + g\,W_o\bar{s}$\\$g_{\text{init}}=0$};
+\node[box] (ve)  at (0,-3.9)   {Vision encoder\\(từng góc, độc lập)};
+\node[new, minimum width=3.2cm] (vas) at (4.6,-3.9) {View-Aware Selection\\$\alpha_i,\ \bar{s}=\sum_i\alpha_i v_i$\\{[Đóng góp 1]}};
+\node[box] (tt)  at (9.4,-3.9) {LLM chỉ-văn-bản\\(shared)};
+\draw[arr] (src) -- (t1);
+\draw[arr] (t1) -- (t2);
+\draw[arr] (txt) -- (t2);
+\draw[arr] (t2) -- node[above]{$h_{\texttt{<emb>}}$} (res);
+\draw[arr] (src) -- (ve);
+\draw[arr] (ve) -- node[above]{$v_1,\dots,v_N$} (vas);
+\draw[arr] (txt.east) -- (13.6,0) -- (13.6,-3.9) -- (tt.east);
+\draw[arr] (tt) -- node[above]{$t$} (vas);
+\draw[arr] (vas.north) -- (4.6,-2.75) -- node[above,pos=0.5]{$\bar{s}$} (11.4,-2.75) -- (res.south);
+% --- target / negative side
+\node[io]  (tgt)  at (0,-5.9)   {Ảnh đa góc đích\\$I^{tgt}_1,\dots,I^{tgt}_M$};
+\node[box] (enct) at (3.7,-5.9) {MLLM Encoder\\(shared)};
+\node[io]  (neg)  at (0,-7.4)   {Ứng viên bị loại};
+\node[new] (filt) at (3.7,-7.4) {Lọc mẫu âm giả\\(F1)+(F2)};
+\node[box] (encn) at (7.4,-7.4) {MLLM Encoder\\(shared)};
+\node[new, minimum width=3.2cm] (loss) at (11.4,-5.9) {$\mathcal{L}^{\text{HN}}_{\text{cir}}$ + GradCache\\{[Đóng góp 2]}};
+\node[box, minimum width=3.2cm] (old) at (11.4,-7.4) {$\mathcal{L}_{\text{doc}}+\mathcal{L}_{\text{src}}$\\(kế thừa ProCIR)};
+\draw[arr] (tgt) -- (enct);
+\draw[arr] (neg) -- (filt);
+\draw[arr] (filt) -- (encn);
+\draw[arr] (enct.east) -- node[above]{$e^{+}$} ($(loss.west)+(0,0.15)$);
+\draw[arr] (encn.east) -- node[below right=-2pt]{$e^{-}_{\mathcal{H}}$} ($(loss.west)+(0,-0.2)$);
+\draw[arr] (res.east) -- (13.1,-1.7) -- node[right,pos=0.5]{$q$} (13.1,-5.9) -- (loss.east);
+\end{tikzpicture}
+\caption{Kiến trúc MV-SHN. Khối nền xanh kế thừa ProCIR (đối thoại hai giai đoạn, căn chỉnh caption); khối viền cam là đóng góp của đề tài: module lựa chọn góc nhìn với biểu diễn từng góc $v_i$ tính độc lập trước LLM và kết nối phần dư khởi tạo bằng 0; nhánh mẫu âm khó có lọc mẫu âm giả, huấn luyện bằng GradCache. Phía đích không qua module để biểu diễn đích độc lập với truy vấn.}\label{fig:arch}
+\end{figure}
+
+%================ 5 =================
+\section{Dữ liệu và Kế hoạch thực nghiệm}
+
+\subsection{Dữ liệu}
+
+\begin{table}[h]
+\centering
+\caption{Bộ dữ liệu sử dụng}\label{tab:data}
+\begin{tabularx}{\textwidth}{L{2.3cm}L{3.3cm}Y}
+\toprule
+\textbf{Dataset} & \textbf{Quy mô} & \textbf{Vai trò trong đề tài}\\
+\midrule
+FashionMV~[1] & 127K sản phẩm, 472K ảnh, 220K+ triplet & Dataset chính: huấn luyện và đánh giá Multi-View CIR trên ba tập con DeepFashion, Fashion200K, Fashion-Gen\\
+FashionIQ~[14] & 77.684 ảnh, 30.134 triplet & Đánh giá chuyển giao (G3): benchmark do người gán nhãn, định lượng độ lệch của dữ liệu sinh bởi mô hình\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\textbf{Phân tách dữ liệu.} Tách 5\% sản phẩm của tập huấn luyện FashionMV (không trùng sản phẩm với phần còn lại) làm \textbf{tập dev}, dùng cho chọn checkpoint, chọn siêu tham số ($\rho$, $\tau_c$, $\lambda_v$, $p_{\text{vd}}$) và ngưỡng lọc. Tập validation công bố chỉ dùng để \textbf{báo cáo}, tránh rò rỉ thông tin khi điều chỉnh.
+
+\textbf{Khả dụng dữ liệu FashionIQ.} Nhiều URL ảnh gốc của FashionIQ không còn truy cập được. Đề tài dùng bản sao công khai do cộng đồng lưu trữ, kiểm tra độ đầy đủ ở Tháng 1 và báo cáo rõ số triplet thực sự đánh giá được.
+
+\subsection{Phương pháp so sánh}
+
+\begin{longtable}{L{4.2cm}L{3.3cm}L{7.7cm}}
+\caption{Các phương pháp đối chiếu}\label{tab:cmp}\\
+\toprule
+\textbf{Phương pháp} & \textbf{Loại} & \textbf{Ý nghĩa so sánh}\\
+\midrule\endfirsthead
+\toprule
+\textbf{Phương pháp} & \textbf{Loại} & \textbf{Ý nghĩa so sánh}\\
+\midrule\endhead
+CLIP zero-shot (cộng embedding ảnh + văn bản; MeanPool trên góc nhìn) & Không huấn luyện & Mốc dưới cùng, chạy trong cùng hạ tầng trên FashionMV và FashionIQ\\
+CLIP4Cir~[6] + MeanPool/MaxSim & CIR đơn ảnh, tổng hợp hậu kỳ & Huấn luyện lại trong cùng hạ tầng trên tập con FashionMV (mốc dưới cho truy xuất mức sản phẩm) và trên FashionIQ (mốc tham chiếu trong miền cho G3)\\
+ProCIR (checkpoint công khai) & Kiểm tra pipeline & Chỉ dùng để xác minh pipeline đánh giá tái tạo đúng số liệu công bố; \textbf{không tham gia kết luận}\\
+ProCIR (tái lập) & Multi-View CIR & Baseline chính, tái lập ở quy mô 1 GPU\\
+ProCIR + View-Aware Selection & Đề xuất (một phần) & Định lượng riêng đóng góp G1\\
+ProCIR + Hard Negatives & Đề xuất (một phần) & Định lượng riêng đóng góp G5\\
+MV-SHN (đầy đủ) & Đề xuất & Kiểm định tính bổ trợ của hai cơ chế\\
+MV-SHN + view-dropout huấn luyện & Đề xuất (mở rộng) & Kiểm định cải thiện độ bền G2\\
+TIRG, CoSMo, ARTEMIS, FashionVLP & Số liệu công bố & Chỉ trình bày để tham khảo bối cảnh trên FashionIQ; \textbf{không so sánh trực tiếp} do khác quy mô huấn luyện\\
+\bottomrule
+\end{longtable}
+
+\subsection{Ablation Study}
+
+\begin{longtable}{L{6.2cm}L{9cm}}
+\caption{Các biến thể ablation}\label{tab:abl}\\
+\toprule
+\textbf{Biến thể} & \textbf{Mục đích kiểm định}\\
+\midrule\endfirsthead
+\toprule
+\textbf{Biến thể} & \textbf{Mục đích kiểm định}\\
+\midrule\endhead
+Có / không View-Aware Selection & Đóng góp của G1 (Recall và VHR)\\
+VAS: phần dư khởi tạo 0 / hợp nhất không đường tắt (MLP trên $[h_{\emb}; W_o\bar{s}]$) & Kiểm tra module mới có phá vỡ biểu diễn đã học hay không\\
+VAS: có / không giám sát yếu $\mathcal{L}_{\text{view}}$ & Tác dụng của nhãn góc nhìn tự động\\
+Số mẫu âm khó $|\mathcal{H}|$: 0 / 2 / 4 / 8 & Đường cong lợi ích và điểm bão hoà của G5\\
+Mẫu âm khó: có lọc / không lọc mẫu âm giả & Tác động của mẫu âm giả\\
+View-dropout khi huấn luyện: có / không & Cải thiện độ bền G2\\
+Số góc nhìn khi suy luận: 1 / 2 / 3 / 5 & Độ bền theo số góc nhìn (G2); mức 5 là ngoại suy vượt số góc tối đa khi huấn luyện (3)\\
+LoRA / full fine-tune (pilot, 5\% dữ liệu) & Kiểm chứng lựa chọn LoRA ở Mục~\ref{sec:config}\\
+\bottomrule
+\end{longtable}
+
+\subsection{Đánh giá đo lường}
+\begin{itemize}
+\item \textbf{Chỉ số chính:} Recall@5 và Recall@10 trên ba tập validation của FashionMV, dùng văn bản điều chỉnh bản ngắn, đúng giao thức của công trình gốc.
+\item \textbf{Chẩn đoán và diễn giải (G1):} VHR của baseline (theo $A_i$) và của module đề xuất (theo $\alpha_i$), cùng trực quan hoá $\alpha_i$ trên các ví dụ tiêu biểu.
+\item \textbf{Độ bền (G2):} Recall@5/@10 theo số góc nhìn khả dụng khi suy luận, mô phỏng bằng view-dropout ngẫu nhiên, lặp 5 lần lấy mẫu góc nhìn.
+\item \textbf{Chuyển giao (G3):} Recall@10/@50 trên FashionIQ theo giao thức chuẩn (trung bình ba danh mục Dress, Shirt, Toptee). Mô hình huấn luyện trên FashionMV được đánh giá \textbf{zero-shot transfer} (không tinh chỉnh trên FashionIQ). Đại lượng quan tâm là khoảng cách so với CLIP zero-shot và CLIP4Cir huấn luyện trong miền FashionIQ, cả hai chạy trong cùng hạ tầng.
+\end{itemize}
+
+\textbf{Giới hạn của phép đánh giá G3:} FashionIQ là benchmark một ảnh tham khảo ($N_P = 1$), nên phép đánh giá này kiểm chứng khả năng khái quát hoá theo văn phong mô tả do người viết (thay vì do mô hình sinh), nhưng không kiểm chứng được module View-Aware Selection trên góc nhìn ngoài phân bố huấn luyện, vì FashionIQ không có cấu trúc đa góc để lựa chọn.
+
+\textbf{Độ tin cậy thống kê:} Các so sánh chính (baseline tái lập so với MV-SHN đầy đủ) lặp lại với 3 random seed, báo cáo trung bình $\pm$ độ lệch chuẩn. \textbf{Mọi} so sánh, kể cả biến thể ablation chạy 1 seed, được kiểm định bằng \textbf{paired bootstrap} trên tập truy vấn~[29]: lấy mẫu lại có hoàn lại 1.000 lần, tính khoảng tin cậy 95\% của $\Delta$Recall@K; chênh lệch được coi là có ý nghĩa khi khoảng tin cậy không chứa 0. Phép kiểm định này gần như không tốn chi phí tính toán. Seed bổ sung chỉ chạy khi ngân sách dự phòng cho phép và hai biến thể liền kề có khoảng tin cậy chồng lấp.
+
+\subsection{Cấu hình thực nghiệm trên tài nguyên hạn chế}\label{sec:config}
+
+Công trình gốc huấn luyện một epoch trên 188K triplet bằng 10 GPU RTX 3090, mất khoảng 7 giờ 20 phút đến 14 giờ 33 phút tuỳ cấu hình, tương đương 73--145 GPU-giờ cho một cấu hình. Với một GPU đơn, tái lập nguyên trạng là bất khả thi trong một học kỳ. Đề tài áp dụng các điều chỉnh sau và \textbf{báo cáo minh bạch rằng mọi so sánh đều thực hiện ở quy mô thu gọn}:
+
+\begin{longtable}{L{3.6cm}L{3.8cm}L{7.8cm}}
+\caption{Điều chỉnh cấu hình cho một GPU đơn}\label{tab:config}\\
+\toprule
+\textbf{Hạng mục} & \textbf{Công trình gốc} & \textbf{Đề tài (1 GPU)}\\
+\midrule\endfirsthead
+\toprule
+\textbf{Hạng mục} & \textbf{Công trình gốc} & \textbf{Đề tài (1 GPU)}\\
+\midrule\endhead
+Phần cứng & 10$\times$RTX 3090 & 1$\times$RTX 3090/4090 (24GB)\\
+Tinh chỉnh & Full fine-tune & LoRA~[28] (kiểm chứng bằng pilot so với full fine-tune)\\
+Dữ liệu huấn luyện & 188K triplet & 20--30\% tập huấn luyện, lấy mẫu cân bằng theo ba nguồn\\
+Batch contrastive & 160 & 64, đạt được nhờ GradCache (không dùng gradient accumulation cho mục đích này)\\
+Mẫu âm mỗi truy vấn & 159 (in-batch) & 63 in-batch + $|\mathcal{H}|$ mẫu âm khó của chính truy vấn + mẫu âm khó của các truy vấn khác trong batch\\
+Số góc nhìn tối đa & 5 & 3 (giữ trước + sau + một góc bổ sung)\\
+Độ phân giải ảnh tối đa & 512$\times$512 & 336$\times$336\\
+Khởi tạo & Có tuỳ chọn SFT & Bỏ SFT; baseline và \textbf{mọi} biến thể khởi tạo từ \textbf{cùng} checkpoint Qwen3.5-0.8B gốc. Checkpoint ProCIR công khai chỉ dùng kiểm tra pipeline đánh giá\\
+Tập chọn mô hình & -- & Tập dev tách từ train (5\% sản phẩm)\\
+\bottomrule
+\end{longtable}
+
+\textbf{Lý do chọn LoRA.} Với 0,8B tham số, full fine-tune bằng AdamW mixed precision cần khoảng 16 byte/tham số ($\approx$13GB) cho tham số, gradient và trạng thái optimizer, chỉ còn $\approx$11GB cho activation. Nút thắt thực sự là activation của nhiều ảnh mỗi mẫu. LoRA giải phóng phần lớn bộ nhớ optimizer, cho phép chunk GradCache lớn hơn và huấn luyện nhanh hơn. Lựa chọn này được kiểm chứng bằng pilot LoRA/full fine-tune trên 5\% dữ liệu ở Tháng 2.
+
+\textbf{Lưu ý về diễn giải kết quả:} do quy mô thu gọn, con số tuyệt đối sẽ thấp hơn công bố gốc. Mọi kết luận của đề tài dựa trên \textbf{so sánh tương đối} giữa các phương pháp chạy trong cùng một cấu hình tài nguyên, không so trực tiếp với số liệu in trong bài báo.
+
+\subsection{Ngân sách tính toán}\label{sec:budget}
+
+\textbf{Ước lượng chi phí một epoch.} Xuất phát từ 73--145 GPU-giờ (3090) của công trình gốc, áp dụng các hệ số: dữ liệu 25\% ($\times0{,}25$); số visual token giảm do độ phân giải $(336/512)^2\approx0{,}43$ và số góc nhìn $3/3{,}7\approx0{,}8$ (gộp $\approx\times0{,}35$); LoRA giảm chi phí lan truyền ngược ($\approx\times0{,}75$). Kết quả $\approx$5--10 GPU-giờ/epoch cho truy vấn + mẫu dương. GradCache thêm một lượt forward ($\approx\times1{,}35$): \textbf{7--13 GPU-giờ}. Mỗi mẫu âm khó thêm một sản phẩm cần mã hoá; với $|\mathcal{H}|=2$, số sản phẩm mã hoá mỗi triplet tăng từ 2 lên 4: \textbf{13--26 GPU-giờ}. Đây là ước lượng ngoại suy; thời gian thực tế mỗi step sẽ được đo bằng pilot ở Tháng 1 và bảng dưới được hiệu chỉnh trong báo cáo giữa kỳ.
+
+\begin{longtable}{L{6.4cm}C{1.2cm}C{2.6cm}C{2.4cm}}
+\caption{Ngân sách GPU-giờ dự kiến (cận trên, 1 epoch mỗi run)}\label{tab:budget}\\
+\toprule
+\textbf{Hạng mục} & \textbf{Số run} & \textbf{GPU-giờ/run} & \textbf{Tổng}\\
+\midrule\endfirsthead
+\toprule
+\textbf{Hạng mục} & \textbf{Số run} & \textbf{GPU-giờ/run} & \textbf{Tổng}\\
+\midrule\endhead
+Pilot đo tốc độ, kiểm tra pipeline & 3 & 3 & 9\\
+Pilot LoRA / full fine-tune (5\% dữ liệu) & 2 & 3 & 6\\
+CLIP4Cir (FashionMV, FashionIQ) & 2 & 5 & 10\\
+Baseline ProCIR tái lập & 3 & 13 & 39\\
+ProCIR + VAS & 1 & 14 & 14\\
+ProCIR + HN ($|\mathcal{H}|=2$) & 1 & 26 & 26\\
+MV-SHN đầy đủ & 3 & 27 & 81\\
+Quét $|\mathcal{H}| = 4,\,8$ & 2 & 39 / 65 & 104\\
+HN không lọc & 1 & 26 & 26\\
+VAS không phần dư; VAS + $\mathcal{L}_{\text{view}}$ & 2 & 14 & 28\\
+View-dropout khi huấn luyện & 1 & 25 & 25\\
+Suy luận: G2, G3, VHR, bootstrap & -- & -- & 10\\
+\midrule
+\textbf{Tổng} & & & \textbf{378}\\
+\textbf{Dự phòng 30\%} (seed bổ sung, chạy lại) & & & \textbf{113}\\
+\textbf{Tổng cộng} & & & \textbf{$\approx$490}\\
+\bottomrule
+\end{longtable}
+
+Ba tháng TT2 tương đương khoảng 1.800 GPU-giờ nếu GPU chạy liên tục 20 giờ/ngày; với hiệu suất sử dụng thực tế 50\% ($\approx$900 GPU-giờ), ngân sách $\approx$490 GPU-giờ vẫn khả thi. Nếu pilot cho thấy chi phí vượt ước lượng, run $|\mathcal{H}|=8$ chuyển sang chế độ embedding mẫu âm lưu đệm không gradient (làm mới mỗi 1/4 epoch), giảm chi phí run này xuống khoảng 15 GPU-giờ.
+
+%================ 6 =================
+\section{Kế hoạch thực hiện}
+
+\begin{longtable}{L{1.4cm}L{1.6cm}L{12.2cm}}
+\caption{Kế hoạch thực hiện theo tháng}\label{tab:plan}\\
+\toprule
+\textbf{Giai đoạn} & \textbf{Thời gian} & \textbf{Nội dung chính}\\
+\midrule\endfirsthead
+\toprule
+\textbf{Giai đoạn} & \textbf{Thời gian} & \textbf{Nội dung chính}\\
+\midrule\endhead
+\multirow{3}{*}{TT1} & Tháng 1 & Hoàn thiện Literature Review (cập nhật khảo sát tính đến thời điểm báo cáo). Tải và khảo sát FashionMV: phân bố số ảnh/sản phẩm, tỉ lệ sản phẩm 1--2 ảnh, metadata góc chụp. \textbf{Mốc go/no-go G5:} kiểm tra dữ liệu công bố có kèm nhóm ứng viên bị loại hay không; nếu không, khởi động tái tạo ngay. Tải và kiểm tra độ đầy đủ ảnh FashionIQ. Dựng môi trường huấn luyện 1 GPU tích hợp GradCache; chạy pilot đo tốc độ và hiệu chỉnh ngân sách.\\
+ & Tháng 2 & Tái lập ProCIR ở quy mô thu gọn; kiểm tra pipeline đánh giá bằng checkpoint công khai. Cài đặt CLIP zero-shot và CLIP4Cir + MeanPool/MaxSim. Pilot LoRA/full fine-tune. Gán nhãn góc nhìn (CLIP zero-shot + 200 ảnh thủ công) và luật từ khoá cho văn bản.\\
+ & Tháng 3 & Thí nghiệm chẩn đoán VHR của baseline, áp dụng quy tắc quyết định ở Mục~\ref{sec:diag}. Xây kho mẫu âm khó, áp dụng lọc (F1)+(F2). \textbf{Báo cáo giữa kỳ TT1:} thống kê dữ liệu, VHR baseline, ngân sách GPU đã hiệu chỉnh, kết quả baseline.\\
+\midrule
+\multirow{4}{*}{TT2} & Tháng 4 & Hiện thực nhánh mẫu âm khó (ưu tiên G5 theo Bảng~\ref{tab:risk}); huấn luyện ProCIR + HN; quét $|\mathcal{H}|$; biến thể không lọc.\\
+ & Tháng 5 & Hiện thực View-Aware Selection và các biến thể (phần dư, giám sát yếu); huấn luyện MV-SHN đầy đủ (3 seed).\\
+ & Tháng 6 & Thực nghiệm độ bền G2 (suy luận 1/2/3/5 góc; view-dropout khi huấn luyện); đánh giá chuyển giao FashionIQ (G3); phân tích VHR và trọng số $\alpha_i$. Bắt đầu viết chương Phương pháp và Thực nghiệm song song.\\
+ & Tháng 7 & Hoàn thiện báo cáo/bài báo, kiểm định thống kê cuối cùng, chuẩn bị và bảo vệ.\\
+\bottomrule
+\end{longtable}
+
+%================ 7 =================
+\section{Rủi ro và Phương án dự phòng}
+
+\begin{longtable}{L{5cm}L{1.6cm}L{8.6cm}}
+\caption{Phân tích rủi ro và phương án dự phòng}\label{tab:risk}\\
+\toprule
+\textbf{Rủi ro} & \textbf{Mức độ} & \textbf{Phương án dự phòng}\\
+\midrule\endfirsthead
+\toprule
+\textbf{Rủi ro} & \textbf{Mức độ} & \textbf{Phương án dự phòng}\\
+\midrule\endhead
+Tài nguyên 1 GPU không đủ hoàn tất ablation trong TT2 & Cao & Ưu tiên G5 $\rightarrow$ G1 $\rightarrow$ G2 $\rightarrow$ G3; giảm dữ liệu xuống 10\%; biến thể phụ chạy 1 seed kèm paired bootstrap; run $|\mathcal{H}|=8$ dùng embedding lưu đệm\\
+Nhóm ứng viên bị loại không được công bố kèm dataset & Cao & Phát hiện sớm nhờ mốc go/no-go Tháng 1. Tái tạo nhóm ứng viên bằng cách chạy lại bước truy hồi láng giềng theo mô tả trong bài báo (tương đồng thị giác và caption), hoặc khai thác mẫu âm khó từ embedding của baseline\\
+Mẫu âm giả trong nhóm ứng viên bị loại & Trung bình & Lọc hai tầng (F1)+(F2); ablation có/không lọc; dự phòng debiased contrastive loss\\
+VHR baseline đã cao, G1 yếu & Trung bình & Áp dụng quy tắc quyết định định trước; định vị lại G1 theo hướng diễn giải và giám sát yếu; báo cáo như một phát hiện về ProCIR\\
+Nhãn góc nhìn tự động không đủ tin cậy & Trung bình & Kiểm định trên 200 ảnh thủ công; nếu độ chính xác $<85\%$, chỉ dùng tập con có metadata hoặc có từ khoá rõ ràng\\
+Ảnh FashionIQ không đầy đủ & Trung bình & Dùng bản sao công khai; báo cáo trên tập con khả dụng kèm số lượng triplet thực tế\\
+Module View-Aware Selection làm giảm hiệu năng & Thấp & Kết nối phần dư khởi tạo bằng 0 đảm bảo điểm xuất phát trùng baseline; nếu vẫn xấu, báo cáo như phát hiện thực nghiệm kèm phân tích $\alpha_i$\\
+Kết quả tái lập cách xa số liệu công bố do thu gọn quy mô & Trung bình & Mọi kết luận dựa trên so sánh tương đối trong cùng cấu hình; checkpoint công khai dùng để xác minh pipeline đánh giá\\
+Lỗi ảo giác trái/phải (G4) gây nhiễu đánh giá & Thấp & Không đặt G4 làm đóng góp; khảo sát định tính trên mẫu nhỏ và ghi nhận như giới hạn dữ liệu nền\\
+\bottomrule
+\end{longtable}
+
+%================ 8 =================
+\section{Dự kiến sản phẩm bàn giao và Ý nghĩa}
+
+\subsection{Sản phẩm bàn giao}
+\begin{enumerate}
+\item Checkpoint mô hình MV-SHN và baseline ProCIR tái lập ở quy mô 1 GPU.
+\item Mã nguồn nghiên cứu tái lập được (tích hợp GradCache), kèm cấu hình cho toàn bộ biến thể ablation.
+\item Bộ mẫu âm khó trích xuất/tái tạo từ pipeline FashionMV, đã lọc mẫu âm giả -- tài nguyên có thể dùng lại cho nghiên cứu sau.
+\item Bộ nhãn góc nhìn tự động, luật gán góc mục tiêu cho văn bản và công cụ tính VHR.
+\item Báo cáo thực nghiệm: bảng Recall@5/@10 kèm khoảng tin cậy bootstrap, đường cong độ bền theo số góc nhìn, kết quả chuyển giao FashionIQ, ngân sách GPU thực tế.
+\item Báo cáo khoá luận kèm phân tích định tính trọng số góc nhìn.
+\end{enumerate}
+
+\subsection{Ý nghĩa khoa học và thực tiễn}
+\begin{itemize}
+\item \textbf{Khoa học:} Cung cấp phân tích chẩn đoán đầu tiên về cách ProCIR lựa chọn góc nhìn; bổ sung cơ chế lựa chọn góc nhìn tường minh cho bài toán Multi-View CIR; đồng thời cung cấp hai đánh giá mà công trình gốc chưa thực hiện (độ bền theo số góc nhìn và chuyển giao sang benchmark do người gán nhãn), góp phần kiểm chứng độc lập một bài toán vừa được đề xuất.
+\item \textbf{Thực tiễn:} Kết quả về độ bền khi thiếu góc nhìn có giá trị triển khai trực tiếp đối với các catalog có nhiều SKU thiếu ảnh đa góc (mức độ phổ biến trên FashionMV được định lượng ở Tháng 1). Việc kết hợp GradCache và mẫu âm khó giúp huấn luyện khả thi trên hạ tầng một GPU -- phù hợp với điều kiện của phần lớn nhóm nghiên cứu và doanh nghiệp vừa và nhỏ tại Việt Nam.
+\end{itemize}
+
+\subsection{Hướng mở rộng ứng dụng (ngoài phạm vi đánh giá chính)}\label{sec:ext}
+Nếu MV-SHN đạt kết quả khả quan, hướng mở rộng tự nhiên là lập chỉ mục biểu diễn sản phẩm đích bằng Approximate Nearest Neighbor (ví dụ FAISS~[19] hoặc HNSW~[20]) phục vụ tra cứu trên catalog nhiều SKU của B2B buyers. Thiết kế giữ biểu diễn đích độc lập với truy vấn (Mục~\ref{sec:vas}) chính là điều kiện để chỉ mục được xây một lần và dùng lại; module View-Aware Selection chỉ chạy phía truy vấn tại thời điểm tra cứu. Việc thiết kế đầy đủ một hệ thống Backend production (API Gateway, đồng bộ dữ liệu thời gian thực, SLA về độ trễ/thông lượng) nằm ngoài phạm vi đề tài và có thể là chủ đề của một đề tài kỹ thuật hệ thống riêng.
+
+%================ 9 =================
+\section{Tài liệu tham khảo}
+\begin{enumerate}[label={[\arabic*]},leftmargin=*,itemsep=3pt]
+\small
+\item Yuan, P., Mei, B., \& Zhang, H. (2026). FashionMV: Product-level composed image retrieval with multi-view fashion data. \textit{arXiv preprint arXiv:2604.10297}.
+\item Vo, N., Jiang, L., Sun, C., Murphy, K., Li, L.-J., Fei-Fei, L., \& Hays, J. (2019). Composing text and image for image retrieval -- an empirical odyssey. \textit{CVPR}, 6439--6448.
+\item Lee, S., Kim, D., \& Han, B. (2021). CoSMo: Content-style modulation for image retrieval with text feedback. \textit{CVPR}, 802--812.
+\item Delmas, G., Rezende, R.S., Csurka, G., \& Larlus, D. (2022). ARTEMIS: Attention-based retrieval with text-explicit matching and implicit similarity. \textit{ICLR}.
+\item Radford, A., Kim, J.W., Hallacy, C., Ramesh, A., Goh, G., Agarwal, S., Sastry, G., Askell, A., Mishkin, P., Clark, J., Krueger, G., \& Sutskever, I. (2021). Learning transferable visual models from natural language supervision. \textit{ICML}.
+\item Baldrati, A., Bertini, M., Uricchio, T., \& Del Bimbo, A. (2022). Effective conditioned and composed image retrieval combining CLIP-based features. \textit{CVPR}, 21466--21474.
+\item Goenka, S., Zheng, Z., Jaiswal, A., Chada, R., Wu, Y., Hedau, V., \& Natarajan, P. (2022). FashionVLP: Vision language transformer for fashion retrieval with feedback. \textit{CVPR}, 14105--14115.
+\item Chia, P.J., Attanasio, G., Bianchi, F., Terragni, S., Magalhães, A.R., Goncalves, D., Greco, C., \& Tagliabue, J. (2022). Contrastive language and vision learning of general fashion concepts (Fashion-CLIP). \textit{Scientific Reports}, 12(1).
+\item Han, X., Yu, L., Zhu, X., Zhang, L., Song, Y.-Z., \& Xiang, T. (2022). FashionViL: Fashion-focused vision-and-language representation learning. \textit{ECCV}.
+\item Saito, K., Sohn, K., Zhang, X., Li, C.-L., Lee, C.-Y., Saenko, K., \& Pfister, T. (2023). Pic2Word: Mapping pictures to words for zero-shot composed image retrieval. \textit{CVPR}, 19305--19314.
+\item Baldrati, A., Agnolucci, L., Bertini, M., \& Del Bimbo, A. (2023). Zero-shot composed image retrieval with textual inversion. \textit{ICCV}, 15338--15347.
+\item Gu, G., Chun, S., Kim, W., Kang, Y., \& Yun, S. (2024). Language-only training of zero-shot composed image retrieval. \textit{CVPR}, 13225--13234.
+\item Huynh, C., Yang, J., Tawari, A., Shah, M., Tran, S., Hamid, R., Chilimbi, T., \& Shrivastava, A. (2025). CoLLM: A large language model for composed image retrieval. \textit{CVPR}, 3994--4004.
+\item Wu, H., Gao, Y., Guo, X., Al-Halah, Z., Rennie, S., Grauman, K., \& Feris, R. (2021). Fashion IQ: A new dataset towards retrieving images by natural language feedback. \textit{CVPR}, 11307--11317.
+\item Gardères, F., Chen, S., Gauthier, C.-S., \& Ponce, J. (2025). FACap: A large-scale fashion dataset for fine-grained composed image retrieval. \textit{arXiv preprint arXiv:2507.07135}.
+\item Liu, Z., Luo, P., Qiu, S., Wang, X., \& Tang, X. (2016). DeepFashion: Powering robust clothes recognition and retrieval with rich annotations. \textit{CVPR}, 1096--1104.
+\item Han, X., Wu, Z., Huang, P.X., Zhang, X., Zhu, M., Li, Y., Zhao, Y., \& Davis, L.S. (2017). Automatic spatially-aware fashion concept discovery. \textit{ICCV}, 1472--1480.
+\item Rostamzadeh, N., Hosseini, S., Boquet, T., Stokowiec, W., Zhang, Y., Jauvin, C., \& Pal, C. (2018). Fashion-Gen: The generative fashion dataset and challenge. \textit{arXiv preprint arXiv:1806.08317}.
+\item Johnson, J., Douze, M., \& Jégou, H. (2021). Billion-scale similarity search with GPUs. \textit{IEEE Transactions on Big Data}, 7(3), 535--547.
+\item Malkov, Y.A., \& Yashunin, D.A. (2020). Efficient and robust approximate nearest neighbor search using hierarchical navigable small world graphs. \textit{IEEE TPAMI}, 42(4), 824--836.
+\item Gardères, F., et al. (2026). FIRE-CIR: Fine-grained reasoning for composed fashion image retrieval. \textit{CVPR 2026}; \textit{arXiv preprint arXiv:2604.09114}.
+\item Li, Z., Fu, Z., Hu, Y., Chen, Z., Wen, H., \& Nie, L. (2025). FineCIR: Explicit parsing of fine-grained modification semantics for composed image retrieval. \textit{arXiv preprint arXiv:2503.21309}.
+\item Gao, L., Zhang, Y., Han, J., \& Callan, J. (2021). Scaling deep contrastive learning batch size under memory limited setup. \textit{Proceedings of the 6th Workshop on Representation Learning for NLP (RepL4NLP)}.
+\item He, K., Fan, H., Wu, Y., Xie, S., \& Girshick, R. (2020). Momentum contrast for unsupervised visual representation learning. \textit{CVPR}, 9729--9738.
+\item Robinson, J., Chuang, C.-Y., Sra, S., \& Jegelka, S. (2021). Contrastive learning with hard negative samples. \textit{ICLR}.
+\item Chuang, C.-Y., Robinson, J., Lin, Y.-C., Torralba, A., \& Jegelka, S. (2020). Debiased contrastive learning. \textit{NeurIPS}, 33.
+\item Moreira, G. de S. P., Osmulski, R., Xu, M., Ak, R., Schifferer, B., \& Oldridge, E. (2024). NV-Retriever: Improving text embedding models with effective hard-negative mining. \textit{arXiv preprint arXiv:2407.15831}.
+\item Hu, E.J., Shen, Y., Wallis, P., Allen-Zhu, Z., Li, Y., Wang, S., Wang, L., \& Chen, W. (2022). LoRA: Low-rank adaptation of large language models. \textit{ICLR}.
+\item Koehn, P. (2004). Statistical significance tests for machine translation evaluation. \textit{EMNLP}, 388--395.
+\item Zhang, R., Han, J., Liu, C., Zhou, A., Lu, P., Qiao, Y., Li, H., \& Gao, P. (2024). LLaMA-Adapter: Efficient fine-tuning of large language models with zero-initialized attention. \textit{ICLR}.
+\end{enumerate}
+
+\end{document}

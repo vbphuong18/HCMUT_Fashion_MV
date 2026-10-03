@@ -1,0 +1,145 @@
+\chapter{Tổng quan về bài toán truy xuất ảnh có điều kiện}\label{chapter:overview}
+\pagestyle{fancy}
+
+Chương này trình bày bức tranh tổng quan về bài toán truy xuất ảnh có điều kiện (CIR): định nghĩa hình thức và mối quan hệ với các bài toán truy xuất đa phương thức khác, quá trình phát triển của lĩnh vực, các ứng dụng tiêu biểu và những thách thức còn mở -- trong đó có thách thức khiếm khuyết góc nhìn mà bài báo FashionMV hướng tới giải quyết.
+
+\section{Định nghĩa bài toán}\label{sec:problem-definition}
+
+\subsection{Truy xuất thông tin đa phương thức}
+
+Truy xuất thông tin (\emph{information retrieval}) là bài toán tìm trong một tập lớn các đối tượng (gọi là \emph{gallery} hoặc \emph{corpus}) những đối tượng phù hợp nhất với một nhu cầu thông tin được diễn đạt qua truy vấn~\cite{manning2008ir}. Trong các hệ thống truy xuất hiện đại dựa trên học sâu, cả truy vấn và đối tượng trong gallery đều được ánh xạ vào một không gian vector chung (\emph{embedding space}) bởi các hàm mã hoá; mức độ phù hợp được đo bằng độ tương đồng (thường là cosine) giữa các vector; và kết quả truy xuất là danh sách các đối tượng được xếp hạng theo độ tương đồng giảm dần. Cách tiếp cận này cho phép tiền tính toán toàn bộ embedding của gallery và sử dụng các thư viện tìm kiếm lân cận gần đúng như FAISS~\cite{johnson2019faiss} để truy xuất trên hàng triệu đối tượng trong thời gian thực.
+
+Tuỳ theo phương thức (\emph{modality}) của truy vấn và gallery, có thể phân biệt các bài toán:
+\begin{itemize}
+    \item \textbf{Truy xuất ảnh theo nội dung} (\emph{content-based image retrieval}): truy vấn là ảnh, gallery là ảnh.
+    \item \textbf{Truy xuất xuyên phương thức} (\emph{cross-modal retrieval}): truy vấn là văn bản, gallery là ảnh (Text-to-Image, T2I), hoặc ngược lại (Image-to-Text, I2T).
+    \item \textbf{Truy xuất ảnh có điều kiện} (CIR): truy vấn là một cặp (ảnh, văn bản), gallery là ảnh. Đây là bài toán \emph{đa phương thức hợp thành}: thông tin trong truy vấn không nằm hoàn toàn ở một phương thức nào, mà là kết quả của việc ``áp dụng'' văn bản lên ảnh.
+\end{itemize}
+
+\subsection{Truy xuất ảnh có điều kiện ở mức ảnh}
+
+Trong thiết lập chuẩn, một mẫu dữ liệu CIR là một \emph{triplet} $(I_{ref}, T_{mod}, I_{tgt})$, trong đó $I_{ref}$ là ảnh tham khảo, $T_{mod}$ là văn bản chỉnh sửa mô tả sự khác biệt mong muốn, và $I_{tgt}$ là ảnh đích. Cho một gallery $\mathcal{G} = \{I_1, \dots, I_M\}$, mục tiêu là học hai hàm mã hoá
+\begin{equation}
+    f_q : (I_{ref}, T_{mod}) \mapsto \mathbf{q} \in \mathbb{R}^d, \qquad f_g : I \mapsto \mathbf{g} \in \mathbb{R}^d
+\end{equation}
+sao cho ảnh đích được xếp hạng cao nhất theo độ tương đồng:
+\begin{equation}
+    I_{tgt} = \arg\max_{I \in \mathcal{G}} \; \cos\big(f_q(I_{ref}, T_{mod}),\, f_g(I)\big).
+    \label{eq:cir-objective}
+\end{equation}
+
+Điểm khó của CIR nằm ở bản chất \emph{hợp thành} của truy vấn: văn bản chỉnh sửa thường mô tả \emph{tương đối} (``dài hơn'', ``đổi sang màu trắng'', ``bỏ túi ngực'') chứ không mô tả đầy đủ ảnh đích, nên mô hình phải đồng thời (i) giữ lại những thuộc tính của ảnh tham khảo không bị đề cập, và (ii) thay đổi đúng những thuộc tính được văn bản yêu cầu. Một phép cộng đơn giản giữa embedding ảnh và embedding văn bản thường không đủ để biểu diễn phép biến đổi này, như sẽ được kiểm chứng bằng thực nghiệm ở Chương~\ref{chapter:experiments}.
+
+\subsection{Truy xuất ảnh có điều kiện ở mức sản phẩm (Multi-View CIR)}
+
+Bài báo FashionMV~\cite{yuan2026fashionmv} tổng quát hoá bài toán trên từ mức ảnh lên \emph{mức sản phẩm}. Mỗi sản phẩm $P$ được biểu diễn bởi một tập ảnh đa góc nhìn
+\begin{equation}
+    \mathcal{V}^P = \{I^P_1, I^P_2, \dots, I^P_{N_P}\}, \qquad N_P \in [2, 5],
+\end{equation}
+và một triplet CIR có dạng $(P_{src}, T_{mod}, P_{tgt})$. Gallery bây giờ là một tập sản phẩm, và mô hình phải tổng hợp mọi góc nhìn của mỗi sản phẩm thành một embedding duy nhất:
+\begin{equation}
+    \mathbf{q} = f_q\big(\mathcal{V}^{P_{src}}, T_{mod}\big), \qquad \mathbf{g}_P = f_g\big(\mathcal{V}^{P}\big).
+\end{equation}
+Bài toán CIR chuẩn là trường hợp suy biến khi $N_P = 1$. Hình~\ref{fig:cir-vs-mvcir} so sánh trực quan hai thiết lập.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[
+  img/.style={draw, fill=blue!8, minimum width=0.85cm, minimum height=1.05cm, font=\scriptsize, align=center},
+  txt/.style={draw, rounded corners=2pt, fill=orange!12, text width=2.9cm, align=center, font=\scriptsize, minimum height=1.05cm},
+  enc/.style={draw, rounded corners=3pt, fill=gray!15, minimum width=1.6cm, minimum height=0.8cm, font=\scriptsize\bfseries, align=center},
+  arr/.style={-{Stealth[length=2mm]}, thick},
+  lbl/.style={font=\small\bfseries, anchor=west}
+]
+% ---- (a) image level
+\node[lbl] at (-0.6,2.1) {(a) CIR mức ảnh};
+\node[img] (a1) at (0,1) {Front};
+\node[font=\large] at (0.95,1) {$+$};
+\node[txt] (at) at (2.85,1) {``Thêm dây đan chéo hở lưng''};
+\node[enc] (ae) at (6.0,1) {$f_q$};
+\draw[arr] (at.east) -- (ae.west);
+\node[img, fill=green!10] (ag) at (8.9,1) {Ảnh\\[-2pt]đích};
+\draw[arr] (ae.east) -- node[above, font=\scriptsize]{truy xuất} (ag.west);
+\node[font=\scriptsize, text=red!70!black, align=left, anchor=west] at (9.5,1) {Không thấy\\phần lưng!};
+% ---- (b) product level
+\node[lbl] at (-0.6,-0.55) {(b) Multi-View CIR mức sản phẩm};
+\foreach \v/\x in {Front/0, Back/0.95, Side/1.9} { \node[img] at (\x,-1.7) {\v}; }
+\draw[decorate, decoration={brace, amplitude=4pt, mirror}] (-0.45,-2.35) -- (2.35,-2.35) node[midway, below=4pt, font=\scriptsize] {$\mathcal{V}^{P_{src}}$ (2--5 ảnh)};
+\node[font=\large] at (2.85,-1.7) {$+$};
+\node[txt] (bt) at (4.75,-1.7) {``Thêm dây đan chéo hở lưng''};
+\node[enc] (be) at (7.6,-1.7) {$f_q$};
+\draw[arr] (bt.east) -- (be.west);
+\foreach \x in {9.2, 9.75, 10.3} { \node[img, fill=green!10, minimum width=0.5cm] at (\x,-1.7) {}; }
+\draw[arr] (be.east) -- (8.95,-1.7);
+\node[font=\scriptsize] at (9.75,-2.5) {Sản phẩm đích $P_{tgt}$};
+\end{tikzpicture}
+\caption{So sánh CIR mức ảnh và Multi-View CIR mức sản phẩm. Ở (a), chi tiết phần lưng được văn bản đề cập nhưng không có mặt trong ảnh tham khảo; ở (b), toàn bộ góc nhìn của sản phẩm nguồn được đưa vào truy vấn và đích truy xuất là một sản phẩm (tập ảnh) thay vì một ảnh đơn.}
+\label{fig:cir-vs-mvcir}
+\end{figure}
+
+Việc chuyển lên mức sản phẩm thay đổi bài toán ở ba khía cạnh. Thứ nhất, \textbf{đơn vị truy xuất} trùng với đơn vị kinh doanh: người dùng thương mại điện tử cần tìm một \emph{sản phẩm} để mua chứ không phải một bức ảnh. Thứ hai, \textbf{thông tin thị giác đầy đủ hơn}: các chi tiết phân bố trên nhiều góc nhìn (cổ áo ở mặt trước, khoá kéo ở mặt sau, túi ở mặt bên) đều có mặt trong truy vấn. Thứ ba, \textbf{yêu cầu mới đối với mô hình}: mô hình phải chấp nhận một số lượng ảnh thay đổi và biết tổng hợp thông tin xuyên góc nhìn -- điều mà các kiến trúc CIR một-ảnh không được thiết kế để làm.
+
+\section{Lịch sử phát triển}\label{sec:history}
+
+Sự phát triển của CIR có thể chia thành bốn giai đoạn, gắn liền với sự tiến hoá của các mô hình biểu diễn thị giác--ngôn ngữ nền tảng (Hình~\ref{fig:cir-timeline}).
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[
+  ev/.style={font=\scriptsize, align=center, text width=2.5cm},
+  dot/.style={circle, fill=#1, inner sep=2.2pt}
+]
+\draw[very thick, -{Stealth[length=3mm]}] (0,0) -- (15.4,0);
+\foreach \px/\yr/\cl/\ti/\de in {
+  0.8/2019/blue/TIRG/{Hợp nhất có giám sát\\(ResNet + LSTM)},
+  3.2/2021/blue/{FashionIQ, CIRR}/{Benchmark CIR\\mức ảnh},
+  5.6/2022/teal/CLIP4Cir/{Combiner trên\\không gian CLIP},
+  8.0/2023/orange/{Pic2Word, SEARLE}/{CIR zero-shot\\(textual inversion)},
+  10.4/2024/orange/{LinCIR, SPRC}/{Huấn luyện chỉ văn bản;\\prompt từ BLIP-2},
+  12.8/2025/red/CoLLM/{LLM làm\\xương sống},
+  14.8/2026/purple/FashionMV/{CIR mức sản phẩm\\đa góc nhìn}} {
+  \node[dot=\cl] at (\px,0) {};
+  \node[font=\scriptsize\bfseries] at (\px,-0.4) {\yr};
+  \node[ev, font=\scriptsize\bfseries, text=\cl!70!black] at (\px,0.95) {\ti};
+  \node[ev] at (\px,-1.15) {\de};
+}
+\end{tikzpicture}
+\caption{Các mốc phát triển tiêu biểu của bài toán truy xuất ảnh có điều kiện.}
+\label{fig:cir-timeline}
+\end{figure}
+
+\paragraph{Giai đoạn 1 -- Hợp nhất đặc trưng có giám sát (2019--2021).} TIRG~\cite{vo2019tirg} là công trình đặt nền móng, sử dụng ResNet~\cite{he2016resnet} để mã hoá ảnh và LSTM để mã hoá văn bản, rồi hợp nhất hai vector bằng một cơ chế \emph{cổng phần dư} (\emph{gated residual}): một nhánh cổng quyết định giữ lại bao nhiêu thông tin từ ảnh gốc, một nhánh phần dư bổ sung sự thay đổi do văn bản yêu cầu. Các công trình tiếp theo cải tiến cơ chế hợp nhất bằng bộ tự mã hoá hợp thành (ComposeAE~\cite{anwaar2021composeae}), học hợp thành kép kết hợp hiệu chỉnh (DCNet~\cite{kim2021dcnet}) hay attention ngữ nghĩa (SAC~\cite{jandial2022sac}). Điểm chung của giai đoạn này là các bộ mã hoá ảnh và văn bản được huấn luyện riêng rẽ, không có không gian biểu diễn chung từ trước, nên mô hình phải học sự căn chỉnh ảnh--văn bản từ chính dữ liệu triplet vốn có quy mô nhỏ.
+
+\paragraph{Giai đoạn 2 -- Kế thừa không gian CLIP (2022--2023).} Sự ra đời của CLIP~\cite{radford2021clip} -- mô hình được tiền huấn luyện tương phản trên 400 triệu cặp ảnh--văn bản -- cung cấp một không gian biểu diễn trong đó ảnh và văn bản đã được căn chỉnh sẵn. CLIP4Cir~\cite{baldrati2022clip4cir} khai thác điều này bằng cách giữ nguyên (hoặc tinh chỉnh nhẹ) hai bộ mã hoá của CLIP và chỉ huấn luyện một mạng \emph{Combiner} nhỏ để kết hợp hai embedding; phương pháp đơn giản này vượt trội đáng kể các mô hình giai đoạn trước và trở thành baseline tiêu chuẩn. SPRC~\cite{bai2024sprc} tiếp tục tận dụng BLIP-2~\cite{li2023blip2} để sinh các prompt mức câu, cải thiện khả năng biểu diễn các chỉnh sửa phức tạp.
+
+\paragraph{Giai đoạn 3 -- CIR không cần triplet gán nhãn (2023--2024).} Gán nhãn triplet CIR rất tốn kém vì người gán nhãn phải viết mô tả sự khác biệt cho từng cặp ảnh. Hướng zero-shot CIR (ZS-CIR) tìm cách loại bỏ chi phí này. Pic2Word~\cite{saito2023pic2word} và SEARLE~\cite{baldrati2023searle} học một ánh xạ biến ảnh thành một ``từ giả'' (\emph{pseudo-word token}) trong không gian token của bộ mã hoá văn bản CLIP, sau đó ghép từ giả với văn bản chỉnh sửa thành một câu hoàn chỉnh (ví dụ ``\emph{a photo of [$S_*$] with short sleeves}'') để mã hoá thành truy vấn. LinCIR~\cite{gu2024lincir} chỉ huấn luyện trên văn bản thông qua phép chiếu tự che (\emph{self-masking projection}); SLERP+TAT~\cite{jang2024slerp} hợp nhất hai embedding bằng nội suy tuyến tính cầu; CompoDiff~\cite{gu2024compodiff} sử dụng mô hình khuếch tán tiềm ẩn để sinh embedding đích.
+
+\paragraph{Giai đoạn 4 -- Mô hình ngôn ngữ lớn (2025--nay).} Các mô hình ngôn ngữ lớn đa phương thức (MLLM) có khả năng hiểu ngôn ngữ và suy luận vượt trội so với bộ mã hoá văn bản của CLIP. CoLLM~\cite{huynh2025collm} sử dụng LLM làm xương sống để tạo embedding hợp nhất ảnh--văn bản. Song song, lĩnh vực mở rộng sang ngữ nghĩa chi tiết (FineCIR~\cite{li2025finecir}), tương tác nhiều lượt (MAI~\cite{chen2025mai}) và miền video (EgoCVR~\cite{hummel2024egocvr}). Bài báo FashionMV~\cite{yuan2026fashionmv} thuộc giai đoạn này, và là công trình đầu tiên thay đổi \emph{phía đầu vào thị giác} vốn không đổi suốt bảy năm: từ một ảnh tham khảo sang toàn bộ tập ảnh đa góc nhìn của sản phẩm.
+
+\section{Các ứng dụng tiêu biểu}\label{sec:applications}
+
+CIR có nhiều ứng dụng thực tiễn, đặc biệt trong các lĩnh vực mà người dùng khó diễn đạt nhu cầu bằng từ khoá:
+
+\begin{itemize}
+    \item \textbf{Tìm kiếm sản phẩm thương mại điện tử.} Đây là ứng dụng trực tiếp nhất: người dùng chọn một sản phẩm đang xem và mô tả bằng ngôn ngữ tự nhiên những điểm muốn thay đổi. Bộ dữ liệu FashionIQ~\cite{wu2021fashioniq} được xây dựng chính từ kịch bản phản hồi của người mua sắm thời trang. Với Multi-View CIR, truy vấn có thể dùng toàn bộ ảnh của trang sản phẩm thay vì buộc người dùng chọn một ảnh.
+    \item \textbf{Tìm kiếm tương tác và hội thoại.} Trong các hệ thống trợ lý mua sắm, người dùng tinh chỉnh kết quả qua nhiều lượt (``tối màu hơn'', ``không có hoạ tiết''). Mỗi lượt là một bài toán CIR với ảnh tham khảo là kết quả của lượt trước~\cite{chen2025mai}. Kiến trúc hội thoại hai lượt của ProCIR còn cho phép lưu cache trạng thái của lượt nhận thức thị giác để giảm độ trễ cho các lượt chỉnh sửa tiếp theo (Mục~\ref{sec:two-stage}).
+    \item \textbf{Thiết kế và sáng tạo.} Nhà thiết kế thời trang có thể tìm các mẫu tham khảo bằng cách mô tả biến thể của một thiết kế sẵn có, hoặc kiểm tra xem một ý tưởng đã tồn tại trong danh mục hay chưa.
+    \item \textbf{Gợi ý sản phẩm thay thế.} Khi một sản phẩm hết hàng, hệ thống có thể tìm các sản phẩm tương tự nhưng khác ở một thuộc tính cụ thể (size, màu, chất liệu).
+    \item \textbf{Các miền ngoài thời trang.} CIR trên ảnh miền mở (CIRR~\cite{liu2021cirr}), truy xuất video từ góc nhìn thứ nhất (EgoCVR~\cite{hummel2024egocvr}), và -- như bài báo FashionMV gợi ý -- các miền thương mại điện tử đa góc nhìn khác như nội thất và đồ điện tử.
+\end{itemize}
+
+\section{Những thách thức và hướng nghiên cứu}\label{sec:challenges}
+
+Mặc dù đạt nhiều tiến bộ, CIR vẫn đối mặt với những thách thức lớn:
+
+\paragraph{(1) Khiếm khuyết góc nhìn.} Như đã phân tích ở Chương~\ref{chapter:introduction}, giả định một-ảnh khiến mô hình thiếu thông tin khi văn bản chỉnh sửa đề cập đến chi tiết không quan sát được. Các công trình biểu diễn thời trang như FashionViL~\cite{han2022fashionvil} đã nhận ra giá trị của dữ liệu đa góc nhìn, nhưng chỉ dùng nó như một dạng tăng cường dữ liệu khi tiền huấn luyện; lúc truy xuất, mô hình vẫn hoạt động trên từng ảnh riêng lẻ. Đây là khoảng trống mà FashionMV giải quyết.
+
+\paragraph{(2) Tổng hợp thông tin xuyên góc nhìn.} Ngay cả khi có nhiều ảnh, câu hỏi \emph{tổng hợp như thế nào} vẫn mở. Các chiến lược đơn giản như lấy trung bình embedding (MeanPool) có thể làm loãng chi tiết đặc thù của từng góc nhìn; chọn cặp góc nhìn khớp nhất (MaxSim) lại thất bại khi văn bản đề cập các thuộc tính phân bố trên nhiều góc nhìn. Mã hoá đồng thời mọi góc nhìn (Joint) đòi hỏi mô hình có khả năng hiểu đa ảnh tốt, và có thể phản tác dụng với các mô hình yếu (Mục~\ref{sec:paper-results}).
+
+\paragraph{(3) Dữ liệu gán nhãn và tính mơ hồ.} Triplet CIR do con người viết tốn kém và nhiễu; triplet tự động sinh bởi mô hình lại có nguy cơ ảo giác (\emph{hallucination}). Một vấn đề khác là \emph{mơ hồ đa đáp án đúng} (\emph{multi-positive ambiguity}): văn bản chỉnh sửa ngắn thường phù hợp với nhiều sản phẩm trong gallery, trong khi giao thức đánh giá chỉ công nhận một đích duy nhất. CIRCO~\cite{baldrati2023searle} giảm thiểu vấn đề này bằng cách gán nhiều đáp án đúng cho mỗi truy vấn; FashionMV giảm thiểu nó ngay từ khâu sinh dữ liệu bằng cách cho MLLM đối chiếu đích với nhiều ứng viên cạnh tranh (Mục~\ref{sec:dataset-construction}).
+
+\paragraph{(4) Chi phí tính toán và độ trễ.} Các mô hình dựa trên MLLM có độ chính xác cao nhưng tốn kém hơn nhiều so với các mô hình kiểu CLIP, đặc biệt khi mỗi truy vấn chứa nhiều ảnh. Đây là một rào cản thực tế, như chính quá trình tái lập trong báo cáo này cho thấy (Chương~\ref{chapter:experiments}).
+
+\paragraph{(5) Tính tái lập và giao thức đánh giá.} Kết quả CIR phụ thuộc mạnh vào các chi tiết của giao thức: kích thước gallery, việc có loại sản phẩm nguồn khỏi kết quả xếp hạng hay không, độ phân giải ảnh, phiên bản văn bản chỉnh sửa (ngắn hay dài). Những chi tiết này hiếm khi được nêu đầy đủ, khiến việc so sánh giữa các công trình trở nên khó khăn. Báo cáo này đưa ra các phân tích định lượng cụ thể về ảnh hưởng của hai yếu tố đầu tiên (Mục~\ref{sec:discussion}).
+
+\paragraph{Hướng nghiên cứu.} Từ các thách thức trên, các hướng nghiên cứu nổi bật hiện nay bao gồm: thiết kế cơ chế tổng hợp đa góc nhìn hiệu quả và có khả năng diễn giải (ví dụ biết góc nhìn nào liên quan đến chi tiết nào trong văn bản chỉnh sửa); tận dụng MLLM cỡ nhỏ để cân bằng độ chính xác và chi phí; tiêm tri thức miền (\emph{domain knowledge}) thông qua chú thích có cấu trúc; và xây dựng giao thức đánh giá bền vững hơn với hiện tượng đa đáp án đúng.

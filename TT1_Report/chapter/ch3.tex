@@ -1,0 +1,267 @@
+\chapter{Cơ sở lý thuyết và các nghiên cứu liên quan}\label{chapter:background}
+\pagestyle{fancy}
+
+Chương này trình bày các kiến thức nền tảng cần thiết để hiểu phương pháp ProCIR và các mô hình cơ sở được đánh giá trong báo cáo. Mục~\ref{sec:architectures} điểm lại các kiến trúc học sâu nền tảng: Transformer, Vision Transformer và các biến thể attention tuyến tính được dùng trong Qwen3.5. Mục~\ref{sec:contrastive} trình bày học biểu diễn tương phản và mô hình CLIP. Mục~\ref{sec:mllm} trình bày mô hình ngôn ngữ lớn đa phương thức và cách sử dụng chúng như bộ mã hoá embedding. Mục~\ref{sec:related-cir} và Mục~\ref{sec:related-datasets} khảo sát các phương pháp và bộ dữ liệu CIR liên quan.
+
+\section{Các kiến trúc học sâu nền tảng}\label{sec:architectures}
+
+\subsection{Kiến trúc Transformer và cơ chế self-attention}
+
+Transformer~\cite{vaswani2017attention} là kiến trúc nền tảng của hầu hết các mô hình ngôn ngữ và thị giác--ngôn ngữ hiện đại. Thành phần cốt lõi của Transformer là cơ chế \emph{self-attention}, cho phép mỗi phần tử trong chuỗi tổng hợp thông tin từ mọi phần tử khác theo trọng số được học. Cho chuỗi đầu vào $\mathbf{X} \in \mathbb{R}^{n \times d}$ gồm $n$ token, mỗi token có chiều $d$, ba ma trận truy vấn (\emph{query}), khoá (\emph{key}) và giá trị (\emph{value}) được tính bằng các phép chiếu tuyến tính:
+\begin{equation}
+    \mathbf{Q} = \mathbf{X}\mathbf{W}_Q, \quad \mathbf{K} = \mathbf{X}\mathbf{W}_K, \quad \mathbf{V} = \mathbf{X}\mathbf{W}_V.
+\end{equation}
+Đầu ra của attention là tổ hợp có trọng số của các vector giá trị, với trọng số được chuẩn hoá bằng hàm softmax:
+\begin{equation}
+    \mathrm{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \mathrm{softmax}\!\left(\frac{\mathbf{Q}\mathbf{K}^\top}{\sqrt{d_k}} + \mathbf{M}\right)\mathbf{V},
+    \label{eq:attention}
+\end{equation}
+trong đó $d_k$ là chiều của vector khoá và $\mathbf{M}$ là ma trận mặt nạ. Trong các mô hình ngôn ngữ tự hồi quy (\emph{decoder-only}), $\mathbf{M}$ là \textbf{mặt nạ nhân quả} (\emph{causal mask}): $M_{ij} = 0$ nếu $j \le i$ và $M_{ij} = -\infty$ nếu $j > i$, tức là mỗi token chỉ được ``nhìn'' các token đứng trước nó. Tính chất nhân quả này đóng vai trò then chốt trong thiết kế hội thoại hai lượt của ProCIR: embedding được trích ở cuối lượt thứ nhất hoàn toàn không bị ảnh hưởng bởi nội dung của lượt thứ hai (Mục~\ref{sec:two-stage}).
+
+\textbf{Multi-head attention} thực hiện $h$ phép attention song song trên các không gian con khác nhau rồi ghép kết quả, cho phép mô hình đồng thời nắm bắt nhiều kiểu quan hệ. Các biến thể hiện đại như \emph{grouped-query attention} cho nhiều đầu truy vấn dùng chung một cặp khoá--giá trị để giảm bộ nhớ đệm (KV cache) khi suy luận. Mỗi tầng Transformer gồm một khối attention và một mạng truyền thẳng (\emph{feed-forward network}), mỗi khối đều có kết nối phần dư và chuẩn hoá tầng. Để mã hoá thông tin vị trí, các mô hình gần đây sử dụng \emph{rotary position embedding} (RoPE)~\cite{su2024rope}, xoay các vector truy vấn và khoá theo một góc phụ thuộc vị trí.
+
+Độ phức tạp tính toán của attention~\eqref{eq:attention} là $\mathcal{O}(n^2 d)$ theo độ dài chuỗi. Với đầu vào đa phương thức nhiều ảnh -- mỗi ảnh có thể tạo ra hàng trăm token -- chi phí bậc hai này trở thành nút thắt đáng kể, là động lực cho các kiến trúc attention tuyến tính ở Mục~\ref{sec:linear-attn}.
+
+\subsection{Vision Transformer}
+
+Vision Transformer (ViT)~\cite{dosovitskiy2021vit} áp dụng trực tiếp Transformer cho ảnh bằng cách chia ảnh $H \times W$ thành lưới các mảnh (\emph{patch}) kích thước $P \times P$, làm phẳng và chiếu tuyến tính mỗi mảnh thành một token. Một ảnh $224 \times 224$ với $P = 32$ (như CLIP ViT-B/32) tạo ra $7 \times 7 = 49$ token, cộng thêm một token \texttt{[CLS]} có trạng thái ẩn cuối cùng được dùng làm biểu diễn toàn cục của ảnh. ViT có ít thiên kiến quy nạp (\emph{inductive bias}) hơn mạng tích chập, nên cần dữ liệu tiền huấn luyện lớn, nhưng khi đủ dữ liệu lại có khả năng mở rộng tốt và trở thành bộ mã hoá ảnh chuẩn trong các mô hình thị giác--ngôn ngữ.
+
+Một điểm quan trọng đối với báo cáo này là \textbf{số token thị giác tỷ lệ với độ phân giải ảnh}. Các MLLM hiện đại như họ Qwen-VL~\cite{wang2024qwen2vl} hỗ trợ \emph{độ phân giải động}: ảnh được giữ gần tỷ lệ gốc và chia thành số mảnh tương ứng, thay vì luôn bị thu về một kích thước cố định. Do đó, ảnh độ phân giải thấp cung cấp ít token -- và ít chi tiết -- hơn cho mô hình ngôn ngữ phía sau. Hệ quả định lượng của tính chất này lên kết quả tái lập được phân tích ở Mục~\ref{sec:discussion}.
+
+\subsection{Attention tuyến tính và kiến trúc lai}\label{sec:linear-attn}
+
+\textbf{Attention tuyến tính}~\cite{katharopoulos2020linear} thay hàm softmax trong~\eqref{eq:attention} bằng tích của các ánh xạ đặc trưng $\phi(\cdot)$, cho phép đổi thứ tự phép nhân ma trận. Với mặt nạ nhân quả, đầu ra tại vị trí $t$ có thể viết dưới dạng hồi quy:
+\begin{equation}
+    \mathbf{S}_t = \mathbf{S}_{t-1} + \mathbf{v}_t\,\phi(\mathbf{k}_t)^\top, \qquad \mathbf{o}_t = \mathbf{S}_t\,\phi(\mathbf{q}_t),
+\end{equation}
+trong đó $\mathbf{S}_t \in \mathbb{R}^{d_v \times d_k}$ là một ma trận trạng thái kích thước cố định. Chi phí mỗi bước là hằng số theo độ dài chuỗi, nên toàn chuỗi có độ phức tạp tuyến tính $\mathcal{O}(n)$ thay vì bậc hai. Nhược điểm của dạng cộng dồn đơn giản này là trạng thái ``nhớ mãi'' mọi thứ, dễ bị bão hoà khi chuỗi dài.
+
+Các mô hình không gian trạng thái chọn lọc như Mamba~\cite{gu2023mamba} và các biến thể dùng \emph{quy tắc delta} khắc phục nhược điểm trên bằng cơ chế quên và ghi đè có chọn lọc. \textbf{Gated DeltaNet}~\cite{yang2025gateddeltanet} kết hợp cổng suy giảm $\alpha_t \in (0,1)$ với quy tắc delta:
+\begin{equation}
+    \mathbf{S}_t = \alpha_t\,\mathbf{S}_{t-1}\big(\mathbf{I} - \beta_t\,\mathbf{k}_t\mathbf{k}_t^\top\big) + \beta_t\,\mathbf{v}_t\mathbf{k}_t^\top,
+\end{equation}
+trong đó $\beta_t$ là ``tốc độ ghi''. Cổng $\alpha_t$ cho phép xoá nhanh thông tin cũ, còn quy tắc delta cho phép cập nhật chính xác giá trị gắn với một khoá cụ thể.
+
+Vì attention tuyến tính kém attention đầy đủ ở các tác vụ đòi hỏi truy hồi chính xác, nhiều mô hình gần đây chọn \textbf{kiến trúc lai}: xen kẽ phần lớn tầng attention tuyến tính với một số ít tầng attention đầy đủ. Qwen3.5~\cite{qwen2026qwen35} -- mô hình nền của ProCIR -- theo thiết kế này. Đọc trực tiếp tệp cấu hình của checkpoint ProCIR cho thấy 24 tầng của mô hình được bố trí theo chu kỳ \emph{ba tầng attention tuyến tính, một tầng attention đầy đủ} (tham số \texttt{full\_attention\_interval = 4}), tức 18 tầng tuyến tính và 6 tầng đầy đủ, với các tầng tuyến tính có một phép tích chập nhân quả ngắn (\texttt{linear\_conv\_kernel\_dim = 4}). Việc thực thi hiệu quả các tầng tuyến tính đòi hỏi các kernel CUDA chuyên dụng (thư viện \texttt{flash-linear-attention} và \texttt{causal-conv1d}); khi các kernel này không khả dụng, mô hình quay về triển khai tham chiếu bằng PyTorch thuần với tốc độ chậm hơn nhiều -- một yếu tố ảnh hưởng trực tiếp đến quá trình tái lập (Chương~\ref{chapter:experiments}).
+
+\section{Học biểu diễn tương phản đa phương thức}\label{sec:contrastive}
+
+\subsection{Hàm mất mát InfoNCE}
+
+Học tương phản (\emph{contrastive learning}) học không gian biểu diễn bằng cách kéo các cặp mẫu dương (có liên quan) lại gần nhau và đẩy các cặp mẫu âm ra xa. Hàm mất mát phổ biến nhất là \textbf{InfoNCE}~\cite{oord2018cpc}. Cho một batch gồm $B$ cặp $(\mathbf{x}_i, \mathbf{y}_i)$ đã chuẩn hoá $L_2$, với $\mathbf{y}_i$ là mẫu dương của $\mathbf{x}_i$ và mọi $\mathbf{y}_j$ ($j \ne i$) là mẫu âm:
+\begin{equation}
+    \mathcal{L}_{\mathrm{InfoNCE}}(\mathbf{x}, \mathbf{y}) = -\frac{1}{B}\sum_{i=1}^{B} \log \frac{\exp(\mathbf{x}_i^\top \mathbf{y}_i / \tau)}{\sum_{j=1}^{B}\exp(\mathbf{x}_i^\top \mathbf{y}_j / \tau)},
+    \label{eq:infonce}
+\end{equation}
+trong đó $\tau > 0$ là tham số nhiệt độ (\emph{temperature}) điều khiển độ ``sắc'' của phân phối. Về bản chất, đây là hàm cross-entropy cho bài toán phân loại $B$ lớp: với mỗi $\mathbf{x}_i$, mô hình phải nhận ra đúng $\mathbf{y}_i$ trong số $B$ ứng viên. Kỹ thuật dùng các mẫu khác trong cùng batch làm mẫu âm (\emph{in-batch negatives}) giúp tránh chi phí khai thác mẫu âm riêng; batch càng lớn thì càng nhiều mẫu âm và tín hiệu học càng mạnh~\cite{chen2020simclr}. Khi huấn luyện phân tán, các embedding thường được tập hợp (\emph{all-gather}) từ mọi GPU để tăng số mẫu âm hiệu dụng.
+
+Phiên bản \textbf{đối xứng} lấy trung bình hai chiều $\mathbf{x} \to \mathbf{y}$ và $\mathbf{y} \to \mathbf{x}$:
+\begin{equation}
+    \mathrm{SymInfoNCE}(\mathbf{x}, \mathbf{y}, \tau) = \tfrac{1}{2}\big[\mathcal{L}_{\mathrm{InfoNCE}}(\mathbf{x}, \mathbf{y}) + \mathcal{L}_{\mathrm{InfoNCE}}(\mathbf{y}, \mathbf{x})\big].
+    \label{eq:syminfonce}
+\end{equation}
+Đây chính là hàm mất mát được sử dụng cho mọi thành phần huấn luyện tương phản của ProCIR (Mục~\ref{sec:procir-objective}).
+
+\subsection{Mô hình CLIP}
+
+CLIP (\emph{Contrastive Language--Image Pre-training})~\cite{radford2021clip} gồm hai bộ mã hoá độc lập -- một bộ mã hoá ảnh (ResNet hoặc ViT) và một bộ mã hoá văn bản (Transformer) -- được huấn luyện đồng thời bằng hàm SymInfoNCE~\eqref{eq:syminfonce} trên khoảng 400 triệu cặp ảnh--chú thích thu thập từ Internet (Hình~\ref{fig:clip}). Sau huấn luyện, ảnh và văn bản có cùng ngữ nghĩa nằm gần nhau trong một không gian embedding chung, cho phép thực hiện truy xuất xuyên phương thức và phân loại zero-shot (so khớp ảnh với các câu dạng ``\emph{a photo of a [class]}'').
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[
+  box/.style={draw, rounded corners=3pt, minimum height=0.8cm, align=center, font=\scriptsize},
+  arr/.style={-{Stealth[length=2mm]}, thick}
+]
+\node[box, fill=blue!10, minimum width=2.4cm] (img) at (0,1.6) {Ảnh $I_1,\dots,I_B$};
+\node[box, fill=orange!15, minimum width=2.4cm] (txt) at (0,-1.6) {Văn bản $T_1,\dots,T_B$};
+\node[box, fill=blue!25, minimum width=2.2cm] (ie) at (3.2,1.6) {Bộ mã hoá ảnh\\(ViT-B/32)};
+\node[box, fill=orange!30, minimum width=2.2cm] (te) at (3.2,-1.6) {Bộ mã hoá\\văn bản};
+\draw[arr] (img) -- (ie); \draw[arr] (txt) -- (te);
+% matrix
+\def\s{0.55}
+\foreach \i in {1,...,4} {
+  \node[draw, fill=blue!15, minimum size=\s cm, font=\tiny, inner sep=0] at (6.3+\i*\s,2.2) {$I_\i$};
+  \node[draw, fill=orange!20, minimum size=\s cm, font=\tiny, inner sep=0] at (6.3,1.65-\i*\s) {$T_\i$};
+  \foreach \j in {1,...,4} {
+    \ifnum\i=\j
+      \node[draw, fill=green!40, minimum size=\s cm, inner sep=0] at (6.3+\i*\s,1.65-\j*\s) {};
+    \else
+      \node[draw, fill=gray!8, minimum size=\s cm, inner sep=0] at (6.3+\i*\s,1.65-\j*\s) {};
+    \fi
+  }
+}
+\draw[arr] (ie.east) -- (6.5,2.2);
+\draw[arr] (te.east) -- (6.0,-0.5);
+\node[font=\scriptsize, align=left, anchor=west] at (9.2,0.3) {Ma trận tương đồng\\$\mathbf{I}_i^\top \mathbf{T}_j / \tau$:\\\textcolor{green!50!black}{đường chéo} = cặp dương,\\còn lại = cặp âm};
+\end{tikzpicture}
+\caption{Sơ đồ huấn luyện tương phản của CLIP: hai bộ mã hoá độc lập ánh xạ ảnh và văn bản vào không gian chung; hàm SymInfoNCE tối đa hoá độ tương đồng trên đường chéo của ma trận tương đồng trong batch.}
+\label{fig:clip}
+\end{figure}
+
+Phiên bản \textbf{CLIP ViT-B/32} được dùng làm baseline trong báo cáo có bộ mã hoá ảnh là ViT-Base với patch kích thước $32 \times 32$ trên ảnh đầu vào $224 \times 224$, và không gian embedding chung 512 chiều. Vì hai bộ mã hoá độc lập, CLIP không có cơ chế tự nhiên để \emph{kết hợp} một ảnh và một văn bản thành một truy vấn; cách đơn giản nhất là hợp nhất muộn (\emph{late fusion}) bằng tổng có trọng số hai embedding -- chính là chiến lược baseline ở Chương~\ref{chapter:experiments}.
+
+\subsection{FashionCLIP}
+
+CLIP được huấn luyện trên dữ liệu Internet tổng quát nên thiếu hiểu biết về các khái niệm thời trang chi tiết (tên kiểu dáng, chất liệu, chi tiết may). \textbf{FashionCLIP}~\cite{chia2022fashionclip} tinh chỉnh CLIP trên dữ liệu danh mục sản phẩm của một nhà bán lẻ thời trang trực tuyến lớn (khoảng 800 nghìn sản phẩm, mỗi sản phẩm gồm ảnh và mô tả văn bản), giữ nguyên kiến trúc ViT-B/32. Kết quả là một mô hình có cùng giao diện sử dụng với CLIP nhưng biểu diễn tốt hơn đáng kể cho các tác vụ thời trang như truy xuất sản phẩm và phân loại thuộc tính. Đánh giá FashionCLIP bên cạnh CLIP cho phép tách bạch lợi ích của \emph{thích nghi miền} (\emph{domain adaptation}) với lợi ích của \emph{kiến trúc CIR chuyên biệt}.
+
+\section{Mô hình ngôn ngữ lớn đa phương thức}\label{sec:mllm}
+
+\subsection{Kiến trúc chung}
+
+Mô hình ngôn ngữ lớn đa phương thức (MLLM) mở rộng một LLM để tiếp nhận thêm đầu vào thị giác. Kiến trúc phổ biến nhất -- được phổ biến bởi BLIP-2~\cite{li2023blip2} và LLaVA~\cite{liu2023llava} -- gồm ba thành phần (Hình~\ref{fig:mllm}): (i) một \textbf{bộ mã hoá thị giác} (thường là ViT) biến ảnh thành chuỗi đặc trưng mảnh; (ii) một \textbf{bộ kết nối} (\emph{projector/merger}) chiếu các đặc trưng này sang không gian embedding token của LLM, đồng thời có thể gộp các mảnh lân cận để giảm số token; (iii) một \textbf{LLM decoder-only} xử lý chuỗi xen kẽ token thị giác và token văn bản bằng attention nhân quả. Mô hình được huấn luyện qua nhiều giai đoạn, trong đó giai đoạn \emph{tinh chỉnh theo chỉ dẫn} (\emph{instruction tuning}) dạy mô hình tuân theo định dạng hội thoại nhiều lượt giữa \texttt{user} và \texttt{assistant}.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[
+  box/.style={draw, rounded corners=3pt, minimum height=0.85cm, align=center, font=\scriptsize},
+  tok/.style={draw, minimum width=0.32cm, minimum height=0.42cm, inner sep=0pt},
+  arr/.style={-{Stealth[length=2mm]}, thick}
+]
+\node[box, fill=blue!8, minimum width=1.5cm] (im) at (0,0) {Ảnh đa\\góc nhìn};
+\node[box, fill=blue!25, minimum width=2.0cm] (ve) at (2.4,0) {Bộ mã hoá\\thị giác (ViT)};
+\node[box, fill=teal!20, minimum width=1.6cm] (pj) at (4.85,0) {Bộ kết nối\\(gộp $2\times2$)};
+\draw[arr] (im) -- (ve); \draw[arr] (ve) -- (pj);
+\foreach \k in {0,...,5} { \node[tok, fill=blue!30] at (6.5+\k*0.34,0) {}; }
+\foreach \k in {0,...,3} { \node[tok, fill=orange!40] at (8.6+\k*0.34,0) {}; }
+\node[tok, fill=red!50] at (10.05,0) {};
+\draw[arr] (pj) -- (6.3,0);
+\node[font=\tiny, align=center] at (7.35,-0.55) {token thị giác};
+\node[font=\tiny, align=center] at (9.1,-0.55) {token văn bản};
+\node[font=\tiny, text=red!60!black] at (10.05,0.5) {\texttt{<emb>}};
+\node[box, fill=gray!15, minimum width=4.6cm] (llm) at (7.9,1.55) {LLM decoder-only (attention nhân quả)};
+\draw[arr] (7.9,0.3) -- (llm.south);
+\node[box, fill=red!12] (e) at (11.9,1.55) {Trạng thái ẩn\\tại \texttt{<emb>} $\to \mathbf{e}$};
+\draw[arr] (llm.east) -- (e.west);
+\end{tikzpicture}
+\caption{Kiến trúc chung của một MLLM và cách trích xuất embedding từ trạng thái ẩn tại một token đặc biệt.}
+\label{fig:mllm}
+\end{figure}
+
+Họ Qwen-VL~\cite{wang2024qwen2vl} có hai đặc điểm liên quan trực tiếp đến báo cáo: \emph{độ phân giải động} (số token thị giác thay đổi theo kích thước ảnh trong một khoảng số điểm ảnh tối thiểu--tối đa) và \emph{M-RoPE} (RoPE đa chiều, mã hoá riêng vị trí theo thời gian, chiều cao và chiều rộng cho token thị giác). Nhờ đó, một yêu cầu có thể chứa nhiều ảnh với kích thước khác nhau.
+
+\subsection{Mô hình nền Qwen3.5-0.8B}
+
+ProCIR sử dụng Qwen3.5-0.8B~\cite{qwen2026qwen35} -- phiên bản nhỏ nhất của họ Qwen3.5, được thiết kế như một mô hình đa phương thức nguyên bản (\emph{native multimodal}). Bảng~\ref{tab:qwen35-config} tóm tắt các siêu tham số kiến trúc, được đọc trực tiếp từ tệp \texttt{config.json} của checkpoint ProCIR do tác giả phát hành.
+
+\begin{table}[h]
+\centering
+\caption{Cấu hình kiến trúc Qwen3.5-0.8B trong checkpoint ProCIR (đọc từ \texttt{config.json}).}
+\label{tab:qwen35-config}
+\begin{tabular}{llr}
+\toprule
+Thành phần & Tham số & Giá trị \\
+\midrule
+\multirow{8}{*}{Mô hình ngôn ngữ}
+ & Số tầng & 24 \\
+ & Bố trí tầng & 3 tuyến tính : 1 đầy đủ (18 + 6) \\
+ & Chiều ẩn & 1024 \\
+ & Chiều tầng truyền thẳng & 3584 \\
+ & Số đầu attention (truy vấn / khoá--giá trị) & 8 / 2 \\
+ & Chiều mỗi đầu & 256 \\
+ & Kích thước từ vựng & 248.320 \\
+ & Mã hoá vị trí & M-RoPE, $\theta = 10^7$ \\
+\midrule
+\multirow{5}{*}{Bộ mã hoá thị giác}
+ & Số tầng ViT & 12 \\
+ & Chiều ẩn / số đầu & 768 / 12 \\
+ & Kích thước patch & $16 \times 16$ \\
+ & Hệ số gộp không gian & $2 \times 2$ \\
+ & Chiều đầu ra (sang LLM) & 1024 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Với patch $16 \times 16$ và hệ số gộp $2 \times 2$, mỗi token thị giác đưa vào LLM tương ứng với một vùng $32 \times 32$ điểm ảnh. Mã nguồn đánh giá của ProCIR giới hạn số điểm ảnh mỗi ảnh trong khoảng $128^2$ đến $512^2$; một ảnh $512 \times 512$ do đó tạo ra $16 \times 16 = 256$ token, và một sản phẩm năm góc nhìn có thể chiếm tới khoảng 1.280 token thị giác. Đây là lý do việc xử lý đa góc nhìn bằng MLLM tốn kém hơn nhiều so với CLIP (49 token mỗi ảnh), và là động lực cho kiến trúc attention lai đã trình bày ở Mục~\ref{sec:linear-attn}.
+
+\subsection{MLLM làm bộ mã hoá embedding}
+
+MLLM vốn được thiết kế để \emph{sinh} văn bản chứ không phải tạo vector biểu diễn. Một hướng nghiên cứu gần đây chuyển hoá MLLM thành bộ mã hoá embedding đa phương thức. E5-V~\cite{jiang2024e5v} dùng prompt dạng ``\emph{tóm tắt nội dung trên trong một từ}'' và lấy trạng thái ẩn của token cuối cùng làm embedding; VLM2Vec~\cite{jiang2025vlm2vec} huấn luyện tương phản MLLM trên một tập lớn các tác vụ embedding; Qwen3-VL-Embedding~\cite{li2026qwen3vlemb} và RzenEmbed~\cite{jian2025rzenembed} là các mô hình embedding đa phương thức đa dụng cỡ 2B--8B tham số, hỗ trợ đầu vào nhiều ảnh. Cơ chế chung là: (i) gắn một token đặc biệt vào cuối chuỗi đầu vào; (ii) nhờ attention nhân quả, trạng thái ẩn ở tầng cuối tại vị trí token này đã ``nhìn thấy'' toàn bộ đầu vào nên có thể dùng làm biểu diễn tổng hợp; (iii) huấn luyện tương phản để không gian này phù hợp cho truy xuất. ProCIR áp dụng đúng cơ chế này với token \texttt{<emb>} (Mục~\ref{sec:procir-embedding}), và các mô hình embedding kể trên là các baseline mạnh nhất trong bài báo FashionMV.
+
+\subsection{Chuỗi suy luận và tinh chỉnh có giám sát}
+
+\textbf{Chain-of-Thought} (CoT)~\cite{wei2022cot} là kỹ thuật cho LLM sinh các bước suy luận trung gian trước khi đưa ra câu trả lời, giúp cải thiện đáng kể khả năng suy luận nhiều bước. Các MLLM gần đây (trong đó có Qwen3.5) tích hợp sẵn định dạng khối \texttt{<think>...</think>} cho phần suy luận trong lượt trả lời của assistant. ProCIR tận dụng khối này theo một cách khác thường: không phải để sinh suy luận, mà để \emph{tiêm} chú thích sản phẩm vào ngữ cảnh khi huấn luyện, rồi loại bỏ dần (Mục~\ref{sec:procir-cot}).
+
+\textbf{Tinh chỉnh có giám sát} (SFT) là việc tiếp tục huấn luyện mô hình với hàm mất mát mô hình hoá ngôn ngữ tự hồi quy trên dữ liệu chuyên biệt, nhằm tiêm tri thức miền hoặc dạy một định dạng đầu ra mới. Trong ProCIR, SFT được dùng như một giai đoạn tiền huấn luyện tuỳ chọn để mô hình ``hiểu'' sản phẩm thời trang trước khi được huấn luyện tương phản.
+
+\section{Các phương pháp truy xuất ảnh có điều kiện liên quan}\label{sec:related-cir}
+
+\subsection{Hợp nhất đặc trưng có giám sát}
+
+TIRG~\cite{vo2019tirg} biểu diễn truy vấn bằng tổ hợp của một nhánh cổng và một nhánh phần dư:
+\begin{equation}
+    \mathbf{q} = w_g\, f_{gate}(\mathbf{x}, \mathbf{t}) \odot \mathbf{x} + w_r\, f_{res}(\mathbf{x}, \mathbf{t}),
+\end{equation}
+trong đó $\mathbf{x}$ là đặc trưng ảnh tham khảo, $\mathbf{t}$ là đặc trưng văn bản, $f_{gate}$ (kết thúc bằng sigmoid) quyết định giữ lại thành phần nào của ảnh, và $f_{res}$ mô hình hoá sự thay đổi. Ý tưởng ``giữ phần lớn ảnh, sửa một phần theo văn bản'' của TIRG ảnh hưởng đến hầu hết các công trình sau. Các phương pháp như ComposeAE~\cite{anwaar2021composeae}, DCNet~\cite{kim2021dcnet} và SAC~\cite{jandial2022sac} cải tiến cơ chế hợp nhất bằng mã hoá tự động, học hợp thành kép và attention ngữ nghĩa. Hạn chế chung là chất lượng phụ thuộc vào lượng triplet gán nhãn vốn hạn chế.
+
+\subsection{Phương pháp dựa trên CLIP}
+
+CLIP4Cir~\cite{baldrati2022clip4cir} tận dụng không gian đã căn chỉnh của CLIP và huấn luyện một mạng \emph{Combiner} $C$ nhận embedding ảnh $\mathbf{x}$ và văn bản $\mathbf{t}$:
+\begin{equation}
+    \mathbf{q} = \lambda\,\mathbf{t} + (1 - \lambda)\,\mathbf{x} + g(\mathbf{x}, \mathbf{t}),
+\end{equation}
+với $\lambda$ là hệ số trộn được học động và $g$ là một mạng MLP mô hình hoá tương tác phi tuyến. Công thức này có thể xem là phiên bản \emph{có học} của baseline hợp nhất muộn trong báo cáo (nơi $\lambda$ cố định và $g \equiv 0$). SPRC~\cite{bai2024sprc} dùng Q-Former của BLIP-2 để sinh các prompt mức câu từ ảnh tham khảo và văn bản chỉnh sửa, giúp xử lý tốt hơn các chỉnh sửa liên quan đến việc loại bỏ hoặc thay thế đối tượng. Trong bài báo FashionMV, CLIP4Cir (0,25B tham số) và SPRC (1,2B tham số) là đại diện cho nhóm phương pháp CIR một-ảnh, chỉ có thể áp dụng cho bài toán đa góc nhìn qua các chiến lược MeanPool và MaxSim.
+
+\subsection{Truy xuất ảnh có điều kiện zero-shot}
+
+Pic2Word~\cite{saito2023pic2word} học một mạng ánh xạ $\phi$ biến embedding ảnh thành một token giả $S_* = \phi(\mathbf{x})$ trong không gian embedding từ của bộ mã hoá văn bản CLIP, chỉ cần dữ liệu ảnh không gán nhãn. Khi truy vấn, câu ``\emph{a photo of $S_*$, $T_{mod}$}'' được mã hoá bởi bộ mã hoá văn bản để tạo $\mathbf{q}$. SEARLE~\cite{baldrati2023searle} cải tiến bằng cách tối ưu token giả và chưng cất kiến thức; LinCIR~\cite{gu2024lincir} chỉ dùng dữ liệu văn bản; CompoDiff~\cite{gu2024compodiff} dùng mô hình khuếch tán. Ưu điểm của nhóm này là không cần triplet gán nhãn; nhược điểm là hiệu năng thường thấp hơn các phương pháp có giám sát trên các miền chuyên biệt như thời trang.
+
+\subsection{Truy xuất ảnh có điều kiện dựa trên mô hình ngôn ngữ lớn}
+
+CoLLM~\cite{huynh2025collm} dùng LLM làm xương sống để mã hoá truy vấn hợp thành và tổng hợp triplet huấn luyện từ dữ liệu ảnh--chú thích. So với CLIP, LLM có khả năng hiểu các chỉnh sửa phức tạp (phủ định, so sánh, nhiều thuộc tính) tốt hơn hẳn. ProCIR tiếp nối hướng này nhưng khác ở ba điểm: dùng MLLM nguyên bản xử lý trực tiếp nhiều ảnh; tách truy vấn thành hai lượt hội thoại; và tiêm tri thức sản phẩm qua chú thích có cấu trúc.
+
+\subsection{Biểu diễn thị giác--ngôn ngữ trong miền thời trang}
+
+Miền thời trang có nhiều công trình biểu diễn chuyên biệt. FashionVLP~\cite{goenka2022fashionvlp} hợp nhất ngữ cảnh thị giác đa mức (ảnh toàn cảnh, vùng trang phục, điểm mốc, vùng quan tâm) \emph{từ một ảnh đơn} cho CIR thời trang. FAME-ViL~\cite{han2023famevil} xử lý nhiều tác vụ thời trang không đồng nhất trong một mô hình qua adapter theo tác vụ. FaD-VLP~\cite{mirchandani2022fadvlp} đề xuất khung tiền huấn luyện thống nhất cho truy xuất và sinh chú thích; ADDE~\cite{hou2021adde} học biểu diễn tách rời theo thuộc tính để hỗ trợ chỉnh sửa có kiểm soát.
+
+Về khía cạnh đa góc nhìn, \textbf{FashionViL}~\cite{han2022fashionvil} quan sát rằng dữ liệu thương mại điện tử gắn ``nhiều hơn một ảnh với một văn bản'' và đề xuất tác vụ tiền huấn luyện \emph{Multi-View Contrastive Learning}: căn chỉnh biểu diễn của một góc nhìn với biểu diễn đa phương thức của một góc nhìn khác kết hợp văn bản. Tuy nhiên, mục tiêu của tác vụ này là tính nhất quán giữa các ảnh đơn lẻ; khi truy xuất, mô hình vẫn hoạt động ở mức ảnh. Nói cách khác, các công trình trước FashionMV coi đa góc nhìn là \emph{nguồn tăng cường dữ liệu}, chưa phải \emph{đơn vị truy xuất}.
+
+\section{Các bộ dữ liệu truy xuất ảnh có điều kiện}\label{sec:related-datasets}
+
+Bảng~\ref{tab:cir-datasets} so sánh các bộ dữ liệu CIR tiêu biểu.
+
+\begin{table}[h]
+\centering
+\caption{So sánh các bộ dữ liệu CIR tiêu biểu (tổng hợp từ~\cite{yuan2026fashionmv} và các công trình gốc).}
+\label{tab:cir-datasets}
+\small
+\begin{tabular}{lllcc}
+\toprule
+Bộ dữ liệu & Miền & Nguồn văn bản chỉnh sửa & Mức & Đa góc nhìn \\
+\midrule
+Fashion200K~\cite{han2017fashion200k} & Thời trang & Khác biệt thuộc tính (tự động) & Ảnh & \cross \\
+FashionIQ~\cite{wu2021fashioniq} & Thời trang & Người gán nhãn & Ảnh & \cross \\
+CIRR~\cite{liu2021cirr} & Miền mở & Người gán nhãn & Ảnh & \cross \\
+CIRCO~\cite{baldrati2023searle} & Miền mở & Người gán nhãn, nhiều đích & Ảnh & \cross \\
+GeneCIS~\cite{vaze2023genecis} & Miền mở & Điều kiện tương đồng & Ảnh & \cross \\
+FACap~\cite{garderes2025facap} & Thời trang & VLM + LLM (tự động) & Ảnh & \cross \\
+\textbf{FashionMV}~\cite{yuan2026fashionmv} & Thời trang & MLLM, đối chiếu 10 ứng viên & \textbf{Sản phẩm} & \tick \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+FashionIQ~\cite{wu2021fashioniq} là benchmark CIR thời trang phổ biến nhất, với văn bản chỉnh sửa thu thập từ phản hồi tương đối của người dùng trên ba danh mục (váy, áo sơ mi, áo thun/áo ba lỗ). CIRR~\cite{liu2021cirr} mở rộng sang ảnh đời thực miền mở; CIRCO cung cấp nhiều đáp án đúng cho mỗi truy vấn để giảm hiện tượng âm tính giả; GeneCIS~\cite{vaze2023genecis} kiểm tra khả năng tổng quát trên nhiều điều kiện tương đồng khác nhau. FACap~\cite{garderes2025facap} xây dựng hơn 227 nghìn triplet thời trang chi tiết bằng pipeline VLM + LLM tự động.
+
+Điểm đáng chú ý là FACap lấy ảnh từ Fashion200K và DeepFashion -- hai nguồn vốn chứa nhiều ảnh cho mỗi sản phẩm -- nhưng \emph{chủ động lọc bỏ} các cặp ảnh cùng sản phẩm để giữ cấu trúc một-ảnh-một-truy-vấn. Như vậy, cấu trúc đa góc nhìn sẵn có trong dữ liệu gốc đã bị loại bỏ. FashionMV là bộ dữ liệu đầu tiên làm điều ngược lại: gom nhóm ảnh đa góc nhìn thành một thực thể sản phẩm, đồng thời cung cấp chú thích ở cả mức ảnh lẫn mức sản phẩm.
+
+\section{Tổng kết chương}
+
+Bảng~\ref{tab:method-groups} tóm tắt các nhóm phương pháp đã khảo sát và vị trí của ProCIR. Có thể thấy xu hướng chung: bộ mã hoá ngày càng mạnh (từ ResNet/LSTM đến CLIP rồi MLLM), cơ chế hợp nhất ngày càng ``sâu'' (từ cộng vector đến attention toàn chuỗi trong LLM), nhưng phía đầu vào thị giác vẫn là một ảnh duy nhất cho đến FashionMV. Các khái niệm trình bày trong chương -- attention nhân quả, InfoNCE đối xứng, trích xuất embedding từ token đặc biệt, CoT và SFT -- là những viên gạch trực tiếp cấu thành ProCIR ở chương tiếp theo.
+
+\begin{table}[h]
+\centering
+\caption{Tóm tắt các nhóm phương pháp CIR.}
+\label{tab:method-groups}
+\small
+\begin{tabular}{p{3.0cm}p{3.2cm}p{3.6cm}c}
+\toprule
+Nhóm & Bộ mã hoá & Cơ chế hợp nhất & Đầu vào thị giác \\
+\midrule
+Hợp nhất có giám sát (TIRG, ComposeAE) & ResNet + LSTM & Cổng phần dư, tự mã hoá & 1 ảnh \\
+Dựa trên CLIP (CLIP4Cir, SPRC) & CLIP / BLIP-2 & Combiner, prompt mức câu & 1 ảnh \\
+Zero-shot (Pic2Word, SEARLE, LinCIR) & CLIP & Token giả trong không gian văn bản & 1 ảnh \\
+Dựa trên LLM (CoLLM) & LLM & Attention trong LLM & 1 ảnh \\
+Baseline hợp nhất muộn (báo cáo này) & CLIP / FashionCLIP & Tổng có trọng số & Trung bình $\le$5 ảnh \\
+\textbf{ProCIR} & \textbf{MLLM (Qwen3.5)} & \textbf{Hội thoại hai lượt} & \textbf{2--5 ảnh (Joint)} \\
+\bottomrule
+\end{tabular}
+\end{table}
