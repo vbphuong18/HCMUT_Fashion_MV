@@ -1,0 +1,21 @@
+# Kaggle (1x Tesla T4 16 GB, sm75, no causal-conv1d): DeepFashion-only pilot, NOT the proposal-scale
+# run. bf16 is emulated and the linear-attention layers may use the PyTorch reference path, so expect
+# minutes per step; the notebook sets stop_after_hours per 12 h session and resumes in the next one.
+# data_dir, image_root and output_dir are set by the notebook (src/kaggle/train/procir_train.ipynb).
+base_model: Qwen/Qwen3.5-0.8B
+datasets: [deepfashion]
+train_fraction: 0.25
+dev_product_fraction: 0.05
+max_views: 3
+image_max_pixels: 112896
+multi_turn: true
+align: true
+cot: false
+batch_size: 64
+chunk_size: 4
+lr: 1.0e-4
+seed: 42
+num_workers: 2
+log_every: 1
+eval_every: 0
+save_every: 10

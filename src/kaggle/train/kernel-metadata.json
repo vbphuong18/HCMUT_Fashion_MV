@@ -1,0 +1,17 @@
+{
+  "id": "vbichphuong/procir-train",
+  "title": "procir-train",
+  "code_file": "procir_train.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": true,
+  "enable_gpu": true,
+  "enable_internet": true,
+  "dataset_sources": [
+    "vbichphuong/procir-code",
+    "vbichphuong/procir-images"
+  ],
+  "competition_sources": [],
+  "kernel_sources": [],
+  "machine_shape": "NvidiaTeslaT4"
+}

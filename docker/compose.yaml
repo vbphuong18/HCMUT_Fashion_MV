@@ -1,0 +1,21 @@
+# Usage: see docker/run.sh (or README "Training on a Docker server").
+services:
+  procir:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: procir-train:latest
+    working_dir: /workspace
+    volumes:
+      - ..:/workspace          # code, data/ (images + annotations), runs/, HF cache in .cache/
+    shm_size: "16gb"           # DataLoader workers pass image tensors through /dev/shm
+    environment:
+      - HF_TOKEN               # optional, passed through from the host
+      - CUDA_VISIBLE_DEVICES   # optional, e.g. CUDA_VISIBLE_DEVICES=1 docker/run.sh train
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
