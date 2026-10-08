@@ -1,5 +1,5 @@
 {
-  "id": "vtbphuongsdh242/procir-eval-f200k-v3",
+  "id": "vtbphuongsdh242/procir-eval-f200k-v3-subsample",
   "title": "ProCIR eval f200k v3 subsample",
   "code_file": "script.py",
   "language": "python",
@@ -9,5 +9,6 @@
   "enable_internet": true,
   "dataset_sources": [],
   "competition_sources": [],
-  "kernel_sources": []
+  "kernel_sources": [],
+  "machine_shape": "NvidiaTeslaT4"
 }
