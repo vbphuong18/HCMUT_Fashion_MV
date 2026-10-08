@@ -64,6 +64,8 @@ def main(argv=None, run=_subprocess_run):
     ap.add_argument("--eval-datasets", nargs="+", default=None,
                     help="default: the run's datasets (fashiongen_train is scored as fashiongen_val)")
     ap.add_argument("--eval-batch-size", type=int, default=16)
+    ap.add_argument("--export-checkpoint", choices=("latest", "best"), default="latest",
+                    help="best = ckpt/best.pt (highest dev mean R@5), falling back to latest when absent")
     ap.add_argument("--allow-slow", action="store_true", help="accept GPUs below sm80 / missing kernels (Kaggle T4)")
     ap.add_argument("--skip-env-check", action="store_true")
     args = ap.parse_args(argv)
@@ -102,6 +104,11 @@ def main(argv=None, run=_subprocess_run):
     (out / "STATUS").write_text(f"training finished: step {step}/{total}\n", encoding="utf-8")
 
     run_cfg, latest, export_dir = out / "config.yaml", out / "ckpt" / "latest.pt", out / "export"
+    if args.export_checkpoint == "best":
+        if (out / "ckpt" / "best.pt").exists():
+            latest = out / "ckpt" / "best.pt"
+        else:
+            print("no ckpt/best.pt (dev eval off?): exporting latest.pt", flush=True)
     if "export" in args.stages:
         run([py, "-m", "procir_train.export", "--config", run_cfg, "--checkpoint", latest, "--out", export_dir])
 

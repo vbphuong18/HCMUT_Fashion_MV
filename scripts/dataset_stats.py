@@ -147,6 +147,8 @@ def markdown(result, sources):
 
 
 def main(argv=None):
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")  # Windows consoles default to cp1252
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--ann", default=str(ROOT / "data" / "FashionMV_hf" / "data" / "data"))
     ap.add_argument("--image-root", default=str(ROOT / "data" / "images_official_hr"))

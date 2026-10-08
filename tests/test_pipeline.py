@@ -127,3 +127,24 @@ def test_resume_flag_when_only_a_log_exists(tmp_path):
     rec = Recorder(tmp_path / "run", (5, 5))
     pipeline.main(["--config", str(_config(tmp_path)), "--stages", "train", "--skip-env-check"], run=rec)
     assert "--resume" in rec.cmds[0]
+
+
+def test_export_checkpoint_best_uses_best_pt(tmp_path):
+    _ckpt(tmp_path / "run", 220, 220)
+    (tmp_path / "run" / "config.yaml").write_text("x")
+    torch.save({"step": 100}, tmp_path / "run" / "ckpt" / "best.pt")
+    rec = Recorder(tmp_path / "run", (220, 220))
+    pipeline.main(["--config", str(_config(tmp_path)), "--stages", "export", "eval", "--skip-env-check",
+                   "--eval-protocols", "upstream", "train", "--export-checkpoint", "best"], run=rec)
+    export, ours = rec.cmds[0], rec.cmds[2]
+    assert export[export.index("--checkpoint") + 1] == str(tmp_path / "run" / "ckpt" / "best.pt")
+    assert ours[ours.index("--checkpoint") + 1] == str(tmp_path / "run" / "ckpt" / "best.pt")
+
+
+def test_export_checkpoint_best_falls_back_to_latest(tmp_path):
+    _ckpt(tmp_path / "run", 220, 220)
+    (tmp_path / "run" / "config.yaml").write_text("x")
+    rec = Recorder(tmp_path / "run", (220, 220))
+    pipeline.main(["--config", str(_config(tmp_path)), "--stages", "export", "--skip-env-check",
+                   "--export-checkpoint", "best"], run=rec)
+    assert rec.cmds[0][rec.cmds[0].index("--checkpoint") + 1] == str(tmp_path / "run" / "ckpt" / "latest.pt")

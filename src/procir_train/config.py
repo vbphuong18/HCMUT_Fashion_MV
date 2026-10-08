@@ -57,6 +57,7 @@ class TrainConfig:
     log_every: int = 10
     eval_every: int = 200  # 0 = no dev evaluation
     save_every: int = 200
+    save_every_minutes: float = 0.0  # 0 = off; also checkpoint when this much time passed since the last save
     dev_eval_max_queries: int = 1000  # 0 = use all dev queries
     eval_batch_size: int = 16
 
@@ -79,13 +80,14 @@ class TrainConfig:
         for name in ("num_workers", "dev_eval_max_queries"):
             if getattr(self, name) < 0:
                 raise ValueError(f"{name} must be >= 0")
-        for name in ("lr", "tau", "lambda_doc", "lambda_src", "weight_decay", "grad_clip", "stop_after_hours"):
+        for name in ("lr", "tau", "lambda_doc", "lambda_src", "weight_decay", "grad_clip", "stop_after_hours",
+                     "save_every_minutes"):
             if not math.isfinite(getattr(self, name)):
                 raise ValueError(f"{name} must be finite")
         for name in ("lr", "tau", "grad_clip"):
             if getattr(self, name) <= 0:
                 raise ValueError(f"{name} must be > 0")
-        for name in ("lambda_doc", "lambda_src", "weight_decay", "stop_after_hours"):
+        for name in ("lambda_doc", "lambda_src", "weight_decay", "stop_after_hours", "save_every_minutes"):
             if getattr(self, name) < 0:
                 raise ValueError(f"{name} must be >= 0")
         if self.batch_size % self.chunk_size != 0:

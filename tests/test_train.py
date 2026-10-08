@@ -146,3 +146,40 @@ def test_stop_after_hours_is_validated_and_not_a_resume_key():
     with pytest.raises(ValueError, match="stop_after_hours"):
         TrainConfig(stop_after_hours=-1.0)
     assert "stop_after_hours" not in RESUME_KEYS  # each Kaggle session sets its own budget
+
+
+def test_dev_score_is_mean_r5_over_datasets():
+    from procir_train.train import dev_score
+
+    res = {"deepfashion": {"R@1": 10.0, "R@5": 50.0, "R@5_src_excluded": 90.0},
+           "f200k": {"R@1": 20.0, "R@5": 70.0}}
+    assert dev_score(res) == pytest.approx(60.0)
+
+
+def test_should_save_on_schedule_end_stop_best_and_time():
+    from procir_train.train import should_save
+
+    cfg = TrainConfig(save_every=50, save_every_minutes=10.0)
+    assert should_save(cfg, step=50, total=200, stopping=False, minutes_since_save=0, new_best=False)
+    assert should_save(cfg, step=200, total=200, stopping=False, minutes_since_save=0, new_best=False)
+    assert should_save(cfg, step=7, total=200, stopping=True, minutes_since_save=0, new_best=False)
+    assert should_save(cfg, step=7, total=200, stopping=False, minutes_since_save=0, new_best=True)
+    assert should_save(cfg, step=7, total=200, stopping=False, minutes_since_save=10.5, new_best=False)
+    assert not should_save(cfg, step=7, total=200, stopping=False, minutes_since_save=9.0, new_best=False)
+    no_timer = TrainConfig(save_every=50)
+    assert not should_save(no_timer, step=7, total=200, stopping=False, minutes_since_save=10**6, new_best=False)
+
+
+def test_best_dev_is_restored_from_checkpoint_meta():
+    from procir_train.train import best_from_meta
+
+    assert best_from_meta(None) == (float("-inf"), None)
+    assert best_from_meta({"best_dev": 61.5, "best_step": 300}) == (61.5, 300)
+
+
+def test_save_every_minutes_validated_and_not_a_resume_key():
+    from procir_train.train import RESUME_KEYS
+
+    with pytest.raises(ValueError, match="save_every_minutes"):
+        TrainConfig(save_every_minutes=-1.0)
+    assert "save_every_minutes" not in RESUME_KEYS

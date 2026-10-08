@@ -47,6 +47,21 @@ RESUME_KEYS = ("base_model", "data_dir", "image_root", "datasets", "train_fracti
 _MISSING = object()
 
 
+def dev_score(res):
+    """Model-selection score on the dev split: mean R@5 over datasets (the paper's headline metric)."""
+    return sum(r["R@5"] for r in res.values()) / len(res)
+
+
+def best_from_meta(meta):
+    meta = meta or {}
+    return meta.get("best_dev", float("-inf")), meta.get("best_step")
+
+
+def should_save(cfg, step, total, stopping, minutes_since_save, new_best):
+    timer = bool(cfg.save_every_minutes) and minutes_since_save >= cfg.save_every_minutes
+    return step % cfg.save_every == 0 or step == total or stopping or new_best or timer
+
+
 def should_stop(cfg, steps_done, hours):
     """Early stop of this process (pilot step count or wall-clock budget); the schedules stay those of the full run."""
     if cfg.stop_after_steps and steps_done >= cfg.stop_after_steps:
@@ -205,13 +220,15 @@ def main(argv=None):
     if args.resume and latest.exists():
         start = load_checkpoint(latest, encoder, optimizer, scheduler, master)
         print(f"resumed from step {start}", flush=True)
+    best_dev, best_step = best_from_meta(saved_meta)
+    best = out / "ckpt" / "best.pt"
 
     sampler = StepBatchSampler(len(train), cfg.batch_size, total, cfg.seed, start_step=start)
     dataset = TripletTrainDataset(train, captions, processor, cfg, total_steps=total)
     loader = DataLoader(dataset, batch_sampler=sampler, collate_fn=collate, num_workers=cfg.num_workers)
 
     step = start
-    t_start = time.time()
+    t_start = t_saved = time.time()
     with open(log_path, "a", encoding="utf-8") as log:
         t_last = time.time()
         for batch in loader:
@@ -242,20 +259,32 @@ def main(argv=None):
                 log.write(json.dumps(rec) + "\n")
                 log.flush()
                 print(rec, flush=True)
+            new_best = False
             if dev and cfg.eval_every and (step % cfg.eval_every == 0 or step == total):
                 res = evaluate_records(encoder, processor, dev, cfg, max_queries=cfg.dev_eval_max_queries,
                                        batch_size=cfg.eval_batch_size)
-                log.write(json.dumps({"step": step, "dev": res}) + "\n")
+                score = dev_score(res)
+                new_best = score > best_dev
+                if new_best:
+                    best_dev, best_step = score, step
+                rec = {"step": step, "dev": res, "dev_score": score, "best_step": best_step}
+                log.write(json.dumps(rec) + "\n")
                 log.flush()
-                print({"step": step, "dev": res}, flush=True)
+                print(rec, flush=True)
             stopping = step < total and should_stop(cfg, step - start, (time.time() - t_start) / 3600)
-            if step % cfg.save_every == 0 or step == total or stopping:
+            if should_save(cfg, step, total, stopping, (time.time() - t_saved) / 60, new_best):
                 ck = out / "ckpt" / f"step_{step:06d}.pt"
-                save_checkpoint(ck, encoder, optimizer, scheduler, step, cfg,
-                                meta={"total": total, "n_train": len(train)}, master=master)
+                save_checkpoint(ck, encoder, optimizer, scheduler, step, cfg, master=master,
+                                meta={"total": total, "n_train": len(train), "best_dev": best_dev,
+                                      "best_step": best_step})
                 tmp_latest = latest.with_suffix(".tmp")
                 shutil.copyfile(ck, tmp_latest)
                 os.replace(tmp_latest, latest)
+                if new_best:  # model selection on the dev split (the proposal: dev picks the checkpoint)
+                    tmp_best = best.with_suffix(".tmp")
+                    shutil.copyfile(ck, tmp_best)
+                    os.replace(tmp_best, best)
+                t_saved = time.time()
             if stopping:
                 print(f"stopping early at step {step}/{total}; continue with --resume", flush=True)
                 break
