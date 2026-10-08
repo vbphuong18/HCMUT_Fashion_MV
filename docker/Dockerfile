@@ -11,7 +11,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     HF_HOME=/workspace/.cache/huggingface \
     PYTHONPATH=/workspace/src:/workspace/external/FashionMV
 
-RUN apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends git unzip && rm -rf /var/lib/apt/lists/*
 
 COPY requirements-train.txt /tmp/requirements-train.txt
 RUN pip install -r /tmp/requirements-train.txt

@@ -7,6 +7,9 @@ pyyaml
 pillow>=10
 pyarrow
 tqdm
+# data setup (scripts/setup_data.py): FashionGen h5 files and the Kaggle download
+h5py
+kaggle
 pytest>=8
 # GPU box only (needs nvcc, i.e. a CUDA "devel" image):
 #   pip install flash-linear-attention causal-conv1d --no-build-isolation

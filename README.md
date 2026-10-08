@@ -110,11 +110,33 @@ skipped and `<output_dir>/STATUS` says how far it got. Options: `--stages train 
 `--eval-protocols upstream train`, `--eval-datasets ...`, `--allow-slow` (GPU below sm80 or missing
 kernels, e.g. Kaggle T4).
 
+### Data on a new machine: `scripts/setup_data.py`
+
+Builds `data/FashionMV_hf/data/data/*.jsonl` and `data/images_official_hr/{deepfashion,f200k,
+fashiongen_train,fashiongen_val}/` (the `image_root` of the configs). Two inputs cannot be downloaded
+by script and must be copied over first: the MMLab DeepFashion In-shop `img_highres` zip (the part
+with `MEN/` and `WOMEN/`; password from the MMLab e-mail) and the Fashion200K zip from the
+xthan/fashion-200k Google Drive (it holds `fashion-200k/image_urls.txt`). FashionGen comes from
+Kaggle, so Kaggle API credentials (`~/.kaggle/kaggle.json` or `KAGGLE_API_TOKEN`) are needed.
+
+```bash
+export DEEPFASHION_PASSWORD='...'          # never commit it
+python scripts/setup_data.py all \
+  --deepfashion /path/img_highres.zip --f200k-urls /path/fashion-200k.zip
+python scripts/setup_data.py verify        # coverage table + data/data_status.json; exit 1 if incomplete
+```
+
+Every stage resumes when re-run (`annotations`, `deepfashion`, `f200k`, `fashiongen`, `verify` can be
+named individually). The Fashion200K stage downloads ~200k images from the original URLs (~10 images/s,
+~5 h); views are matched by file stem, so images already present are kept. Disk: about 15 GB of
+images, plus ~30 GB of FashionGen h5/zip in `data/raw/fashiongen/` that can be deleted afterwards.
+With Docker: `docker compose -f docker/compose.yaml run --rm -e DEEPFASHION_PASSWORD procir python scripts/setup_data.py all ...`.
+
 ### Docker server (proposal-scale runs; GPU sm80+, 24 GB)
 
 The image holds dependencies only (`docker/Dockerfile`, CUDA devel base, builds `causal-conv1d`); the
-repository is bind-mounted at `/workspace`, so copy `data/FashionMV_hf/data/data/` and
-`data/images_official_hr/` (DeepFashion, plus `f200k/` once extracted) to the server's checkout first.
+repository is bind-mounted at `/workspace`, so either build `data/` there with `scripts/setup_data.py`
+or copy `data/FashionMV_hf/data/data/` and `data/images_official_hr/` from another machine.
 
 ```bash
 git submodule update --init
