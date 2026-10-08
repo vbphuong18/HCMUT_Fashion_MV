@@ -127,8 +127,11 @@ python scripts/setup_data.py verify        # coverage table + data/data_status.j
 ```
 
 Every stage resumes when re-run (`annotations`, `deepfashion`, `f200k`, `fashiongen`, `verify` can be
-named individually). The Fashion200K stage downloads ~200k images from the original URLs (~10 images/s,
-~5 h); views are matched by file stem, so images already present are kept. Disk: about 15 GB of
+named individually). The Fashion200K stage downloads ~200k full images from the URLs (~10 images/s,
+~5 h) into `f200k_source/`, then crops each to the garment box the official release used
+(`src/data/crop_f200k.py`: the detection whose score `labels/*_detect_all.txt` records), so `f200k/`
+matches the released, cropped Fashion200K images (checked against the Marqo/fashion200k mirror: 60/60
+crops within 3 px). Train and val then come from one source. Disk: about 15 GB of
 images, plus ~30 GB of FashionGen h5/zip in `data/raw/fashiongen/` that can be deleted afterwards.
 With Docker: `docker compose -f docker/compose.yaml run --rm -e DEEPFASHION_PASSWORD procir python scripts/setup_data.py all ...`.
 

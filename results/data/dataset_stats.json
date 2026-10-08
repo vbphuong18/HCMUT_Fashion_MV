@@ -86,7 +86,7 @@
       "views_mean": 3.34,
       "images_on_disk": 190489,
       "images_used_max5": 190489,
-      "bytes_on_disk": 5056813807,
+      "bytes_on_disk": 7030060895,
       "targets_per_source_mean": 2.0,
       "mod_short_words": {
         "mean": 23.3,
@@ -97,8 +97,8 @@
         "median": 84.0
       },
       "image_size_median": [
-        520,
-        650
+        234,
+        471
       ]
     },
     "val": {
@@ -113,7 +113,7 @@
       "views_mean": 3.34,
       "images_on_disk": 35814,
       "images_used_max5": 35814,
-      "bytes_on_disk": 745080809,
+      "bytes_on_disk": 897399998,
       "targets_per_source_mean": 2.0,
       "mod_short_words": {
         "mean": 23.4,
@@ -121,8 +121,8 @@
       },
       "mod_long_words": null,
       "image_size_median": [
-        412,
-        635
+        229,
+        475
       ]
     },
     "captions": {
