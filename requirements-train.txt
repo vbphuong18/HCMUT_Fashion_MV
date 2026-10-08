@@ -1,0 +1,12 @@
+torch>=2.5
+torchvision
+transformers>=5.0
+peft>=0.13
+huggingface_hub
+pyyaml
+pillow>=10
+pyarrow
+tqdm
+pytest>=8
+# GPU box only (needs nvcc, i.e. a CUDA "devel" image):
+#   pip install flash-linear-attention causal-conv1d --no-build-isolation

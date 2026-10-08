@@ -1,0 +1,3 @@
+[submodule "external/FashionMV"]
+	path = external/FashionMV
+	url = https://github.com/yuandaxia2001/FashionMV.git

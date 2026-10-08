@@ -8,6 +8,18 @@
 !/src/
 !/results/
 !/docs/
+!/.gitmodules
+!/external/
+!/configs/
+!/scripts/
+!/tests/
+!/pytest.ini
+!/requirements-train.txt
+!/docker/
+!/.dockerignore
+
+# ---- credentials: never commit ----
+/.secrets/
 
 # ---- report/: LaTeX sources, figures and the final PDF ----
 /report/build/
@@ -33,6 +45,7 @@
 *.synctex.gz
 *.log
 !/results/baselines/logs/*.log
+!/results/procir/logs/*.log
 
 # ---- Python / OS ----
 __pycache__/
