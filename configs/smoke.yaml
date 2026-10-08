@@ -1,0 +1,19 @@
+# 20-step end-to-end check on 64 DeepFashion triplets. Not a result.
+base_model: Qwen/Qwen3.5-0.8B
+data_dir: data/FashionMV_hf/data/data
+image_root: data/images
+output_dir: runs/smoke
+datasets: [deepfashion]
+train_fraction: 1.0
+max_train_triplets: 64
+batch_size: 8
+chunk_size: 4
+epochs: 3
+max_steps: 20
+lr: 1.0e-4
+log_every: 1
+eval_every: 10
+save_every: 10
+dev_eval_max_queries: 16
+eval_batch_size: 8
+num_workers: 2

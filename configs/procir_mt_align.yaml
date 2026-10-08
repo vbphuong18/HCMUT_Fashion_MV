@@ -1,0 +1,22 @@
+# ProCIR baseline at proposal scale (decuong v3, table tab:config): 1 GPU 24GB, LoRA,
+# contrastive batch 64 via GradCache, 25% stratified train data, 3 views, 336x336 max pixels,
+# no SFT, dev = 5% of train products. Variants: --set cot=true | multi_turn=false | align=false.
+# image_root points at the high-res DeepFashion regrouping (Task 2b) plus the Fashion200K symlink.
+base_model: Qwen/Qwen3.5-0.8B
+data_dir: data/FashionMV_hf/data/data
+image_root: data/images_official_hr
+output_dir: runs/procir_mt_align_seed42
+datasets: [deepfashion, f200k]
+train_fraction: 0.25
+dev_product_fraction: 0.05
+max_views: 3
+image_max_pixels: 112896
+multi_turn: true
+align: true
+cot: false
+batch_size: 64
+chunk_size: 8
+lr: 1.0e-4
+seed: 42
+eval_every: 200
+save_every: 100
