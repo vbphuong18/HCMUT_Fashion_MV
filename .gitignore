@@ -58,3 +58,6 @@ Thumbs.db
 #   FashionMV/   clone of https://github.com/yuandaxia2001/FashionMV
 #   personal/    CV, transcripts
 #   archive/     old drafts, backups and duplicate files
+
+# ---- Jupyter autosave copies (the server notebook is saved inside the repo) ----
+.ipynb_checkpoints/
