@@ -74,9 +74,47 @@ def test_fetch_extracts_into_repo_and_skips_done_zips(tmp_path):
     assert fetch.extract_all(tmp_path / "dist", dest) == []  # markers make re-runs a no-op
 
 
-def test_fetch_downloads_with_gdown_when_given_a_folder(tmp_path):
-    fetch = _load("fetch_data")
-    calls = []
-    fetch.download_folder("https://drive.google.com/drive/folders/abc", tmp_path / "dl", run=calls.append)
-    cmd = calls[0]
-    assert "gdown" in " ".join(map(str, cmd)) and "--folder" in cmd and "https://drive.google.com/drive/folders/abc" in cmd
+def test_fetch_drive_holds_one_zip_at_a_time_and_skips_done_zips(tmp_path):
+    pack, fetch = _load("pack_data"), _load("fetch_data")
+    pack.pack(_repo(tmp_path), tmp_path / "dist", parts=["annotations", "f200k"], max_bytes=10**9)
+    listing = [("id-a", "procir_annotations.zip"), ("id-f", "procir_f200k.zip"), ("id-x", "notes.txt")]
+    dl, seen = tmp_path / "dl", []
+
+    def download(fid, out):
+        assert list(dl.glob("*.zip")) == []  # the previous zip was deleted before the next download
+        seen.append(fid)
+        out.write_bytes((tmp_path / "dist" / out.name).read_bytes())
+
+    dest = tmp_path / "server"
+    done = fetch.fetch_drive("url", dl, dest, list_files=lambda url: listing, download=download)
+    assert done == ["procir_annotations.zip", "procir_f200k.zip"] and seen == ["id-a", "id-f"]
+    assert (dest / "data/images_official_hr/f200k/2/2_0.jpg").exists()
+    assert list(dl.glob("*.zip")) == []
+    assert fetch.fetch_drive("url", dl, dest, list_files=lambda url: listing, download=download) == []
+
+
+def test_fetch_drive_reuses_a_complete_zip_and_redownloads_a_partial_one(tmp_path):
+    pack, fetch = _load("pack_data"), _load("fetch_data")
+    pack.pack(_repo(tmp_path), tmp_path / "dist", parts=["annotations", "f200k"], max_bytes=10**9)
+    dl = tmp_path / "dl"
+    dl.mkdir()
+    (dl / "procir_annotations.zip").write_bytes((tmp_path / "dist/procir_annotations.zip").read_bytes())
+    (dl / "procir_f200k.zip").write_bytes(b"truncated")
+    seen = []
+
+    def download(fid, out):
+        seen.append(fid)
+        out.write_bytes((tmp_path / "dist" / out.name).read_bytes())
+
+    listing = [("id-a", "procir_annotations.zip"), ("id-f", "procir_f200k.zip")]
+    fetch.fetch_drive("url", dl, tmp_path / "server", list_files=lambda url: listing, download=download)
+    assert seen == ["id-f"]
+
+
+def test_extract_refuses_when_the_disk_is_too_small(tmp_path, monkeypatch):
+    pack, fetch = _load("pack_data"), _load("fetch_data")
+    pack.pack(_repo(tmp_path), tmp_path / "dist", parts=["f200k"], max_bytes=10**9)
+    monkeypatch.setattr(fetch.shutil, "disk_usage", lambda p: fetch.shutil._ntuple_diskusage(10**9, 10**9, 10))
+    import pytest
+    with pytest.raises(SystemExit, match="No space"):
+        fetch.extract_all(tmp_path / "dist", tmp_path / "server")
