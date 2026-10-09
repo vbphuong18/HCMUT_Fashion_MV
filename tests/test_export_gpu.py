@@ -41,6 +41,10 @@ def test_exported_model_matches_encoder_under_upstream_loader(tmp_path):
     enc.eval()
     base, _ = load_encoder(cfg, device)  # same architecture, no trained deltas
     base.eval()
+    merged, _ = load_encoder(cfg, torch.device("cpu"))  # LoRA merged on CPU, as export_merged does
+    load_checkpoint(run / "ckpt" / "latest.pt", merged)
+    merged.peft_model.merge_and_unload()
+    merged = merged.to(device).eval()
     assert up_emb_id == enc.emb_token_id
     assert AutoTokenizer.from_pretrained(str(tmp_path / "export")).convert_tokens_to_ids("<emb_all>") \
         == enc.emb_token_id
@@ -54,14 +58,20 @@ def test_exported_model_matches_encoder_under_upstream_loader(tmp_path):
     q_in = [process_visual(proc, multiturn_query_text(proc, 2, "make it red"), imgs, *px)]
     with torch.no_grad():
         ours_d, base_d = enc.encode_single(doc_in)[0].float(), base.encode_single(doc_in)[0].float()
+        merged_d = merged.encode_single(doc_in)[0].float()
         theirs_d = up_model.forward_visual_batch(doc_in, device)[0].float()
         ours_q, base_q = enc.encode_multiturn(q_in)[1][0].float(), base.encode_multiturn(q_in)[1][0].float()
+        merged_q = merged.encode_multiturn(q_in)[1][0].float()
         theirs_q = up_model.forward_visual_batch_multiturn(q_in, device)[1][0].float()
 
     def cos(a, b):
         return F.cosine_similarity(a, b, dim=0).item()
 
-    assert cos(ours_d, theirs_d) > 0.999 and cos(ours_q, theirs_q) > 0.999
+    # upstream's loader and forward reproduce our encoder exactly on the same (merged) weights
+    assert cos(merged_d, theirs_d) > 0.9999 and cos(merged_q, theirs_q) > 0.9999
+    # merging rounds W + BA to bf16 (upstream always loads bf16): 0.9986-0.9989 on an H200 for these
+    # deliberately large deltas (shift ~1.3x the embedding norm), so this bound is the rounding, not a bug
+    assert cos(ours_d, theirs_d) > 0.995 and cos(ours_q, theirs_q) > 0.995
     # the deltas must matter, otherwise the checks above prove nothing; compare the shifts themselves
     assert (ours_d - base_d).norm() > 0.05 * base_d.norm() and (ours_q - base_q).norm() > 0.05 * base_q.norm()
     assert cos(ours_d - base_d, theirs_d - base_d) > 0.99 and cos(ours_q - base_q, theirs_q - base_q) > 0.99
