@@ -90,7 +90,7 @@ Nói gọn: **TT1 = "chứng minh em hiểu và chạy lại được cái ngư�
 
 Kết quả (R@5 trung bình ba bộ, giao thức của bài báo): **MT+Align 72,47; single-turn 71,26; checkpoint của tác giả trên cùng bộ ảnh 77,60.** Bảng đầy đủ và lệnh đã chạy: `results/procir_train/README.md`; phần viết cho báo cáo: Mục "Tái lập huấn luyện ProCIR ở quy mô thu gọn" trong `report/chapter/ch6.tex`.
 
-Hai giả thuyết ở trên giờ đã có câu trả lời: với ảnh DeepFashion độ phân giải cao, checkpoint của tác giả đạt 89,26 (khớp 89,2 của bài báo); còn trên Fashion200K với gallery đầy đủ nó chỉ đạt 67,71 (bài báo 77,6), tức ảnh Fashion200K đang dùng (bản cắt) không phải ảnh của tác giả.
+Hai giả thuyết ở trên giờ đã có câu trả lời: với ảnh DeepFashion độ phân giải cao, checkpoint của tác giả đạt 89,26 (khớp 89,2 của bài báo); còn trên Fashion200K với gallery đầy đủ nó chỉ đạt 67,71 (bài báo 77,6). Nguyên nhân tìm ra ngày 10/10: bước cắt ảnh Fashion200K của mình cắt nhầm món đồ ở 58.102 ảnh (khoảng một phần tư, cả train lẫn val), do ảnh không có nhãn bị cắt theo hộp điểm cao nhất thay vì hộp của đúng loại sản phẩm. Đã sửa trong `src/data/crop_f200k.py`; **mọi số Fashion200K của lần train này đo trên ảnh lỗi, cần đo lại và train lại.**
 
 ---
 

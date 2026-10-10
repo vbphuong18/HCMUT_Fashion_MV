@@ -91,5 +91,10 @@ Source-excluded recalls are in the JSON files of our tools and the CLIP script.
   queries per source) picked step 400 for MT+Align and step 644 for single-turn. Dev R@5 is near its
   ceiling on these small galleries, so the choice is noisy.
 - The authors' checkpoint reproduces the paper on DeepFashion and FashionGen with these images but
-  is about 10 points lower on Fashion200K, so our Fashion200K images (crops) are not the paper's.
+  is about 10 points lower on Fashion200K. That gap exposed a cropping bug: FashionMV images without
+  a label line in the Fashion200K release (41%) were cropped to the top-scored detection, which is
+  another garment for about 55% of them. 58,102 files in 31,260 of 67,680 products were wrong, in
+  train and val (25.8% of the val images evaluation reads). **Every Fashion200K number in this folder
+  was measured with those crops, and both runs were trained on them.** Fixed in
+  `src/data/crop_f200k.py` (commit `c84c47d`); DeepFashion and FashionGen are unaffected.
 - Upstream numbers of the two runs come from two tools; the train protocol uses one tool for both.
