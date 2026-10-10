@@ -1,11 +1,11 @@
 """Rebuild the released (cropped) Fashion200K images from the full images at their URLs.
 
 The Fashion200K release (xthan/fashion-200k; the Marqo/fashion200k mirror is a copy) ships each image
-cropped to the garment box listed first in fashion-200k/detection/*_detection.txt
-("<label>_<score>_<x1>_<x2>_<y1>_<y2>", coordinates normalised to [0, 1]); image_urls.txt points to
-the uncropped photos. Cropping the URL images with that box reproduces the released crops (checked
-against the mirror: same region, mean absolute difference ~3/255 from JPEG noise), so train and val
-come from one source.
+cropped to one of the boxes in fashion-200k/detection/*_detection.txt
+("<label>_<score>_<x1>_<x2>_<y1>_<y2>", coordinates normalised to [0, 1]): the box of the product's
+own garment, see load_boxes. image_urls.txt points to the uncropped photos. Cropping the URL images
+with that box reproduces the released crops (checked against the mirror: same region, mean absolute
+difference ~3/255 from JPEG noise), so train and val come from one source.
 
 Files that are already released crops (byte-identical to --mirror) are copied as they are; every
 other image is cropped and written as JPEG (quality 95). The source folder is left untouched.
@@ -25,6 +25,8 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parents[2]
 ZIP = ROOT / "data" / "raw" / "fashion-200k-20261003T154803Z-1-001.zip"
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".webp"}
+# women/<category>/... -> the detection class the release crops that category to
+CATEGORY_CLASS = {"dresses": "dress", "jackets": "outerwear", "pants": "pants", "skirts": "skirt", "tops": "top"}
 
 
 def _lines(z, prefix):
@@ -39,18 +41,26 @@ def _lines(z, prefix):
 def load_boxes(zip_path):
     """{image stem (e.g. '91352269_0'): (x1, x2, y1, y2)} of the box each released image is cropped to.
 
-    labels/*_detect_all.txt records, per image, the score of the detection the release used (its
-    garment class, e.g. outerwear for a jacket); the box is the detection with that score. Images
-    without a label line fall back to the top-scored detection."""
+    labels/*_detect_all.txt records, per image, the score of the detection the release used; the box
+    is the detection with that score. On the 201,824 labelled images that box is of the product's
+    category garment (CATEGORY_CLASS) 99.9% of the time but the top-scored detection only 66% of the
+    time, so the 41% of FashionMV's images without a label line take the best-scored detection of
+    their category class (the labelled box on 97.7% of labelled images), not the top one: the top one
+    is another garment, e.g. the trousers in a jacket photo, for about 55% of them. Only an image
+    with no detection of its class falls back to the top-scored detection."""
     with zipfile.ZipFile(zip_path) as z:
         label_score = {Path(p[0]).stem: float(p[1]) for p in _lines(z, "fashion-200k/labels/")}
         boxes = {}
         for path, *dets in _lines(z, "fashion-200k/detection/"):
             stem = Path(path).stem
             parsed = [d.split("_") for d in dets]
+            garment = CATEGORY_CLASS.get(Path(path).parts[1])
+            same_class = [d for d in parsed if "_".join(d[:-5]) == garment]
             chosen = parsed[0]
             if stem in label_score:
                 chosen = min(parsed, key=lambda f: abs(float(f[-5]) - label_score[stem]))
+            elif same_class:
+                chosen = max(same_class, key=lambda f: float(f[-5]))
             boxes[stem] = tuple(min(1.0, max(0.0, float(v))) for v in chosen[-4:])
     return boxes
 

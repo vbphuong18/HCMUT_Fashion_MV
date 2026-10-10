@@ -29,7 +29,22 @@ def test_load_boxes_uses_the_detection_whose_score_the_label_file_records(tmp_pa
     boxes = c.load_boxes(z)
     assert boxes["1_0"] == (0.23, 0.74, 0.20, 0.86)
     assert boxes["2_0"] == (0.02, 0.98, 0.0, 1.0)      # second detection: its score is the labelled one
-    assert boxes["1_1"] == (0.0, 0.41, 0.0, 1.0)       # no label line: top box, clamped to [0, 1]
+    assert boxes["1_1"] == (0.0, 0.41, 0.0, 1.0)       # no label, no dress detection: top box, clamped to [0, 1]
+
+
+def test_unlabelled_image_is_cropped_to_its_category_garment(tmp_path):
+    """41% of FashionMV's Fashion200K images have no label line. The release crops labelled images to
+    the garment of the product's category (99.9%), which is the top-scored detection only 66% of the time."""
+    import crop_f200k as c
+
+    z = _zip(tmp_path / "f.zip", [
+        # a jacket photo whose best-scored detection is the trousers worn with it
+        "women/jackets/x/3/3_0.jpeg\tpants_-0.50_0.30_0.70_0.55_1.00\touterwear_-2.10_0.15_0.85_0.05_0.60"
+        "\touterwear_-6.00_0.40_0.60_0.10_0.30",
+        "women/tops/x/4/4_0.jpeg\tskirt_-1.00_0.20_0.80_0.50_0.90\ttop_-3.00_0.25_0.75_0.10_0.50"])
+    boxes = c.load_boxes(z)
+    assert boxes["3_0"] == (0.15, 0.85, 0.05, 0.60)    # best-scored outerwear box, not the pants
+    assert boxes["4_0"] == (0.25, 0.75, 0.10, 0.50)
 
 
 def test_pixel_box_matches_the_released_crop():
