@@ -45,7 +45,7 @@ Mục tiêu tổng quát của Thực tập 1 là \emph{nắm vững và kiểm 
     \item \textbf{Nguồn ảnh.} FashionMV chỉ phát hành chú thích văn bản, không kèm ảnh. Nguồn ảnh gốc của DeepFashion và Fashion200K không tải tự động được, phải thay thế bằng các bản sao (mirror) công khai trên HuggingFace; trang tải chính thức của FashionGen đã ngừng hoạt động nên bộ dữ liệu này nằm ngoài phạm vi đánh giá.
     \item \textbf{Tài nguyên tính toán.} Học viên không có GPU riêng; thực nghiệm ProCIR được chạy trên GPU miễn phí của Kaggle (giới hạn khoảng 12 giờ mỗi phiên và 30 giờ mỗi tuần), dẫn đến việc Fashion200K chỉ được đánh giá trên một mẫu con.
 \end{itemize}
-Các giới hạn này được trình bày chi tiết và phân tích ảnh hưởng định lượng ở Chương~\ref{chapter:experimental-basis} và Chương~\ref{chapter:experiments}.
+Các giới hạn này được trình bày chi tiết và phân tích ảnh hưởng định lượng ở Chương~\ref{chapter:experimental-basis} và Chương~\ref{chapter:experiments}. Sau thời gian thực hiện chính, hai giới hạn đầu được gỡ bỏ một phần trong một thực nghiệm bổ sung: học viên có đủ ảnh của cả ba bộ dữ liệu, tự cài đặt lại phần huấn luyện và huấn luyện ProCIR ở quy mô thu gọn trên một máy chủ GPU (Mục~\ref{sec:train-repro}).
 
 \section{Đóng góp của báo cáo}
 
@@ -53,6 +53,7 @@ Ngoài việc tổng hợp bài báo, báo cáo có các đóng góp thực nghi
 \begin{itemize}
     \item Xây dựng quy trình chuẩn bị dữ liệu ảnh từ nguồn thay thế (parquet trên HuggingFace $\to$ thư mục ảnh theo mã sản phẩm) tương thích với mã đánh giá gốc, cùng thống kê độ phủ ảnh cho từng bộ dữ liệu.
     \item Tái lập kết quả ProCIR trên toàn bộ 5.188 triplet validation của DeepFashion và trên mẫu con 1.500 triplet của Fashion200K; phân tích hai nguồn sai lệch chính theo hai chiều ngược nhau (độ phân giải ảnh và kích thước gallery).
+    \item (Bổ sung) Cài đặt lại phần huấn luyện của ProCIR và huấn luyện hai cấu hình MT+Align và single-turn trên 25\% dữ liệu của cả ba bộ; đánh giá chúng, checkpoint của tác giả và hai baseline trên toàn bộ tập validation với cùng một bộ ảnh.
     \item Đánh giá hai baseline zero-shot CLIP và FashionCLIP trên cùng tập triplet và cùng gallery với ProCIR, kèm khảo sát trọng số hợp nhất $\alpha$ và phân tích ảnh hưởng của việc sản phẩm nguồn nằm trong gallery -- một chi tiết của giao thức đánh giá chưa được thảo luận trong bài báo gốc.
 \end{itemize}
 
@@ -64,6 +65,6 @@ Phần còn lại của báo cáo được tổ chức như sau:
     \item \textbf{Chương~\ref{chapter:background}} trình bày cơ sở lý thuyết (Transformer, Vision Transformer, học tương phản, CLIP, mô hình ngôn ngữ lớn đa phương thức, attention tuyến tính) và khảo sát các nghiên cứu liên quan về CIR cũng như biểu diễn đa phương thức trong miền thời trang.
     \item \textbf{Chương~\ref{chapter:method}} trình bày chi tiết phương pháp của bài báo FashionMV: định nghĩa bài toán Multi-View CIR, pipeline xây dựng bộ dữ liệu, kiến trúc ProCIR với ba cơ chế bổ trợ, và các kết quả do tác giả công bố.
     \item \textbf{Chương~\ref{chapter:experimental-basis}} giới thiệu các bộ dữ liệu, giao thức và độ đo đánh giá, cùng quy trình chuẩn bị dữ liệu ảnh thay thế.
-    \item \textbf{Chương~\ref{chapter:experiments}} trình bày thiết lập, kết quả tái lập ProCIR, kết quả các mô hình cơ sở và thảo luận.
+    \item \textbf{Chương~\ref{chapter:experiments}} trình bày thiết lập, kết quả tái lập ProCIR, kết quả các mô hình cơ sở, thảo luận và phần tái lập huấn luyện bổ sung.
     \item \textbf{Chương~\ref{chapter:conclusion}} tổng kết kết quả đạt được, những hạn chế tồn tại và định hướng phát triển.
 \end{itemize}

@@ -11,17 +11,19 @@ Thực tập 1 đã hoàn thành ba mục tiêu đề ra ở Chương~\ref{chapt
 
 \paragraph{Về mô hình cơ sở.} Hai baseline zero-shot CLIP và FashionCLIP được đánh giá trên \emph{đúng} tập triplet và gallery của ProCIR. Thứ tự hiệu năng CLIP $<$ FashionCLIP $<$ ProCIR được quan sát nhất quán trên cả hai bộ dữ liệu, với khoảng cách lớn giữa ProCIR và baseline tốt nhất, khẳng định giá trị của kiến trúc CIR chuyên biệt trên nền MLLM so với hợp nhất muộn tuyến tính. Khảo sát trọng số hợp nhất và phân tích vai trò của sản phẩm nguồn trong gallery cung cấp thêm hiểu biết về giao thức đánh giá mà bài báo gốc chưa đề cập.
 
+\paragraph{Về tái lập huấn luyện (thực nghiệm bổ sung).} Sau khi có đủ ảnh của cả ba bộ dữ liệu, học viên cài đặt lại phần huấn luyện của ProCIR và huấn luyện hai cấu hình MT+Align và single-turn trên 25\% dữ liệu với LoRA (Mục~\ref{sec:train-repro}). Trên toàn bộ tập validation, MT+Align đạt trung bình R@5 = 72,47 so với 71,26 của single-turn, với cùng hình mẫu theo từng bộ dữ liệu như ablation của bài báo. Trên cùng bộ ảnh, checkpoint của tác giả đạt R@5 = 89,26 trên DeepFashion và 75,82 trên FashionGen, khớp với số công bố; kết quả trên DeepFashion kiểm chứng trực tiếp lập luận về độ phân giải nêu ở trên. Trên Fashion200K với gallery đầy đủ, checkpoint này đạt 67,71, thấp hơn bài báo khoảng 10 điểm, cho thấy ảnh Fashion200K đang dùng không tương đương với ảnh của tác giả.
+
 \paragraph{Về kinh nghiệm thực tiễn.} Quá trình thực hiện cho thấy tái lập một MLLM có kiến trúc attention lai trên tài nguyên miễn phí là khả thi nhưng đòi hỏi nhiều lần điều chỉnh (cỡ mẫu, batch, thư viện kernel), và nhấn mạnh tầm quan trọng của việc ghi lại đầy đủ các chi tiết như nguồn ảnh, độ phân giải và cách dựng gallery khi báo cáo kết quả truy xuất.
 
 \section{Những hạn chế tồn tại}
 
 \begin{itemize}
-    \item \textbf{Chưa đánh giá FashionGen.} Không có nguồn ảnh FashionGen khả dụng, nên chỉ đánh giá được 2/3 bộ dữ liệu của bài báo.
+    \item \textbf{Số liệu ở các Mục~\ref{sec:repro-results}--\ref{sec:discussion} đo trên bộ ảnh thay thế.} Các mục này dùng ảnh DeepFashion $224 \times 224$, một mẫu con của Fashion200K và không có FashionGen. Thực nghiệm bổ sung (Mục~\ref{sec:train-repro}) đã đánh giá cả ba bộ trên toàn bộ tập validation với ảnh đầy đủ; khi so sánh với bài báo nên dùng Bảng~\ref{tab:train-results}.
+    \item \textbf{Ảnh Fashion200K chưa tương đương với bài báo.} Với bản ảnh cắt theo hộp phát hiện, checkpoint của tác giả thấp hơn số công bố khoảng 10 điểm R@5; giả thuyết tác giả dùng ảnh chưa cắt chưa được kiểm chứng.
     \item \textbf{Fashion200K chỉ đánh giá trên mẫu con.} Mẫu 1.500/18.499 triplet với gallery 2.367 sản phẩm khiến kết quả trên bộ này không so sánh trực tiếp được với số liệu bài báo; ngoài ra tập triplet khả dụng (48,2\%) đã là một tập con chọn lọc theo độ phủ của nguồn ảnh thay thế.
-    \item \textbf{Độ phân giải ảnh thấp hơn bản gốc.} Ảnh DeepFashion thay thế ở $224 \times 224$; tác động của độ phân giải đã được lập luận định lượng qua số token thị giác nhưng chưa được kiểm chứng trực tiếp bằng thực nghiệm đối chứng với ảnh gốc.
-    \item \textbf{Không tái lập được quá trình huấn luyện.} Mã huấn luyện chưa được công bố, nên các kết luận ablation của bài báo chưa được kiểm chứng độc lập.
+    \item \textbf{Huấn luyện lại mới ở quy mô thu gọn.} Hai lần chạy dùng 25\% dữ liệu, LoRA, không có bước SFT và một seed; chúng được chấm ở hai bước huấn luyện khác nhau do tiêu chí chọn checkpoint trên tập dev còn thô. Trong 16 cấu hình ablation của bài báo, mới có hai cấu hình được kiểm chứng độc lập.
     \item \textbf{Baseline còn đơn giản.} Hai baseline là mô hình zero-shot với hợp nhất muộn; chưa đánh giá các baseline mạnh hơn trong bài báo như SPRC hay Qwen3-VL-Embedding do giới hạn tài nguyên.
-    \item \textbf{Ảnh hưởng của việc thiếu kernel tối ưu chưa được kiểm chứng.} Về nguyên tắc, chạy attention tuyến tính bằng triển khai tham chiếu chỉ ảnh hưởng tốc độ, không ảnh hưởng kết quả số học (ngoài sai số dấu phẩy động), nhưng điều này chưa được đối chiếu trực tiếp.
+    \item \textbf{Ảnh hưởng của việc thiếu kernel tối ưu chưa được đối chiếu trực tiếp.} Về nguyên tắc, chạy attention tuyến tính bằng triển khai tham chiếu chỉ ảnh hưởng tốc độ, không ảnh hưởng kết quả số học (ngoài sai số dấu phẩy động). Trong thực nghiệm bổ sung, kernel tối ưu chạy được và checkpoint của tác giả cho kết quả khớp bài báo trên hai bộ dữ liệu; tuy vậy hai triển khai chưa được so sánh trên cùng dữ liệu.
 \end{itemize}
 
 \section{Định hướng phát triển}
@@ -29,15 +31,15 @@ Thực tập 1 đã hoàn thành ba mục tiêu đề ra ở Chương~\ref{chapt
 Từ các kết quả và hạn chế trên, học viên đề xuất các hướng phát triển sau cho giai đoạn Thực tập 2:
 
 \begin{enumerate}
-    \item \textbf{Hoàn thiện tái lập.} Tìm nguồn ảnh độ phân giải cao cho DeepFashion và nguồn ảnh FashionGen (qua các kênh học thuật), đánh giá Fashion200K trên gallery đầy đủ khi có tài nguyên GPU phù hợp, và chạy đối chứng cùng một tập triplet ở hai độ phân giải để định lượng trực tiếp ảnh hưởng của độ phân giải.
+    \item \textbf{Hoàn thiện tái lập.} Chấm checkpoint của tác giả trên ảnh Fashion200K chưa cắt để xác định bộ ảnh tương đương với bài báo; chấm hai cấu hình đã huấn luyện ở cùng một bước; lặp lại với nhiều seed và, khi tài nguyên cho phép, trên toàn bộ dữ liệu huấn luyện.
     \item \textbf{Chuẩn hoá giao thức đánh giá.} Báo cáo song song kết quả có và không loại sản phẩm nguồn khỏi danh sách xếp hạng, và luôn báo cáo kèm kích thước gallery.
     \item \textbf{Phân tích cơ chế tổng hợp đa góc nhìn.} Khảo sát bản đồ attention của ProCIR để xem mô hình chú ý vào góc nhìn nào khi văn bản đề cập một chi tiết (ví dụ phần lưng), cũng như độ bền của mô hình khi thiếu góc nhìn, khi đảo thứ tự góc nhìn hoặc khi chỉ có một ảnh.
-    \item \textbf{Đề xuất cải tiến.} Dựa trên các phân tích trên, nghiên cứu cơ chế tổng hợp đa góc nhìn có nhận biết góc nhìn (\emph{view-aware}) -- ví dụ gắn nhãn góc nhìn tường minh cho từng ảnh hoặc dùng trường \texttt{views\_involved} làm tín hiệu giám sát phụ -- nhằm giải quyết trực tiếp hơn hiện tượng khiếm khuyết góc nhìn, theo hướng đã nêu trong đề cương nghiên cứu.
+    \item \textbf{Đề xuất cải tiến.} Dựa trên các phân tích trên, nghiên cứu cơ chế tổng hợp đa góc nhìn có nhận biết góc nhìn (\emph{view-aware}) -- ví dụ gắn nhãn góc nhìn tường minh cho từng ảnh hoặc dùng trường \texttt{views\_involved} làm tín hiệu giám sát phụ -- nhằm giải quyết trực tiếp hơn hiện tượng khiếm khuyết góc nhìn, theo hướng đã nêu trong đề cương nghiên cứu. Vì dữ liệu công bố không kèm nhóm ứng viên bị loại trong quá trình xây dựng, kho mẫu âm khó mà đề cương dự kiến sẽ được khai thác từ embedding của mô hình đã huấn luyện ở Mục~\ref{sec:train-repro}.
 \end{enumerate}
 
 \section{Kế hoạch và tiến độ thực hiện}
 
-Thực tập 1 được thực hiện trong bốn tuần, từ ngày 07/09/2026 đến ngày 03/10/2026, theo sáu nhóm công việc: khảo sát tài liệu, nghiên cứu bài báo FashionMV, viết đề cương nghiên cứu, chuẩn bị dữ liệu và môi trường, thực nghiệm, và viết báo cáo (Hình~\ref{fig:timeline}). Toàn bộ công việc do học viên thực hiện cá nhân dưới sự hướng dẫn của giảng viên.
+Thực tập 1 được thực hiện trong bốn tuần, từ ngày 07/09/2026 đến ngày 03/10/2026, theo sáu nhóm công việc: khảo sát tài liệu, nghiên cứu bài báo FashionMV, viết đề cương nghiên cứu, chuẩn bị dữ liệu và môi trường, thực nghiệm, và viết báo cáo (Hình~\ref{fig:timeline}). Thực nghiệm bổ sung ở Mục~\ref{sec:train-repro} được thực hiện sau mốc này, từ ngày 08/10 đến ngày 10/10/2026, và không nằm trong Hình~\ref{fig:timeline}. Toàn bộ công việc do học viên thực hiện cá nhân dưới sự hướng dẫn của giảng viên.
 
 \begin{figure}[h]
 \centering

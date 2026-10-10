@@ -315,9 +315,10 @@ Bảng~\ref{tab:train-results} đặt hai run cạnh các hàng tương ứng c�
 
 \begin{table}[h]
 \centering
-\caption{Kết quả theo giao thức gốc trên toàn bộ tập validation (R@5 / R@10, \%). Số của bài báo trích từ Bảng~\ref{tab:ablation}. Gallery: 2.791, 10.720 và 5.292 sản phẩm.}
+\caption{Kết quả theo giao thức gốc trên toàn bộ tập validation (R@5 / R@10, \%). Số của bài báo trích từ Bảng~\ref{tab:ablation}. Gallery: 2.791, 10.720 và 5.292 sản phẩm. $\Delta$: R@5 của MT+Align trừ R@5 của single-turn.}
 \label{tab:train-results}
-\small
+\footnotesize
+\setlength{\tabcolsep}{5pt}
 \begin{tabular}{lcccc}
 \toprule
 & DeepFashion & Fashion200K & FashionGen & TB R@5 \\
@@ -335,8 +336,8 @@ FashionCLIP, $\alpha = 0{,}25$ & 59,83 / 71,59 & 30,09 / 38,27 & 39,01 / 50,45 &
 FashionCLIP, $\alpha = 0{,}5$ & 48,46 / 65,56 & 26,34 / 36,75 & 37,24 / 51,33 & 37,35 \\
 CLIP ViT-B/32, $\alpha = 0{,}5$ & 27,49 / 41,79 & 10,43 / 16,14 & 14,17 / 22,36 & 17,36 \\
 \midrule
-MT+Align trừ single-turn, R@5 (bài báo) & +2,5 & +0,4 & +3,0 & +2,0 \\
-MT+Align trừ single-turn, R@5 (thực nghiệm này) & +2,06 & +0,04 & +1,53 & +1,21 \\
+$\Delta$ R@5, bài báo & +2,5 & +0,4 & +3,0 & +2,0 \\
+$\Delta$ R@5, thực nghiệm này & +2,06 & +0,04 & +1,53 & +1,21 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -345,21 +346,22 @@ Bảng~\ref{tab:train-detail} bổ sung R@1 và kết quả theo giao thức hu�
 
 \begin{table}[h]
 \centering
-\caption{Chi tiết R@1 / R@5 / R@10 (\%) khi giữ và khi loại sản phẩm nguồn khỏi danh sách xếp hạng.}
+\caption{Chi tiết R@1 / R@5 / R@10 (\%) theo giao thức gốc và giao thức huấn luyện (HL), khi giữ và khi loại sản phẩm nguồn khỏi danh sách xếp hạng.}
 \label{tab:train-detail}
-\small
+\footnotesize
+\setlength{\tabcolsep}{4pt}
 \begin{tabular}{llccc}
 \toprule
-Giao thức & Mô hình & DeepFashion & Fashion200K & FashionGen \\
+Giao thức, nguồn & Mô hình & DeepFashion & Fashion200K & FashionGen \\
 \midrule
-Gốc, giữ nguồn & Checkpoint của tác giả & 51,04 / 89,26 / 95,10 & 30,92 / 67,71 / 76,97 & 39,59 / 75,82 / 86,05 \\
+Gốc, giữ & Tác giả & 51,04 / 89,26 / 95,10 & 30,92 / 67,71 / 76,97 & 39,59 / 75,82 / 86,05 \\
                & MT+Align & 29,36 / 80,47 / 90,79 & 22,36 / 66,22 / 77,34 & 29,39 / 70,72 / 81,76 \\
                & Single-turn & 26,41 / 78,41 / 89,51 & 23,11 / 66,18 / 77,48 & 27,76 / 69,19 / 80,67 \\
-Gốc, loại nguồn & Single-turn & 50,67 / 82,17 / 90,56 & 42,21 / 69,16 / 78,77 & 44,54 / 72,11 / 82,22 \\
+Gốc, loại & Single-turn & 50,67 / 82,17 / 90,56 & 42,21 / 69,16 / 78,77 & 44,54 / 72,11 / 82,22 \\
 \midrule
-Huấn luyện, giữ nguồn & MT+Align & 28,64 / 76,39 / 86,51 & 23,14 / 64,04 / 75,10 & 31,16 / 70,96 / 81,87 \\
+HL, giữ & MT+Align & 28,64 / 76,39 / 86,51 & 23,14 / 64,04 / 75,10 & 31,16 / 70,96 / 81,87 \\
                       & Single-turn & 21,92 / 73,03 / 85,33 & 23,23 / 64,00 / 75,06 & 29,39 / 69,57 / 80,53 \\
-Huấn luyện, loại nguồn & MT+Align & 47,63 / 79,43 / 87,39 & 40,35 / 66,90 / 76,32 & 46,84 / 73,61 / 83,18 \\
+HL, loại & MT+Align & 47,63 / 79,43 / 87,39 & 40,35 / 66,90 / 76,32 & 46,84 / 73,61 / 83,18 \\
                        & Single-turn & 43,56 / 76,35 / 86,24 & 40,08 / 66,91 / 76,33 & 45,31 / 72,31 / 81,90 \\
 \bottomrule
 \end{tabular}
