@@ -1,0 +1,8 @@
+{
+ "val_products": 10720,
+ "val_images_used_in_eval": 35814,
+ "val_images_whose_crop_was_wrong_and_is_now_fixed": 9244,
+ "share": 0.258,
+ "val_products_with_at_least_one_fixed_image": 4951,
+ "all_f200k_images_recropped_train_and_val": 58102
+}

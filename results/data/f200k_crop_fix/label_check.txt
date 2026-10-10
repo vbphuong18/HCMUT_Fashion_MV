@@ -1,0 +1,7 @@
+label lines: {'test': 29789, 'train': 172049}
+labelled images: label score found among detections: {True: 201824}
+labelled images: labelled box is of the product's category class: {True: 201618, False: 206}
+labelled images: labelled box is the top-scored detection: {True: 133193, False: 68631}
+labelled images: labelled box == best-scored detection of the category class: {True: 197108, False: 4716}
+FashionMV train f200k images in detection file: {'without label': 79268, 'with label': 111290} | unlabelled: {'category class exists further down': 43216, 'top detection is the category class': 36052}
+FashionMV val f200k images in detection file: {'without label': 14885, 'with label': 20949} | unlabelled: {'category class exists further down': 8230, 'top detection is the category class': 6655}

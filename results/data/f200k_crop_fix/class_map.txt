@@ -1,0 +1,7 @@
+dresses [('dress', 59033), ('skirt', 30), ('top', 13), ('shoe', 7)]
+jackets [('outerwear', 27073), ('pants', 10), ('top', 10), ('shoe', 9)]
+pants [('pants', 31606), ('shoe', 10), ('shorts', 10), ('top', 7)]
+skirts [('skirt', 35116), ('shoe', 4), ('dress', 3), ('outerwear', 3)]
+tops [('top', 48780), ('pants', 11), ('shorts', 9), ('skirt', 8)]
+sub-categories whose main class is not the category's:
+rule 'best-scored detection of the category's classes' reproduces the labelled box: {True: 197108, False: 4716}
