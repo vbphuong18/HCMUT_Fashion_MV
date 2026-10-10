@@ -1,0 +1,6 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/398 [00:00<?, ?it/s]Loading weights: 100%|██████████| 398/398 [00:00<00:00, 44965.20it/s]
+[deepfashion] 5188 queries, gallery 2791 (11305 images), alpha=0.5 with source {'R@1': 0.89, 'R@5': 27.49, 'R@10': 41.79} | source excluded {'R@1': 10.62, 'R@5': 31.32, 'R@10': 43.62} (122s)
+[f200k] 18499 queries, gallery 10720 (35814 images), alpha=0.5 with source {'R@1': 0.36, 'R@5': 10.43, 'R@10': 16.14} | source excluded {'R@1': 4.18, 'R@5': 11.84, 'R@10': 17.09} (319s)
+[fashiongen_val] 9031 queries, gallery 5292 (21865 images), alpha=0.5 with source {'R@1': 0.49, 'R@5': 14.17, 'R@10': 22.36} | source excluded {'R@1': 5.88, 'R@5': 15.9, 'R@10': 23.62} (185s)
+saved runs/ref_clip/eval.json

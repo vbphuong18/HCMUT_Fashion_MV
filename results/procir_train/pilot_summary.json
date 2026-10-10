@@ -1,0 +1,40 @@
+{
+  "run": "runs/pilot",
+  "steps": 20,
+  "sec_per_step_median": 41.39120650291443,
+  "max_mem_allocated_gb": 2.349213123321533,
+  "max_mem_reserved_gb": 2.515625,
+  "final_loss": 0.5149794220924377,
+  "final_dev": {
+    "deepfashion": {
+      "n_queries": 64,
+      "n_gallery": 118,
+      "R@1": 6.25,
+      "R@5": 100.0,
+      "R@10": 100.0,
+      "R@1_src_excluded": 76.56,
+      "R@5_src_excluded": 100.0,
+      "R@10_src_excluded": 100.0
+    },
+    "f200k": {
+      "n_queries": 64,
+      "n_gallery": 126,
+      "R@1": 6.25,
+      "R@5": 96.88,
+      "R@10": 98.44,
+      "R@1_src_excluded": 82.81,
+      "R@5_src_excluded": 96.88,
+      "R@10_src_excluded": 98.44
+    },
+    "fashiongen_train": {
+      "n_queries": 64,
+      "n_gallery": 127,
+      "R@1": 4.69,
+      "R@5": 100.0,
+      "R@10": 100.0,
+      "R@1_src_excluded": 90.62,
+      "R@5_src_excluded": 100.0,
+      "R@10_src_excluded": 100.0
+    }
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "deepfashion": {
+    "n_queries": 5188,
+    "n_gallery": 2791,
+    "R@1": 26.41,
+    "R@5": 78.41,
+    "R@10": 89.51,
+    "R@1_src_excluded": 50.67,
+    "R@5_src_excluded": 82.17,
+    "R@10_src_excluded": 90.56
+  },
+  "f200k": {
+    "n_queries": 18499,
+    "n_gallery": 10720,
+    "R@1": 23.11,
+    "R@5": 66.18,
+    "R@10": 77.48,
+    "R@1_src_excluded": 42.21,
+    "R@5_src_excluded": 69.16,
+    "R@10_src_excluded": 78.77
+  },
+  "fashiongen_val": {
+    "n_queries": 9031,
+    "n_gallery": 5292,
+    "R@1": 27.76,
+    "R@5": 69.19,
+    "R@10": 80.67,
+    "R@1_src_excluded": 44.54,
+    "R@5_src_excluded": 72.11,
+    "R@10_src_excluded": 82.22
+  },
+  "protocol": {
+    "name": "upstream",
+    "max_views": 5,
+    "pixels": [
+      16384,
+      262144
+    ]
+  }
+}

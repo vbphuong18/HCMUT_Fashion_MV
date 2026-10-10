@@ -1,0 +1,27 @@
+{
+  "deepfashion": {
+    "triplets": 16399,
+    "usable": 16399,
+    "train_pool": 14329,
+    "train": 1433,
+    "dev": 392,
+    "dropped": 1678
+  },
+  "f200k": {
+    "triplets": 98800,
+    "usable": 98800,
+    "train_pool": 86660,
+    "train": 8666,
+    "dev": 2306,
+    "dropped": 9834
+  },
+  "fashiongen_train": {
+    "triplets": 72816,
+    "usable": 72816,
+    "train_pool": 63954,
+    "train": 6395,
+    "dev": 1705,
+    "dropped": 7157
+  },
+  "train_used": 16494
+}

@@ -1,0 +1,13 @@
+{
+  "DeepFashion_R@1": 29.36,
+  "DeepFashion_R@5": 80.47,
+  "DeepFashion_R@10": 90.79,
+  "Fashion200K_R@1": 22.36,
+  "Fashion200K_R@5": 66.22,
+  "Fashion200K_R@10": 77.34,
+  "FashionGen-val_R@1": 29.39,
+  "FashionGen-val_R@5": 70.72,
+  "FashionGen-val_R@10": 81.76,
+  "Average_R@5": 72.47,
+  "Average_R@10": 83.3
+}

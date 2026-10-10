@@ -1,0 +1,40 @@
+{
+  "deepfashion": {
+    "n_queries": 5188,
+    "n_gallery": 2791,
+    "R@1": 28.64,
+    "R@5": 76.39,
+    "R@10": 86.51,
+    "R@1_src_excluded": 47.63,
+    "R@5_src_excluded": 79.43,
+    "R@10_src_excluded": 87.39
+  },
+  "f200k": {
+    "n_queries": 18499,
+    "n_gallery": 10720,
+    "R@1": 23.14,
+    "R@5": 64.04,
+    "R@10": 75.1,
+    "R@1_src_excluded": 40.35,
+    "R@5_src_excluded": 66.9,
+    "R@10_src_excluded": 76.32
+  },
+  "fashiongen_val": {
+    "n_queries": 9031,
+    "n_gallery": 5292,
+    "R@1": 31.16,
+    "R@5": 70.96,
+    "R@10": 81.87,
+    "R@1_src_excluded": 46.84,
+    "R@5_src_excluded": 73.61,
+    "R@10_src_excluded": 83.18
+  },
+  "protocol": {
+    "name": "train",
+    "max_views": 3,
+    "pixels": [
+      16384,
+      112896
+    ]
+  }
+}

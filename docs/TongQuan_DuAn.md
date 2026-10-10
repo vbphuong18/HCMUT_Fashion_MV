@@ -73,6 +73,25 @@ Nói gọn: **TT1 = "chứng minh em hiểu và chạy lại được cái ngư�
 
 > Lưu ý: hai nguyên nhân sai lệch ở trên hiện là **giả thuyết hợp lý**, chưa được kiểm chứng bằng thực nghiệm. Đó chính là lý do kế hoạch tiếp theo có hai thí nghiệm đối chứng.
 
+### Cập nhật 10/10/2026: đã huấn luyện lại ProCIR (không chỉ đánh giá)
+
+**Lần train này dùng 25% dữ liệu huấn luyện = 41.235 triplet** (bằng 21,9% của toàn bộ 188.015 triplet train). Cả hai lần chạy (MT+Align và single-turn) dùng đúng cùng tập triplet này, lấy theo từng bộ nên tỉ lệ giữa ba bộ giữ nguyên.
+
+| Bộ | Tổng triplet train | Tách làm dev (5% sản phẩm) | Bị loại (nối train và dev) | Còn lại để train | **Thực dùng (25%)** |
+|---|---|---|---|---|---|
+| DeepFashion | 16.399 | 392 | 1.678 | 14.329 | **3.582** |
+| Fashion200K | 98.800 | 2.306 | 9.834 | 86.660 | **21.665** |
+| FashionGen | 72.816 | 1.705 | 7.157 | 63.954 | **15.988** |
+| **Tổng** | **188.015** | 4.403 | 18.669 | 164.943 | **41.235** |
+
+- 1 epoch, batch 64 → **644 bước**. Train 100% (164.943 triplet) sẽ là 2.577 bước, khoảng 30 giờ trên GPU hiện có.
+- Đánh giá thì dùng **100% tập val**: 32.718 triplet (5.188 / 18.499 / 9.031).
+- Con số 25% nằm ở `train_fraction: 0.25` trong `results/procir_train/<tên run>/config.yaml`; số triplet từng bộ nằm ở `data_stats.json` cùng thư mục.
+
+Kết quả (R@5 trung bình ba bộ, giao thức của bài báo): **MT+Align 72,47; single-turn 71,26; checkpoint của tác giả trên cùng bộ ảnh 77,60.** Bảng đầy đủ và lệnh đã chạy: `results/procir_train/README.md`; phần viết cho báo cáo: Mục "Tái lập huấn luyện ProCIR ở quy mô thu gọn" trong `report/chapter/ch6.tex`.
+
+Hai giả thuyết ở trên giờ đã có câu trả lời: với ảnh DeepFashion độ phân giải cao, checkpoint của tác giả đạt 89,26 (khớp 89,2 của bài báo); còn trên Fashion200K với gallery đầy đủ nó chỉ đạt 67,71 (bài báo 77,6), tức ảnh Fashion200K đang dùng (bản cắt) không phải ảnh của tác giả.
+
 ---
 
 ## 4. Còn thiếu gì / việc cần làm

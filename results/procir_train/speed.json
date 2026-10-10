@@ -1,0 +1,47 @@
+{
+  "chunk_size": 4,
+  "gradient_checkpointing": true,
+  "ok": true,
+  "sec_per_step": 41.47188210487366,
+  "max_mem_reserved_gb": 2.4375,
+  "fits": true,
+  "run": "pilot_c4_gc1",
+  "trials": [
+    {
+      "chunk_size": 4,
+      "gradient_checkpointing": true,
+      "ok": true,
+      "sec_per_step": 41.47188210487366,
+      "max_mem_reserved_gb": 2.4375,
+      "fits": true,
+      "run": "pilot_c4_gc1"
+    },
+    {
+      "chunk_size": 8,
+      "gradient_checkpointing": true,
+      "ok": true,
+      "sec_per_step": 41.57612466812134,
+      "max_mem_reserved_gb": 3.03125,
+      "fits": true,
+      "run": "pilot_c8_gc1"
+    },
+    {
+      "chunk_size": 4,
+      "gradient_checkpointing": false,
+      "ok": false,
+      "sec_per_step": null,
+      "max_mem_reserved_gb": null,
+      "fits": false,
+      "run": "pilot_c4_gc0"
+    },
+    {
+      "chunk_size": 8,
+      "gradient_checkpointing": false,
+      "ok": false,
+      "sec_per_step": null,
+      "max_mem_reserved_gb": null,
+      "fits": false,
+      "run": "pilot_c8_gc0"
+    }
+  ]
+}

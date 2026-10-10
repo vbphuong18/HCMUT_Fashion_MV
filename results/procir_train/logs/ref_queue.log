@@ -1,0 +1,8 @@
+=== ref_procir_released start Sat Oct 10 08:23:21 AM UTC 2026
+Fetching 9 files:   0%|          | 0/9 [00:00<?, ?it/s]Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Fetching 9 files:  11%|█         | 1/9 [00:01<00:08,  1.03s/it]Fetching 9 files:  44%|████▍     | 4/9 [00:01<00:01,  3.17it/s]Fetching 9 files:  67%|██████▋   | 6/9 [00:01<00:00,  4.25it/s]Fetching 9 files:  78%|███████▊  | 7/9 [00:02<00:00,  3.76it/s]Fetching 9 files:  89%|████████▉ | 8/9 [00:04<00:00,  1.21it/s]Fetching 9 files: 100%|██████████| 9/9 [03:13<00:00, 50.76s/it]Fetching 9 files: 100%|██████████| 9/9 [03:13<00:00, 21.49s/it]
+=== ref_procir_released exit 0 Sat Oct 10 09:30:32 AM UTC 2026
+=== ref_clip start Sat Oct 10 09:30:32 AM UTC 2026
+=== ref_clip exit 0 Sat Oct 10 09:42:33 AM UTC 2026
+=== ref_fashionclip start Sat Oct 10 09:42:33 AM UTC 2026
+=== ref_fashionclip exit 0 Sat Oct 10 09:53:09 AM UTC 2026

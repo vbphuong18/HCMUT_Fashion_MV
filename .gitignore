@@ -46,6 +46,7 @@
 *.log
 !/results/baselines/logs/*.log
 !/results/procir/logs/*.log
+!/results/procir_train/logs/*.log
 
 # ---- Python / OS ----
 __pycache__/

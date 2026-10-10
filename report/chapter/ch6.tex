@@ -1,7 +1,7 @@
 \chapter{Thực nghiệm và đánh giá}\label{chapter:experiments}
 \pagestyle{fancy}
 
-Chương này trình bày toàn bộ thực nghiệm của Thực tập 1: thiết lập và quá trình chạy (Mục~\ref{sec:setup}), các nhóm mô hình (Mục~\ref{sec:model-groups}), kết quả tái lập ProCIR (Mục~\ref{sec:repro-results}), kết quả các mô hình cơ sở (Mục~\ref{sec:baseline-results}) và thảo luận (Mục~\ref{sec:discussion}). Mọi số liệu trong chương được ghi nhận từ các tệp kết quả của các lần chạy thực tế (thư mục \texttt{results/} của kho mã đi kèm).
+Chương này trình bày toàn bộ thực nghiệm của Thực tập 1: thiết lập và quá trình chạy (Mục~\ref{sec:setup}), các nhóm mô hình (Mục~\ref{sec:model-groups}), kết quả tái lập ProCIR (Mục~\ref{sec:repro-results}), kết quả các mô hình cơ sở (Mục~\ref{sec:baseline-results}), thảo luận (Mục~\ref{sec:discussion}) và phần tái lập \emph{huấn luyện} ProCIR ở quy mô thu gọn, được thực hiện sau khi có đủ ảnh của cả ba bộ dữ liệu (Mục~\ref{sec:train-repro}). Mọi số liệu trong chương được ghi nhận từ các tệp kết quả của các lần chạy thực tế (thư mục \texttt{results/} của kho mã đi kèm).
 
 \section{Thiết lập thực nghiệm}\label{sec:setup}
 
@@ -252,3 +252,161 @@ Quá trình tái lập cho thấy một số yếu tố thường bị bỏ qua 
     \item \textbf{Môi trường phần mềm} -- các kiến trúc mới như attention lai cần kernel chuyên dụng; thiếu kernel không làm sai kết quả nhưng có thể làm thời gian chạy vượt quá giới hạn tài nguyên, buộc phải thu nhỏ thực nghiệm.
 \end{itemize}
 
+\section{Tái lập huấn luyện ProCIR ở quy mô thu gọn}\label{sec:train-repro}
+
+Các mục trước chỉ \emph{đánh giá} checkpoint do tác giả công bố. Mục này trình bày bước tiếp theo: \emph{huấn luyện lại} ProCIR. Mã huấn luyện của bài báo chưa được phát hành, nên học viên cài đặt lại theo mô tả trong bài báo (gói \texttt{procir\_train} trong kho mã đi kèm) và huấn luyện hai cấu hình trên cùng dữ liệu: \textbf{MT+Align} (hội thoại hai lượt kèm hàm mất mát căn chỉnh) và \textbf{single-turn} (không MT, không Align). Câu hỏi cần trả lời là kết luận ablation của bài báo (MT+Align tốt hơn single-turn, Bảng~\ref{tab:ablation}) có lặp lại được trên một cài đặt độc lập, ở quy mô nhỏ hơn nhiều, hay không. Số liệu của mục này nằm trong thư mục \texttt{results/procir\_train/} của kho mã.
+
+\subsection{Thiết lập}
+
+\paragraph{Dữ liệu và ảnh.} Khác với các mục trước, thực nghiệm này dùng ảnh của cả ba bộ dữ liệu và 100\% triplet đều có đủ ảnh: DeepFashion ở độ phân giải cao (trung vị $750 \times 1101$), Fashion200K được cắt lại theo hộp phát hiện của bản phát hành chính thức (trung vị khoảng $234 \times 471$) và FashionGen ($256 \times 256$). Tập huấn luyện gồm 188.015 triplet; 5\% sản phẩm (5.424 sản phẩm) được tách làm tập dev để chọn checkpoint, các triplet nối giữa hai phần bị loại, còn lại 164.943 triplet. Theo cấu hình của đề cương, mỗi lần chạy huấn luyện trên \textbf{25\%} số này, lấy mẫu theo từng bộ dữ liệu: 41.235 triplet (3.582 của DeepFashion, 21.665 của Fashion200K, 15.988 của FashionGen), tương ứng 644 bước với batch 64 trong một epoch. Việc đánh giá cuối dùng \emph{toàn bộ} tập validation (32.718 triplet).
+
+\paragraph{Khác biệt so với bài báo.} Bảng~\ref{tab:train-setup} liệt kê các điểm thu gọn. Vì không có bước tiền huấn luyện SFT, hàng tham chiếu đúng trong Bảng~\ref{tab:ablation} là nhóm \emph{Khởi tạo Pretrained}, không phải cấu hình tốt nhất của bài báo.
+
+\begin{table}[h]
+\centering
+\caption{Thiết lập huấn luyện: bài báo gốc so với thực nghiệm này.}
+\label{tab:train-setup}
+\small
+\begin{tabular}{p{3.6cm}p{4.2cm}p{5.4cm}}
+\toprule
+& Bài báo & Thực nghiệm này \\
+\midrule
+Dữ liệu huấn luyện & 100\% & 25\% (41.235 triplet, 644 bước) \\
+Cách tinh chỉnh & Toàn bộ mô hình & LoRA ($r = 16$, $\alpha = 32$; 10,8 triệu tham số) \\
+Ảnh mỗi sản phẩm khi huấn luyện & tối đa 5 ảnh, $512^2$ điểm ảnh & tối đa 3 ảnh, $336^2$ điểm ảnh \\
+Khởi tạo & Pretrained hoặc SFT & Pretrained (Qwen3.5-0.8B), không SFT \\
+Batch đối sánh & -- & 64, qua GradCache (chunk 4) \\
+Phần cứng & 10$\times$RTX 3090 & một lát MIG \texttt{1g.35gb} của GPU H200 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Các siêu tham số còn lại: AdamW, tốc độ học $10^{-4}$ giảm theo cosine (không warmup), weight decay 0,01, cắt gradient ở 1,0, nhiệt độ $\tau = 0{,}07$, $\lambda_{doc} = \lambda_{src} = 0{,}25$, độ chính xác bf16, seed 42. Cứ 100 bước, mô hình được đánh giá trên tập dev (tối đa 500 truy vấn mỗi bộ); checkpoint có trung bình R@5 trên dev cao nhất được dùng để đánh giá cuối.
+
+\paragraph{Giao thức đánh giá.} Mỗi lần chạy được chấm theo hai giao thức. Giao thức \emph{gốc} (tối đa 5 ảnh, $512^2$, giữ sản phẩm nguồn trong gallery) cho số liệu so sánh với bài báo: run MT+Align được xuất thành checkpoint thường (gộp LoRA vào trọng số) và chấm bằng \texttt{evaluate.py} gốc không chỉnh sửa; run single-turn được chấm bằng công cụ của học viên ở cùng giao thức, vì \texttt{evaluate.py} gốc chỉ hỗ trợ truy vấn hai lượt. Giao thức \emph{huấn luyện} (3 ảnh, $336^2$) dùng cùng một công cụ cho cả hai run.
+
+\paragraph{Các mốc tham chiếu trên cùng bộ ảnh.} Số liệu ở các mục trước được đo trên bộ ảnh khác (DeepFashion $224 \times 224$, mẫu con Fashion200K, không có FashionGen) nên không đặt chung bảng với kết quả ở đây được. Checkpoint của tác giả (\texttt{yuandaxia/ProCIR}, chấm bằng \texttt{evaluate.py} gốc) và hai baseline hợp nhất muộn của Mục~\ref{sec:baseline-setup} vì vậy được chấm lại trên đúng bộ ảnh, đúng gallery và toàn bộ tập validation của thực nghiệm này.
+
+\subsection{Chi phí huấn luyện}
+
+Lát MIG \texttt{1g.35gb} chỉ có 16 SM, một phần nhỏ năng lực tính toán của GPU, và trên máy chủ dùng chung này chỉ còn khoảng 11~GiB bộ nhớ trống. Một phép đo thử trước khi huấn luyện (Bảng~\ref{tab:train-cost}) cho thấy tăng chunk của GradCache không làm nhanh hơn, tức nút thắt là năng lực tính toán chứ không phải bộ nhớ; tắt gradient checkpointing thì vượt quá bộ nhớ còn trống.
+
+\begin{table}[h]
+\centering
+\caption{Tốc độ và bộ nhớ đo trên lát MIG \texttt{1g.35gb} (cấu hình MT+Align, batch 64, 12 bước mỗi cấu hình).}
+\label{tab:train-cost}
+\small
+\begin{tabular}{lcc}
+\toprule
+Cấu hình & Giây / bước & Bộ nhớ GPU (GB) \\
+\midrule
+Chunk 4, gradient checkpointing & 41,5 & 2,4 \\
+Chunk 8, gradient checkpointing & 41,6 & 3,0 \\
+Chunk 4 hoặc 8, không checkpointing & \multicolumn{2}{c}{hết bộ nhớ} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Trong lần chạy đầy đủ, trung vị thời gian mỗi bước là 40,8 giây với MT+Align và 22,7 giây với single-turn: hội thoại hai lượt và hàm mất mát căn chỉnh làm mỗi bước tốn gấp khoảng 1,8 lần. Run MT+Align cần khoảng 7,3 giờ cho 644 bước, chưa kể các lần đánh giá trên dev (lần chạy bị dừng một lần để đo tốc độ và tiếp tục từ checkpoint ở bước 43); run single-turn mất 5 giờ 17 phút kể cả đánh giá trên dev. Mức này phù hợp với khoảng 7--13 GPU-giờ mỗi epoch mà đề cương ước lượng cho cấu hình 25\% dữ liệu. Về đánh giá cuối trên toàn bộ tập validation, \texttt{evaluate.py} gốc chấm checkpoint của tác giả trong 64 phút, còn công cụ của học viên cần 4 giờ 38 phút cho run single-turn theo cả hai giao thức.
+
+\subsection{Kết quả}
+
+Bảng~\ref{tab:train-results} đặt hai run cạnh các hàng tương ứng của bài báo và các mốc tham chiếu đo trên cùng bộ ảnh.
+
+\begin{table}[h]
+\centering
+\caption{Kết quả theo giao thức gốc trên toàn bộ tập validation (R@5 / R@10, \%). Số của bài báo trích từ Bảng~\ref{tab:ablation}. Gallery: 2.791, 10.720 và 5.292 sản phẩm.}
+\label{tab:train-results}
+\small
+\begin{tabular}{lcccc}
+\toprule
+& DeepFashion & Fashion200K & FashionGen & TB R@5 \\
+\midrule
+\multicolumn{5}{l}{\emph{Số liệu bài báo (100\% dữ liệu, tinh chỉnh toàn bộ, ảnh của tác giả)}} \\
+Single-turn, Pretrained & 77,0 / 87,8 & 61,4 / 73,6 & 59,7 / 72,5 & 66,0 \\
+MT+Align, Pretrained & 79,5 / 89,0 & 61,8 / 73,8 & 62,7 / 74,9 & 68,0 \\
+MT+Align, SFT (ProCIR) & 89,2 / 94,9 & 77,6 / 86,6 & 75,0 / 85,3 & 80,6 \\
+\midrule
+\multicolumn{5}{l}{\emph{Đo trên bộ ảnh của thực nghiệm này}} \\
+Checkpoint ProCIR của tác giả & 89,26 / 95,10 & 67,71 / 76,97 & 75,82 / 86,05 & 77,60 \\
+\textbf{MT+Align} (25\%, LoRA) & \textbf{80,47} / \textbf{90,79} & \textbf{66,22} / 77,34 & \textbf{70,72} / \textbf{81,76} & \textbf{72,47} \\
+Single-turn (25\%, LoRA) & 78,41 / 89,51 & 66,18 / 77,48 & 69,19 / 80,67 & 71,26 \\
+FashionCLIP, $\alpha = 0{,}25$ & 59,83 / 71,59 & 30,09 / 38,27 & 39,01 / 50,45 & 42,98 \\
+FashionCLIP, $\alpha = 0{,}5$ & 48,46 / 65,56 & 26,34 / 36,75 & 37,24 / 51,33 & 37,35 \\
+CLIP ViT-B/32, $\alpha = 0{,}5$ & 27,49 / 41,79 & 10,43 / 16,14 & 14,17 / 22,36 & 17,36 \\
+\midrule
+MT+Align trừ single-turn, R@5 (bài báo) & +2,5 & +0,4 & +3,0 & +2,0 \\
+MT+Align trừ single-turn, R@5 (thực nghiệm này) & +2,06 & +0,04 & +1,53 & +1,21 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Bảng~\ref{tab:train-detail} bổ sung R@1 và kết quả theo giao thức huấn luyện, kèm giá trị khi loại sản phẩm nguồn khỏi danh sách xếp hạng (\texttt{evaluate.py} gốc không xuất giá trị này).
+
+\begin{table}[h]
+\centering
+\caption{Chi tiết R@1 / R@5 / R@10 (\%) khi giữ và khi loại sản phẩm nguồn khỏi danh sách xếp hạng.}
+\label{tab:train-detail}
+\small
+\begin{tabular}{llccc}
+\toprule
+Giao thức & Mô hình & DeepFashion & Fashion200K & FashionGen \\
+\midrule
+Gốc, giữ nguồn & Checkpoint của tác giả & 51,04 / 89,26 / 95,10 & 30,92 / 67,71 / 76,97 & 39,59 / 75,82 / 86,05 \\
+               & MT+Align & 29,36 / 80,47 / 90,79 & 22,36 / 66,22 / 77,34 & 29,39 / 70,72 / 81,76 \\
+               & Single-turn & 26,41 / 78,41 / 89,51 & 23,11 / 66,18 / 77,48 & 27,76 / 69,19 / 80,67 \\
+Gốc, loại nguồn & Single-turn & 50,67 / 82,17 / 90,56 & 42,21 / 69,16 / 78,77 & 44,54 / 72,11 / 82,22 \\
+\midrule
+Huấn luyện, giữ nguồn & MT+Align & 28,64 / 76,39 / 86,51 & 23,14 / 64,04 / 75,10 & 31,16 / 70,96 / 81,87 \\
+                      & Single-turn & 21,92 / 73,03 / 85,33 & 23,23 / 64,00 / 75,06 & 29,39 / 69,57 / 80,53 \\
+Huấn luyện, loại nguồn & MT+Align & 47,63 / 79,43 / 87,39 & 40,35 / 66,90 / 76,32 & 46,84 / 73,61 / 83,18 \\
+                       & Single-turn & 43,56 / 76,35 / 86,24 & 40,08 / 66,91 / 76,33 & 45,31 / 72,31 / 81,90 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Bảng~\ref{tab:train-dev} cho thấy diễn biến trên tập dev. Điểm chọn checkpoint là trung bình R@5 (giữ sản phẩm nguồn) của ba bộ.
+
+\begin{table}[h]
+\centering
+\caption{Diễn biến trên tập dev (\%; gallery dev 443--887 sản phẩm). Ba cột giữa: R@1 / R@5 của run MT+Align khi loại sản phẩm nguồn. Hai cột cuối: điểm chọn checkpoint của từng run; in đậm là checkpoint được chọn.}
+\label{tab:train-dev}
+\small
+\begin{tabular}{rccccc}
+\toprule
+& \multicolumn{3}{c}{MT+Align: R@1 / R@5} & \multicolumn{2}{c}{Điểm chọn checkpoint} \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-6}
+Bước & DeepFashion & Fashion200K & FashionGen & MT+Align & Single-turn \\
+\midrule
+100 & 66,07 / 92,09 & 68,2 / 90,4 & 67,8 / 92,8 & 89,82 & 88,83 \\
+200 & 68,88 / 94,64 & 70,8 / 91,8 & 73,6 / 95,2 & 91,87 & 91,35 \\
+300 & 72,45 / 96,43 & 75,8 / 92,8 & 74,4 / 95,2 & 93,47 & 92,72 \\
+400 & 73,72 / 95,92 & 75,4 / 94,4 & 74,0 / 96,4 & \textbf{93,89} & 93,24 \\
+500 & 72,19 / 96,43 & 75,0 / 94,2 & 73,8 / 95,0 & 93,48 & 92,95 \\
+600 & 73,21 / 95,66 & 76,4 / 94,4 & 76,6 / 95,6 & 93,80 & 93,66 \\
+644 & 73,21 / 95,66 & 76,6 / 94,4 & 76,6 / 95,6 & 93,73 & \textbf{93,73} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Thảo luận}
+
+\paragraph{Xu hướng của bài báo được lặp lại.} MT+Align cao hơn single-turn trên DeepFashion (+2,06 điểm R@5) và FashionGen (+1,53), và gần như không khác biệt trên Fashion200K (+0,04). Bài báo báo cáo đúng hình mẫu này cho nhóm Khởi tạo Pretrained (+2,5 / +0,4 / +3,0). Theo giao thức huấn luyện, nơi hai run được chấm bằng cùng một công cụ, hình mẫu vẫn giữ nguyên (+3,36 / +0,04 / +1,39). Mức cải thiện trung bình ở đây nhỏ hơn bài báo (+1,21 so với +2,0), và đi kèm chi phí mỗi bước huấn luyện gấp khoảng 1,8 lần.
+
+\paragraph{Checkpoint của tác giả xác nhận quy trình trên hai bộ, và cho thấy ảnh Fashion200K khác bài báo.} Trên bộ ảnh của thực nghiệm này, checkpoint của tác giả đạt R@5 = 89,26 trên DeepFashion và 75,82 trên FashionGen, khớp với số công bố (89,2 và 75,0); R@10 cũng khớp (95,10 và 86,05 so với 94,9 và 85,3). Như vậy ảnh, gallery và quy trình đánh giá của hai bộ này tương đương với của bài báo, và khoảng cách 14,8 điểm trên DeepFashion ở Mục~\ref{sec:discussion} đúng là do ảnh $224 \times 224$ như đã lập luận. Trên Fashion200K thì ngược lại: cùng checkpoint chỉ đạt 67,71 thay vì 77,6. Ảnh Fashion200K dùng ở đây (bản cắt theo hộp phát hiện) vì vậy không tương đương với ảnh tác giả dùng; một giả thuyết cần kiểm chứng là tác giả dùng ảnh gốc chưa cắt. Hệ quả là trên Fashion200K, mọi kết quả của thực nghiệm này phải được so với 67,71 chứ không phải 77,6.
+
+\paragraph{So với các mốc.} Trên cùng bộ ảnh, run MT+Align thấp hơn checkpoint của tác giả 8,8 điểm R@5 trên DeepFashion, 1,5 điểm trên Fashion200K và 5,1 điểm trên FashionGen (trung bình 5,1). Khoảng cách ở R@1 lớn hơn nhiều (29,36 so với 51,04 trên DeepFashion): khi sản phẩm nguồn được giữ trong gallery, mô hình của tác giả xếp đích lên trên nguồn thường xuyên hơn. So với các hàng Khởi tạo Pretrained của bài báo, là cấu hình tương ứng về phương pháp, run MT+Align tương đương trên DeepFashion (80,47 so với 79,5) và cao hơn 8,0 điểm trên FashionGen (70,72 so với 62,7), hai bộ mà ảnh đã được xác nhận là tương đương. Học viên chưa có giải thích được kiểm chứng cho việc một cấu hình 25\% dữ liệu với LoRA vượt hàng tinh chỉnh toàn bộ của bài báo; kết quả này mới dựa trên một seed và cần được lặp lại trước khi diễn giải. Thứ tự CLIP $<$ FashionCLIP $<$ ProCIR của Mục~\ref{sec:baseline-results} được giữ nguyên trên cả ba gallery đầy đủ: cấu hình baseline tốt nhất (FashionCLIP, $\alpha = 0{,}25$) kém run MT+Align từ 20,6 đến 36,1 điểm R@5.
+
+\paragraph{Hai run được chấm ở hai bước khác nhau.} Tiêu chí trên dev chọn bước 400 cho MT+Align và bước 644 cho single-turn (Bảng~\ref{tab:train-dev}), nên phép so sánh ở trên là giữa một mô hình MT+Align đã thấy khoảng 62\% số triplet và một mô hình single-turn đã thấy toàn bộ. Vì gallery dev chỉ vài trăm sản phẩm, điểm chọn checkpoint đã ở mức 93--94\% và chỉ dao động dưới một điểm từ bước 300 trở đi (ở bước 644 hai run có cùng điểm 93,73), nên lựa chọn này phần nào mang tính ngẫu nhiên. Một tiêu chí dùng R@1 hoặc gallery dev lớn hơn sẽ phân biệt các checkpoint tốt hơn, và chấm cả hai run ở bước cuối sẽ cho phép so sánh chặt hơn.
+
+\paragraph{Thêm ảnh và độ phân giải lúc suy luận vẫn có lợi.} Dù được huấn luyện với 3 ảnh ở $336^2$, cả hai run đều đạt R@5 trên DeepFashion cao hơn khi suy luận với 5 ảnh ở $512^2$ (80,47 so với 76,39 với MT+Align; 78,41 so với 73,03 với single-turn). Trên FashionGen, nơi ảnh gốc chỉ $256 \times 256$, hai giao thức cho kết quả xấp xỉ nhau.
+
+\paragraph{Sản phẩm nguồn trong gallery.} Hiện tượng ở Mục~\ref{sec:source-in-gallery} cũng xuất hiện với mô hình tự huấn luyện: trên DeepFashion, R@1 của run MT+Align theo giao thức huấn luyện tăng từ 28,64 lên 47,63 khi loại sản phẩm nguồn khỏi danh sách xếp hạng, trong khi R@10 gần như không đổi (86,51 và 87,39). Với hai baseline ở $\alpha = 0{,}5$, R@1 khi giữ nguồn vẫn dưới 1\% trên cả ba bộ.
+
+\paragraph{Giới hạn của kết quả.}
+\begin{itemize}
+    \item \textbf{Một seed.} Với 5.188--18.499 truy vấn, sai số chuẩn của R@5 vào khoảng 0,3--0,6 điểm, nên chênh lệch 1,5--2 điểm là đáng kể ở mức vừa phải, còn +0,04 trên Fashion200K coi như bằng nhau. Độ dao động giữa các seed chưa được đo.
+    \item \textbf{Hai công cụ chấm ở giao thức gốc.} Run MT+Align dùng \texttt{evaluate.py} gốc, run single-turn dùng công cụ của học viên. Phép kiểm thử đối chiếu hai công cụ có trong kho mã nhưng chưa chạy được trên máy chủ huấn luyện; kết quả theo giao thức huấn luyện, nơi hai run dùng chung một công cụ, là phép đối chứng.
+    \item \textbf{Làm tròn bf16 khi xuất checkpoint.} \texttt{evaluate.py} gốc nạp mô hình ở bf16, nên trọng số sau khi gộp LoRA bị làm tròn. Kiểm thử cho thấy mã gốc cho embedding trùng khớp (cosine 1,0000) với bộ mã hoá của học viên trên cùng trọng số đã gộp; so với mô hình chưa gộp, cosine là 0,9986--0,9989 trên một phép thử với thay đổi trọng số cố ý rất lớn.
+    \item \textbf{Thiếu kernel \texttt{causal\_conv1d}.} Máy chủ không có trình biên dịch CUDA nên phép tích chập trong các tầng attention tuyến tính chạy bằng triển khai tham chiếu; điều này chỉ ảnh hưởng tốc độ. Kernel của \texttt{flash-linear-attention} chạy được sau khi nâng Triton lên 3.7.1, do các bản 3.4--3.7.0 tính sai gradient trên GPU thế hệ Hopper.
+\end{itemize}
