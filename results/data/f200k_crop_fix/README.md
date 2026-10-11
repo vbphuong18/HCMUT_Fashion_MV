@@ -52,6 +52,23 @@ These numbers were read from the server's output on 2026-10-10 (`runs/f200kfix_*
 `runs/f200k_uncropped_released`, `runs/f200k_fullphoto_*`); the result files are to be copied here.
 Since commit `d9ef4b2`, `scripts/setup_data.py` downloads the photos into `f200k/` and does not crop.
 
+## The four Fashion200K image variants
+
+All four are built from the same photos (`data/images_official_hr/f200k`) and differ only in what is
+done to each image; DeepFashion and FashionGen are identical across them.
+
+| Variant | Images in the release (label line) | Other images (41%) | Built with | Authors' checkpoint R@5 |
+|---|---|---|---|---|
+| `photo` | uncropped | uncropped | nothing: the downloaded photos | 78.29 |
+| `mixed` | cropped as released | uncropped | `crop_f200k.py --unlabelled keep` | 75.51 |
+| `crop` | cropped as released | cropped to the category garment | `crop_f200k.py --unlabelled category` | 74.70 |
+| `top_crop` | cropped as released | cropped to the top-scored detection | `crop_f200k.py --unlabelled top` | 67.71 |
+
+Crops rebuilt from the photos have the size of the crops evaluated above on all 1,300 images of a
+400-product val sample (within 3 px). `src/server/queue_f200k_variants.sh` builds `mixed` and `crop`
+on the server, checks each image set with the authors' checkpoint and trains on `photo` (MT+Align and
+single-turn), `mixed` and `crop` (MT+Align); the `top_crop` run is `results/procir_train`.
+
 ## Consequence
 
 Every Fashion200K number in `results/procir_train/` was measured with the wrong crops and both runs

@@ -1,8 +1,12 @@
 """Rebuild the released (cropped) Fashion200K images from the full images at their URLs.
 
-Not part of the training data any more: ProCIR's authors use the uncropped photos (their checkpoint
-scores R@5 78.3 on the photos, 74.7 on these crops; results/data/f200k_crop_fix/). Kept to
-reproduce that comparison.
+ProCIR's authors use the uncropped photos (their checkpoint scores R@5 78.3 on the photos, 74.7 on
+these crops; results/data/f200k_crop_fix/), so the default data is uncropped. This script builds
+the cropped Fashion200K variants from the photos, to compare image sources:
+
+  --unlabelled category   "crop":     every image cropped as the release does (74.7)
+  --unlabelled keep       "mixed":    labelled images cropped, the others left as photos (75.5)
+  --unlabelled top        "top_crop": unlabelled images cropped to the top detection, our first data (67.7)
 
 The Fashion200K release (xthan/fashion-200k; the Marqo/fashion200k mirror is a copy) ships each image
 cropped to one of the boxes in fashion-200k/detection/*_detection.txt
@@ -42,8 +46,15 @@ def _lines(z, prefix):
                     yield parts
 
 
-def load_boxes(zip_path):
+UNLABELLED = ("category", "top", "keep")
+
+
+def load_boxes(zip_path, unlabelled="category"):
     """{image stem (e.g. '91352269_0'): (x1, x2, y1, y2)} of the box each released image is cropped to.
+
+    `unlabelled` says what images without a label line get, which is all the image variants differ in:
+    "category" the best-scored detection of the category class (described below), "top" the
+    top-scored detection (our first, wrong data), "keep" no box, so the photo stays uncropped.
 
     labels/*_detect_all.txt records, per image, the score of the detection the release used; the box
     is the detection with that score. On the 201,824 labelled images that box is of the product's
@@ -52,6 +63,8 @@ def load_boxes(zip_path):
     their category class (the labelled box on 97.7% of labelled images), not the top one: the top one
     is another garment, e.g. the trousers in a jacket photo, for about 55% of them. Only an image
     with no detection of its class falls back to the top-scored detection."""
+    if unlabelled not in UNLABELLED:
+        raise ValueError(f"unlabelled must be one of {UNLABELLED}, got {unlabelled!r}")
     with zipfile.ZipFile(zip_path) as z:
         label_score = {Path(p[0]).stem: float(p[1]) for p in _lines(z, "fashion-200k/labels/")}
         boxes = {}
@@ -63,7 +76,9 @@ def load_boxes(zip_path):
             chosen = parsed[0]
             if stem in label_score:
                 chosen = min(parsed, key=lambda f: abs(float(f[-5]) - label_score[stem]))
-            elif same_class:
+            elif unlabelled == "keep":
+                continue
+            elif unlabelled == "category" and same_class:
                 chosen = max(same_class, key=lambda f: float(f[-5]))
             boxes[stem] = tuple(min(1.0, max(0.0, float(v))) for v in chosen[-4:])
     return boxes
@@ -115,10 +130,13 @@ def main(argv=None):
     ap.add_argument("--zip", default=str(ZIP), help="Fashion200K zip holding fashion-200k/detection/")
     ap.add_argument("--mirror", default=str(ROOT / "data" / "images" / "f200k"),
                     help="Marqo mirror folders: files identical to these are released crops already")
+    ap.add_argument("--unlabelled", choices=UNLABELLED, default="category",
+                    help="images without a label line: crop to the category garment, to the top detection, "
+                         "or keep the photo")
     ap.add_argument("--workers", type=int, default=8)
     args = ap.parse_args(argv)
 
-    boxes = load_boxes(args.zip)
+    boxes = load_boxes(args.zip, args.unlabelled)
     print(f"detection boxes: {len(boxes)}", flush=True)
     mirror = Path(args.mirror) if Path(args.mirror).is_dir() else None
     products = sorted(p.name for p in Path(args.src).iterdir() if p.is_dir())

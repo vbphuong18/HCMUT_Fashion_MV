@@ -91,3 +91,19 @@ def test_degenerate_box_keeps_at_least_one_pixel(box):
 
     left, top, right, bottom = c.pixel_box(box, (100, 100))
     assert right > left and bottom > top
+
+
+def test_unlabelled_policy_builds_the_other_image_variants(tmp_path):
+    """The Fashion200K variants differ only in what happens to images without a label line."""
+    import crop_f200k as c
+
+    z = _zip(tmp_path / "f.zip", [
+        "women/jackets/x/3/3_0.jpeg\tpants_-0.50_0.30_0.70_0.55_1.00\touterwear_-2.10_0.15_0.85_0.05_0.60",
+        "women/jackets/x/3/3_1.jpeg\tpants_-0.40_0.10_0.90_0.50_1.00\touterwear_-3.00_0.20_0.80_0.00_0.50"],
+        labels=["women/jackets/x/3/3_1.jpeg\t-3.000000\tblue jacket"])
+    labelled = (0.20, 0.80, 0.0, 0.50)
+    assert c.load_boxes(z, unlabelled="top") == {"3_0": (0.30, 0.70, 0.55, 1.0), "3_1": labelled}
+    assert c.load_boxes(z, unlabelled="keep") == {"3_1": labelled}  # no box: crop_product copies the photo
+    assert c.load_boxes(z) == {"3_0": (0.15, 0.85, 0.05, 0.60), "3_1": labelled}
+    with pytest.raises(ValueError, match="unlabelled"):
+        c.load_boxes(z, unlabelled="other")
