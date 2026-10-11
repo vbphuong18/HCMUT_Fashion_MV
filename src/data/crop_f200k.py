@@ -2,11 +2,15 @@
 
 ProCIR's authors use the uncropped photos (their checkpoint scores R@5 78.3 on the photos, 74.7 on
 these crops; results/data/f200k_crop_fix/), so the default data is uncropped. This script builds
-the cropped Fashion200K variants from the photos, to compare image sources:
+the cropped Fashion200K variants from the photos, to compare image sources. An image is either in
+the release ("labelled": it has a line in labels/*_detect_all.txt) or not, and each group is either
+cropped to its garment or left as a photo:
 
-  --unlabelled category   "crop":     every image cropped as the release does (74.7)
-  --unlabelled keep       "mixed":    labelled images cropped, the others left as photos (75.5)
-  --unlabelled top        "top_crop": unlabelled images cropped to the top detection, our first data (67.7)
+                          other images cropped             other images as photos
+  release images cropped  "crop"  (default options)        "mixed"  --unlabelled keep
+  release images photos   "mixed_other"  --labelled keep   "photo"  (no script: the download)
+
+--unlabelled top rebuilds our first, wrong data (other images cropped to the top-scored detection).
 
 The Fashion200K release (xthan/fashion-200k; the Marqo/fashion200k mirror is a copy) ships each image
 cropped to one of the boxes in fashion-200k/detection/*_detection.txt
@@ -47,14 +51,16 @@ def _lines(z, prefix):
 
 
 UNLABELLED = ("category", "top", "keep")
+LABELLED = ("crop", "keep")
 
 
-def load_boxes(zip_path, unlabelled="category"):
+def load_boxes(zip_path, unlabelled="category", labelled="crop"):
     """{image stem (e.g. '91352269_0'): (x1, x2, y1, y2)} of the box each released image is cropped to.
 
     `unlabelled` says what images without a label line get, which is all the image variants differ in:
     "category" the best-scored detection of the category class (described below), "top" the
     top-scored detection (our first, wrong data), "keep" no box, so the photo stays uncropped.
+    `labelled` does the same for the images of the release: "crop" the release's box, "keep" no box.
 
     labels/*_detect_all.txt records, per image, the score of the detection the release used; the box
     is the detection with that score. On the 201,824 labelled images that box is of the product's
@@ -65,6 +71,8 @@ def load_boxes(zip_path, unlabelled="category"):
     with no detection of its class falls back to the top-scored detection."""
     if unlabelled not in UNLABELLED:
         raise ValueError(f"unlabelled must be one of {UNLABELLED}, got {unlabelled!r}")
+    if labelled not in LABELLED:
+        raise ValueError(f"labelled must be one of {LABELLED}, got {labelled!r}")
     with zipfile.ZipFile(zip_path) as z:
         label_score = {Path(p[0]).stem: float(p[1]) for p in _lines(z, "fashion-200k/labels/")}
         boxes = {}
@@ -75,6 +83,8 @@ def load_boxes(zip_path, unlabelled="category"):
             same_class = [d for d in parsed if "_".join(d[:-5]) == garment]
             chosen = parsed[0]
             if stem in label_score:
+                if labelled == "keep":
+                    continue
                 chosen = min(parsed, key=lambda f: abs(float(f[-5]) - label_score[stem]))
             elif unlabelled == "keep":
                 continue
@@ -133,10 +143,12 @@ def main(argv=None):
     ap.add_argument("--unlabelled", choices=UNLABELLED, default="category",
                     help="images without a label line: crop to the category garment, to the top detection, "
                          "or keep the photo")
+    ap.add_argument("--labelled", choices=LABELLED, default="crop",
+                    help="images of the release (with a label line): crop to the release's box, or keep the photo")
     ap.add_argument("--workers", type=int, default=8)
     args = ap.parse_args(argv)
 
-    boxes = load_boxes(args.zip, args.unlabelled)
+    boxes = load_boxes(args.zip, args.unlabelled, args.labelled)
     print(f"detection boxes: {len(boxes)}", flush=True)
     mirror = Path(args.mirror) if Path(args.mirror).is_dir() else None
     products = sorted(p.name for p in Path(args.src).iterdir() if p.is_dir())

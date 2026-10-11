@@ -52,22 +52,30 @@ These numbers were read from the server's output on 2026-10-10 (`runs/f200kfix_*
 `runs/f200k_uncropped_released`, `runs/f200k_fullphoto_*`); the result files are to be copied here.
 Since commit `d9ef4b2`, `scripts/setup_data.py` downloads the photos into `f200k/` and does not crop.
 
-## The four Fashion200K image variants
+## The four Fashion200K image variants (a 2 x 2)
 
-All four are built from the same photos (`data/images_official_hr/f200k`) and differ only in what is
-done to each image; DeepFashion and FashionGen are identical across them.
+An image is either in the Fashion200K release (it has a label line) or not (41% of FashionMV's
+images), and each group is either cropped to its garment or left as the photo. All four variants are
+built from the same photos (`data/images_official_hr/f200k`); DeepFashion and FashionGen are
+identical across them.
 
-| Variant | Images in the release (label line) | Other images (41%) | Built with | Authors' checkpoint R@5 |
-|---|---|---|---|---|
-| `photo` | uncropped | uncropped | nothing: the downloaded photos | 78.29 |
-| `mixed` | cropped as released | uncropped | `crop_f200k.py --unlabelled keep` | 75.51 |
-| `crop` | cropped as released | cropped to the category garment | `crop_f200k.py --unlabelled category` | 74.70 |
-| `top_crop` | cropped as released | cropped to the top-scored detection | `crop_f200k.py --unlabelled top` | 67.71 |
+| | Other images cropped | Other images as photos |
+|---|---|---|
+| **Release images cropped** | `crop`: 74.70 | `mixed`: 75.51 |
+| **Release images as photos** | `mixed_other`: not measured yet | `photo`: 78.29 (the paper's images) |
 
-Crops rebuilt from the photos have the size of the crops evaluated above on all 1,300 images of a
-400-product val sample (within 3 px). `src/server/queue_f200k_variants.sh` builds `mixed` and `crop`
-on the server, checks each image set with the authors' checkpoint and trains on `photo` (MT+Align and
-single-turn), `mixed` and `crop` (MT+Align); the `top_crop` run is `results/procir_train`.
+The number is R@5 of the authors' checkpoint on the variant's val images. Built with
+`src/data/crop_f200k.py`: `crop` with the default options, `mixed` with `--unlabelled keep`,
+`mixed_other` with `--labelled keep`; `photo` is the download itself. Crops rebuilt from the photos
+have the size of the crops evaluated above on all 1,300 images of a 400-product val sample (within
+3 px).
+
+Our first data (other images cropped to the top-scored detection, 67.71) is wrong rather than a
+variant and is not trained on again; `--unlabelled top` rebuilds it if needed.
+
+`src/server/queue_f200k_variants.sh` builds the three cropped variants on the server, checks each
+image set with the authors' checkpoint, then trains MT+Align and single-turn on `photo` and MT+Align
+on the other three.
 
 ## Consequence
 

@@ -2,11 +2,14 @@
 # Fashion200K image variants on the lab server: build them from the uncropped photos, check each with
 # the authors' checkpoint, then train on them. DeepFashion and FashionGen are the same in every run.
 #
-#   photo     every image uncropped (what the paper uses; authors' checkpoint R@5 78.29)   -> main runs
-#   mixed     images in the Fashion200K release cropped as released, the others uncropped (75.51)
-#   crop      every image cropped as the release does (74.70)
-#   top_crop  unlabelled images cropped to the top detection, our first data (67.71): the earlier
-#             run runs/fast_mt_align_s42 was trained on it and is only re-scored here
+# A Fashion200K image is either in the Fashion200K release or not (41% are not), and each group is
+# either cropped to its garment or left as the photo: a 2 x 2 of image variants.
+#
+#                             other images cropped    other images as photos
+#   release images cropped    crop         (74.70)    mixed  (75.51)
+#   release images photos     mixed_other  (new)      photo  (78.29, what the paper uses) -> main runs
+#
+# In brackets: R@5 of the authors' checkpoint on that variant's val images, measured on 10 October.
 #
 # Needs in $HOME: procir_f200k_1.zip and procir_f200k_2.zip (the photos, from scripts/pack_data.py)
 # and the Fashion200K release zip fashion-200k*.zip (its detection/ and labels/ give the crop boxes).
@@ -64,19 +67,20 @@ fi
 
 # ---- 2. the cropped variants, built from the photos ----
 REL=$(ls "$HOME"/fashion-200k*.zip 2> /dev/null | head -1)
-build() {  # build NAME UNLABELLED_POLICY
+build() {  # build NAME UNLABELLED_POLICY LABELLED_POLICY
   [ -e "runs/f200k_variant_$1.done" ] && return 0
   [ -n "$REL" ] || { echo "upload the Fashion200K release zip (fashion-200k*.zip) to the home folder first"; exit 1; }
   mkdir -p "$VAR/$1"
   for d in deepfashion fashiongen_train fashiongen_val; do ln -sfn "$REPO/$HR/$d" "$VAR/$1/$d"; done
   echo "building variant $1 ($(date))"
   $PY src/data/crop_f200k.py --src "$HR/f200k" --dst "$VAR/$1/f200k" --zip "$REL" --mirror none \
-      --unlabelled "$2" --workers 4 >> "runs/f200k_variant_$1.log" 2>&1 || { echo "building $1 failed"; exit 1; }
+      --unlabelled "$2" --labelled "$3" --workers 4 >> "runs/f200k_variant_$1.log" 2>&1       || { echo "building $1 failed"; exit 1; }
   touch "runs/f200k_variant_$1.done"
   tail -n 1 "runs/f200k_variant_$1.log"
 }
-build mixed keep
-build crop category
+build mixed keep crop
+build crop category crop
+build mixed_other category keep
 
 # ---- 3. each image set against the authors' checkpoint, before any training on it ----
 check() {  # check NAME IMAGE_ROOT
@@ -123,7 +127,9 @@ check crop "$VAR/crop"
 train crop_mt_align_s42 "$VAR/crop" "upstream"
 on_photos crop_mt_align_s42
 
-on_photos fast_mt_align_s42  # the top_crop run of 9 October (its export is the best dev step, 400)
+check mixed_other "$VAR/mixed_other"
+train mixed_other_mt_align_s42 "$VAR/mixed_other" "upstream"
+on_photos mixed_other_mt_align_s42
 
 echo "=== queue finished $(date)"
 $PY - << 'EOF'
@@ -143,7 +149,8 @@ print("Fashion200K R@5 (upstream evaluate.py)      own images   photos")
 print(f"authors' checkpoint / photo                 {r5('runs/check_photo/eval_upstream/eval_results.json', 'Fashion200K_R@5')}")
 print(f"authors' checkpoint / mixed                 {r5('runs/check_mixed/eval_upstream/eval_results.json', 'Fashion200K_R@5')}")
 print(f"authors' checkpoint / crop                  {r5('runs/check_crop/eval_upstream/eval_results.json', 'Fashion200K_R@5')}")
-for name in ("photo_mt_align_s42", "mixed_mt_align_s42", "crop_mt_align_s42", "fast_mt_align_s42"):
+print(f"authors' checkpoint / mixed_other           {r5('runs/check_mixed_other/eval_upstream/eval_results.json', 'Fashion200K_R@5')}")
+for name in ("photo_mt_align_s42", "mixed_mt_align_s42", "crop_mt_align_s42", "mixed_other_mt_align_s42"):
     own = r5(f"runs/{name}/eval_upstream/eval_results.json", "Fashion200K_R@5")
     photos = own if name.startswith("photo") else r5(f"runs/{name}/eval_photos/eval_results.json", "Fashion200K_R@5")
     print(f"{name:42s}  {own}        {photos}")

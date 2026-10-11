@@ -107,3 +107,17 @@ def test_unlabelled_policy_builds_the_other_image_variants(tmp_path):
     assert c.load_boxes(z) == {"3_0": (0.15, 0.85, 0.05, 0.60), "3_1": labelled}
     with pytest.raises(ValueError, match="unlabelled"):
         c.load_boxes(z, unlabelled="other")
+
+
+def test_labelled_policy_keeps_release_images_as_photos(tmp_path):
+    """The fourth cell of the 2x2: release images uncropped, the other images cropped to their garment."""
+    import crop_f200k as c
+
+    z = _zip(tmp_path / "f.zip", [
+        "women/jackets/x/3/3_0.jpeg\tpants_-0.50_0.30_0.70_0.55_1.00\touterwear_-2.10_0.15_0.85_0.05_0.60",
+        "women/jackets/x/3/3_1.jpeg\tpants_-0.40_0.10_0.90_0.50_1.00\touterwear_-3.00_0.20_0.80_0.00_0.50"],
+        labels=["women/jackets/x/3/3_1.jpeg\t-3.000000\tblue jacket"])
+    assert c.load_boxes(z, labelled="keep") == {"3_0": (0.15, 0.85, 0.05, 0.60)}  # 3_1 is in the release
+    assert c.load_boxes(z, unlabelled="keep", labelled="keep") == {}                # nothing cropped
+    with pytest.raises(ValueError, match="labelled"):
+        c.load_boxes(z, labelled="other")
