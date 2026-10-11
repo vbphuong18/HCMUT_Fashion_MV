@@ -25,11 +25,38 @@ jackets → outerwear, pants → pants, skirts → skirt, tops → top.
 accepting `shorts` for the pants category; 58,102 files changed because the fixed rule takes `pants`
 only, as the release does.
 
+## Which images did the authors use? (tests of 2026-10-10)
+
+Fixing the crops was not the end of it. The authors' checkpoint (`yuandaxia/ProCIR`), scored with the
+unmodified upstream `evaluate.py` on the full Fashion200K val split (18,499 queries, gallery 10,720),
+with only the image files changed:
+
+| Fashion200K val images | R@1 | R@5 | R@10 |
+|---|---|---|---|
+| Unlabelled images cropped to the top-scored detection (the bug) | 30.92 | 67.71 | 76.97 |
+| Unlabelled images cropped to the category garment (the fix above) | 35.02 | 74.70 | 84.17 |
+| Release crops for labelled images, unlabelled images uncropped | 36.33 | 75.51 | 85.23 |
+| **Every image uncropped (the photos at the URLs)** | **41.08** | **78.29** | **87.22** |
+| Paper | | 77.6 | 86.6 |
+
+So the authors used the uncropped photos, not the release's crops, and cropping at all was the
+mistake. Other models on the same images, R@5 with the source kept (late fusion alpha 0.5 for CLIP):
+
+| Model | Buggy crops | Fixed crops | Uncropped |
+|---|---|---|---|
+| Our MT+Align run (trained on the buggy crops) | 66.22 | 69.30 | not measured |
+| FashionCLIP | 26.34 | 29.96 | 34.17 |
+| CLIP ViT-B/32 | 10.43 | 12.06 | 14.36 |
+
+These numbers were read from the server's output on 2026-10-10 (`runs/f200kfix_*`,
+`runs/f200k_uncropped_released`, `runs/f200k_fullphoto_*`); the result files are to be copied here.
+Since commit `d9ef4b2`, `scripts/setup_data.py` downloads the photos into `f200k/` and does not crop.
+
 ## Consequence
 
 Every Fashion200K number in `results/procir_train/` was measured with the wrong crops and both runs
 there were trained on them. DeepFashion and FashionGen are unaffected. The Fashion200K numbers must
-be re-measured on the fixed crops and both configurations retrained.
+be re-measured on the uncropped photos and both configurations retrained on them.
 
 ## Files
 
