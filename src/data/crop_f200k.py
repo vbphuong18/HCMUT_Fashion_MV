@@ -1,5 +1,9 @@
 """Rebuild the released (cropped) Fashion200K images from the full images at their URLs.
 
+Not part of the training data any more: ProCIR's authors use the uncropped photos (their checkpoint
+scores R@5 78.3 on the photos, 74.7 on these crops; results/data/f200k_crop_fix/). Kept to
+reproduce that comparison.
+
 The Fashion200K release (xthan/fashion-200k; the Marqo/fashion200k mirror is a copy) ships each image
 cropped to one of the boxes in fashion-200k/detection/*_detection.txt
 ("<label>_<score>_<x1>_<x2>_<y1>_<y2>", coordinates normalised to [0, 1]): the box of the product's

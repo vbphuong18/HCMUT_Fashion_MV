@@ -9,10 +9,12 @@ Stages (`all` runs them in this order; each one can be re-run and resumes where 
   deepfashion  MMLab DeepFashion In-shop img_highres -> one folder per colorway (FashionMV product).
                --deepfashion: the In-shop img_highres zip (the part with MEN/ and WOMEN/) or an
                extracted folder. The zip is encrypted: put the MMLab password in DEEPFASHION_PASSWORD.
-  f200k        Fashion200K: full images from image_urls.txt (train + val products) into f200k_source/,
-               then cropped to the released garment boxes into f200k/ (src/data/crop_f200k.py).
-               --f200k-urls: the Fashion200K zip from the xthan/fashion-200k Google Drive (it holds
-               image_urls.txt plus the detection/ and labels/ files that give the crop boxes).
+  f200k        Fashion200K: the uncropped photos from image_urls.txt (train + val products) into f200k/.
+               Not the release's garment crops: the authors' checkpoint reproduces the paper only on
+               the photos (results/data/f200k_crop_fix/). The folder must not already hold crops
+               (e.g. the Marqo mirror): the download skips views that are present.
+               --f200k-urls: the Fashion200K zip from the xthan/fashion-200k Google Drive, or its
+               image_urls.txt.
   fashiongen   fashiongen_256_256_{train,validation}.h5 from Kaggle (bothin/fashiongen-validation; needs
                Kaggle API credentials), then the upstream tools/prepare_fashiongen.py.
   verify       Triplets whose source and target both have images, per dataset and split; writes
@@ -121,19 +123,14 @@ def stage_deepfashion(src, data_root, ann, password=None):
 # ---- Fashion200K ----
 
 def stage_f200k(urls, data_root, ann, workers=8, delay=0.1):
-    """Full images from the URLs into f200k_source/, then the release's garment crops into f200k/."""
-    import crop_f200k
+    """The uncropped photos from the URLs into f200k/ (what ProCIR's authors train and evaluate on)."""
     import download_f200k_urls
 
-    if not zipfile.is_zipfile(urls):
-        raise SystemExit("--f200k-urls must be the Fashion200K zip: its detection/ and labels/ files give the "
-                         "crop boxes of the released images")
-    source, out = image_root(data_root) / "f200k_source", image_root(data_root) / "f200k"
-    argv = ["--urls", str(urls), "--out", str(source), "--workers", str(workers), "--delay", str(delay)]
+    argv = ["--urls", str(urls), "--out", str(image_root(data_root) / "f200k"),
+            "--workers", str(workers), "--delay", str(delay)]
     for t in triplet_files(ann):
         argv += ["--triplets", str(t)]
     download_f200k_urls.main(argv)
-    crop_f200k.main(["--src", str(source), "--dst", str(out), "--zip", str(urls)])
 
 
 # ---- FashionGen ----

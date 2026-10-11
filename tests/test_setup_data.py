@@ -140,30 +140,18 @@ def test_verify_reports_coverage_and_status_file(tmp_path, jpeg):
     assert not s.verify(data, ann, datasets=["deepfashion"])
 
 
-def test_stage_f200k_downloads_full_images_then_crops_like_the_release(tmp_path, monkeypatch):
+def test_stage_f200k_downloads_the_uncropped_photos_into_the_image_root(tmp_path, monkeypatch):
+    """ProCIR's authors use the photos at the URLs, not the release's crops: their checkpoint scores
+    R@5 78.3 on uncropped val photos (paper 77.6) against 74.7 on correct crops."""
     s = _setup()
-    import crop_f200k
     import download_f200k_urls
 
     calls = []
-    monkeypatch.setattr(download_f200k_urls, "main", lambda argv: calls.append(("download", argv)))
-    monkeypatch.setattr(crop_f200k, "main", lambda argv: calls.append(("crop", argv)))
+    monkeypatch.setattr(download_f200k_urls, "main", calls.append)
     data, ann = tmp_path / "data", tmp_path / "ann"
-    urls_zip = tmp_path / "fashion-200k.zip"
-    with zipfile.ZipFile(urls_zip, "w") as z:
-        z.writestr("fashion-200k/image_urls.txt", "")
-    s.stage_f200k(urls_zip, data, ann)
-    (kind1, dl), (kind2, crop) = calls
-    assert kind1 == "download" and dl[dl.index("--out") + 1] == str(data / "images_official_hr" / "f200k_source")
-    assert kind2 == "crop"
-    assert crop[crop.index("--src") + 1] == str(data / "images_official_hr" / "f200k_source")
-    assert crop[crop.index("--dst") + 1] == str(data / "images_official_hr" / "f200k")
-    assert crop[crop.index("--zip") + 1] == str(urls_zip)
-
-
-def test_stage_f200k_needs_the_zip_for_the_crop_boxes(tmp_path):
-    s = _setup()
-    txt = tmp_path / "image_urls.txt"
-    txt.write_text("")
-    with pytest.raises(SystemExit, match="detection"):
-        s.stage_f200k(txt, tmp_path / "data", tmp_path / "ann")
+    urls = tmp_path / "image_urls.txt"
+    urls.write_text("")
+    s.stage_f200k(urls, data, ann)
+    (dl,) = calls  # one download, no cropping step
+    assert dl[dl.index("--out") + 1] == str(data / "images_official_hr" / "f200k")
+    assert dl[dl.index("--urls") + 1] == str(urls)

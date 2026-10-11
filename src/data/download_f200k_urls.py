@@ -1,8 +1,9 @@
 """Download original Fashion200K images (fashion-200k/image_urls.txt) for the FashionMV products.
 
 Output: <out>/<id>/<id>_<k>.jpeg, the first MAX_VIEWS images per product (as procir/datasets.py reads).
-Resumable: views are matched by file stem (<id>_<k>), so a view already present under another
-extension (the .jpg files of the earlier HF mirror) is not fetched again; only missing views are. Stops early when
+Resumable: views are matched by file stem (<id>_<k>), so a view already present is not fetched
+again, whatever its extension. The output folder must therefore not hold release crops (the .jpg
+files of the HF mirror): they would be kept in place of the photos. Stops early when
 the server keeps refusing; re-run later to continue. Failures are listed in <out>/../f200k_failed.json.
 
   python src/data/download_f200k_urls.py                       # train + val products
