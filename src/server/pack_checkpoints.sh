@@ -16,6 +16,8 @@ POLL=${POLL:-60}
 RUNS=${RUNS:-"photo_mt_align_s42 photo_single_s42 mixed_mt_align_s42 crop_mt_align_s42 mixed_other_mt_align_s42"}
 cd "$REPO" || exit 1
 mkdir -p "$OUT" runs/.packed
+exec 9> runs/.packed/.lock  # one copy at a time: two would pack the same run into the same files
+! command -v flock > /dev/null || flock -n 9 || { echo "pack_checkpoints.sh is running already ($(date)): this copy exits"; exit 1; }
 
 for run in $RUNS; do
   if [ -e "runs/.packed/$run" ]; then echo "--- $run: packed already"; continue; fi
