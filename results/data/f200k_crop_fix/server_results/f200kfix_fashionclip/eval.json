@@ -1,0 +1,70 @@
+{
+  "model": "patrickjohncyh/fashion-clip",
+  "image_root": "/home/jovyan/HCMUT_Fashion_MV/data/images_official_hr",
+  "f200k": {
+    "n_queries": 18499,
+    "n_gallery": 10720,
+    "alpha": {
+      "0.0": {
+        "with_source": {
+          "R@1": 10.4,
+          "R@5": 21.02,
+          "R@10": 26.76
+        },
+        "source_excluded": {
+          "R@1": 10.53,
+          "R@5": 21.08,
+          "R@10": 26.82
+        }
+      },
+      "0.25": {
+        "with_source": {
+          "R@1": 13.67,
+          "R@5": 34.11,
+          "R@10": 43.19
+        },
+        "source_excluded": {
+          "R@1": 18.82,
+          "R@5": 35.79,
+          "R@10": 44.14
+        }
+      },
+      "0.5": {
+        "with_source": {
+          "R@1": 0.33,
+          "R@5": 29.96,
+          "R@10": 41.69
+        },
+        "source_excluded": {
+          "R@1": 14.4,
+          "R@5": 33.04,
+          "R@10": 43.23
+        }
+      },
+      "0.75": {
+        "with_source": {
+          "R@1": 0.0,
+          "R@5": 15.49,
+          "R@10": 25.75
+        },
+        "source_excluded": {
+          "R@1": 5.41,
+          "R@5": 17.75,
+          "R@10": 27.36
+        }
+      },
+      "1.0": {
+        "with_source": {
+          "R@1": 0.0,
+          "R@5": 8.55,
+          "R@10": 15.5
+        },
+        "source_excluded": {
+          "R@1": 2.63,
+          "R@5": 10.16,
+          "R@10": 16.72
+        }
+      }
+    }
+  }
+}

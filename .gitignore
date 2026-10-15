@@ -47,6 +47,7 @@
 !/results/baselines/logs/*.log
 !/results/procir/logs/*.log
 !/results/procir_train/logs/*.log
+!/results/data/f200k_crop_fix/server_results/logs/*.log
 
 # ---- Python / OS ----
 __pycache__/

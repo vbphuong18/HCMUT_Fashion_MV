@@ -49,7 +49,8 @@ mistake. Other models on the same images, R@5 with the source kept (late fusion 
 | CLIP ViT-B/32 | 10.43 | 12.06 | 14.36 |
 
 These numbers were read from the server's output on 2026-10-10 (`runs/f200kfix_*`,
-`runs/f200k_uncropped_released`, `runs/f200k_fullphoto_*`); the result files are to be copied here.
+`runs/f200k_uncropped_released`, `runs/f200k_fullphoto_*`); the result files, test scripts and logs are in
+`server_results/` (bundle `f200k_image_tests.tgz`, downloaded 2026-10-11).
 Since commit `d9ef4b2`, `scripts/setup_data.py` downloads the photos into `f200k/` and does not crop.
 
 ## The four Fashion200K image variants (a 2 x 2)

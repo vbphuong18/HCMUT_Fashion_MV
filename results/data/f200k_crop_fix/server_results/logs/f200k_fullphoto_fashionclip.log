@@ -1,0 +1,3 @@
+Loading weights:   0%|                                                                                                                        | 0/398 [00:00<?, ?it/s]Loading weights: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████| 398/398 [00:00<00:00, 10849.55it/s]
+[f200k] 18499 queries, gallery 10720 (35814 images), alpha=0.5 with source {'R@1': 0.37, 'R@5': 34.17, 'R@10': 46.58} | source excluded {'R@1': 16.49, 'R@5': 37.47, 'R@10': 48.26} (463s)
+saved runs/f200k_fullphoto_fashionclip/eval.json
