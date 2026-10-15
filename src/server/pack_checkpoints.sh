@@ -8,11 +8,13 @@
 #
 # For each run: download every file in ~/ckpt_download, then delete its .tar.part files; the next
 # run is packed within a minute. A run is packed once (runs/.packed/<run>); delete that marker to
-# pack it again.
+# pack it again. With WAIT=0 it packs the runs one after another without waiting, as long as the
+# free space lasts, and stops with a message when it does not.
 set -u
 REPO=${REPO:-$HOME/HCMUT_Fashion_MV}
 OUT=${OUT:-$HOME/ckpt_download}
 POLL=${POLL:-60}
+WAIT=${WAIT:-1}  # WAIT=0: pack every run without waiting for downloads, while the free space lasts
 RUNS=${RUNS:-"photo_mt_align_s42 photo_single_s42 mixed_mt_align_s42 crop_mt_align_s42 mixed_other_mt_align_s42"}
 cd "$REPO" || exit 1
 mkdir -p "$OUT" runs/.packed
@@ -22,7 +24,9 @@ exec 9> runs/.packed/.lock  # one copy at a time: two would pack the same run in
 for run in $RUNS; do
   if [ -e "runs/.packed/$run" ]; then echo "--- $run: packed already"; continue; fi
   [ -d "runs/$run/ckpt" ] && [ -d "runs/$run/export" ] || { echo "runs/$run has no ckpt/ or export/"; exit 1; }
-  while ls "$OUT"/*.tar.part* > /dev/null 2>&1; do sleep "$POLL"; done  # previous run not taken yet
+  if [ "$WAIT" = 1 ]; then
+    while ls "$OUT"/*.tar.part* > /dev/null 2>&1; do sleep "$POLL"; done  # previous run not taken yet
+  fi
   need=$(du -sBG "runs/$run/ckpt" "runs/$run/export" | awk '{s += $1} END {print s + 1}')
   free=$(df --output=avail -BG "$OUT" | tail -1 | tr -dc 0-9)
   [ "$free" -ge "$need" ] || { echo "$run needs ${need}G, only ${free}G free"; exit 1; }
