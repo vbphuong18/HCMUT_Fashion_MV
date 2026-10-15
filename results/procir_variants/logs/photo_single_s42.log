@@ -1,0 +1,462 @@
++ /opt/conda/bin/python /home/jovyan/HCMUT_Fashion_MV/scripts/check_env.py /home/jovyan/HCMUT_Fashion_MV/runs/photo_single_s42/env_check.json --allow-slow
+{
+  "gpu": "NVIDIA H200 NVL MIG 1g.35gb",
+  "capability": "sm90",
+  "kernels": {
+    "fla": true,
+    "causal_conv1d": false
+  },
+  "warnings": [
+    "linear-attention kernels missing (causal_conv1d); pip install flash-linear-attention causal-conv1d --no-build-isolation"
+  ],
+  "torch": "2.12.0+cu130",
+  "cuda": "13.0",
+  "transformers": "5.19.0",
+  "peft": "0.21.2",
+  "pip_freeze": [
+    "accelerate==1.15.0",
+    "annotated-doc==0.0.5",
+    "annotated-types @ file:///home/conda/feedstock_root/build_artifacts/annotated-types_1733247046149/work",
+    "anyio @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_anyio_1774359453/work",
+    "archspec @ file:///home/conda/feedstock_root/build_artifacts/archspec_1737352602016/work",
+    "argon2-cffi @ file:///home/conda/feedstock_root/build_artifacts/argon2-cffi_1749017159514/work",
+    "argon2-cffi-bindings @ file:///home/conda/feedstock_root/build_artifacts/argon2-cffi-bindings_1762509336295/work",
+    "arrow @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_arrow_1760831179/work",
+    "asttokens @ file:///home/conda/feedstock_root/build_artifacts/asttokens_1763409923949/work",
+    "async-lru @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_async-lru_1773926359/work",
+    "attrs @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_attrs_1773935801/work",
+    "babel @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_babel_1772555330/work",
+    "backports.zstd @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_backports.zstd_1778594049/work",
+    "beautifulsoup4 @ file:///home/conda/feedstock_root/build_artifacts/beautifulsoup4_1764520477956/work",
+    "bleach @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_bleach_1770719370/work",
+    "bokeh @ file:///home/conda/feedstock_root/build_artifacts/bokeh_1773302546197/work",
+    "boltons @ file:///home/conda/feedstock_root/build_artifacts/boltons_1749686179973/work",
+    "Brotli @ file:///home/conda/feedstock_root/build_artifacts/brotli-split_1764016952863/work",
+    "build @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_python-build_1778048948/work",
+    "cached-property @ file:///home/conda/feedstock_root/build_artifacts/cached_property_1615209429212/work",
+    "certifi @ file:///home/conda/feedstock_root/build_artifacts/certifi_1784717589373/work/certifi",
+    "cffi @ file:///home/conda/feedstock_root/build_artifacts/cffi_1761202850602/work",
+    "charset-normalizer @ file:///home/conda/feedstock_root/build_artifacts/charset-normalizer_1775127091311/work",
+    "click==8.5.0",
+    "click-option-group==0.5.7",
+    "cloudpickle @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_cloudpickle_1765303462/work",
+    "colorama @ file:///home/conda/feedstock_root/build_artifacts/colorama_1733218098505/work",
+    "comm @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_comm_1753453984/work",
+    "conda @ file:///home/conda/feedstock_root/build_artifacts/conda_1780392536694/work/conda-src",
+    "conda-libmamba-solver @ file:///home/conda/feedstock_root/build_artifacts/conda-libmamba-solver_1778768113160/work/src",
+    "conda-lockfiles @ file:///home/conda/feedstock_root/build_artifacts/conda-lockfiles_1778023890072/work",
+    "conda-package-handling @ file:///home/conda/feedstock_root/build_artifacts/conda-package-handling_1736345463896/work",
+    "conda-pypi @ file:///home/conda/feedstock_root/build_artifacts/conda-pypi_1778882827409/work",
+    "conda-rattler-solver @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_conda-rattler-solver_1778936874/work",
+    "conda-self @ file:///home/conda/feedstock_root/build_artifacts/conda-self_1778152796009/work",
+    "conda_index @ file:///home/conda/feedstock_root/build_artifacts/conda-index_1776455392995/work",
+    "conda_package_streaming @ file:///home/conda/feedstock_root/build_artifacts/conda-package-streaming_1751548120229/work",
+    "contourpy @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_contourpy_1769155979/work",
+    "cryptography==48.0.0",
+    "cuda-bindings==13.0.3",
+    "cuda-pathfinder==1.2.2",
+    "cuda-toolkit==13.0.2",
+    "cycler @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_cycler_1764466758/work",
+    "debugpy @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_debugpy_1780390159/work",
+    "decorator @ file:///home/conda/feedstock_root/build_artifacts/decorator_1779115150916/work",
+    "defusedxml @ file:///home/conda/feedstock_root/build_artifacts/defusedxml_1615232257335/work",
+    "dill @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_dill_1768863743/work",
+    "distro @ file:///home/conda/feedstock_root/build_artifacts/distro_1734729835256/work",
+    "docstring_parser==0.18.0",
+    "einops==0.8.2",
+    "exceptiongroup @ file:///home/conda/feedstock_root/build_artifacts/exceptiongroup_1763918002538/work",
+    "executing @ file:///home/conda/feedstock_root/build_artifacts/executing_1756729339227/work",
+    "fastjsonschema @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_python-fastjsonschema_1755304154/work/dist",
+    "filelock @ file:///home/conda/feedstock_root/build_artifacts/filelock_1780521888565/work",
+    "fla-core==0.5.2",
+    "flash-linear-attention==0.5.2",
+    "fonttools @ file:///home/conda/feedstock_root/build_artifacts/fonttools_1778770237442/work",
+    "fqdn @ file:///home/conda/feedstock_root/build_artifacts/fqdn_1733327382592/work/dist",
+    "frozendict @ file:///home/conda/feedstock_root/build_artifacts/frozendict_1763082802787/work",
+    "fsspec==2026.4.0",
+    "gdown==6.4.2",
+    "gitdb==4.0.12",
+    "GitPython==3.1.50",
+    "google-api-core==2.31.0",
+    "google-auth==2.53.0",
+    "google-cloud-core==2.6.0",
+    "google-cloud-storage==3.11.0",
+    "google-crc32c==1.8.0",
+    "google-resumable-media==2.10.0",
+    "googleapis-common-protos==1.75.0",
+    "h11 @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_h11_1767729720/work",
+    "h2 @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_h2_1756364871/work",
+    "h5py==3.16.0",
+    "hf-xet==1.7.0",
+    "hpack @ file:///home/conda/feedstock_root/build_artifacts/hpack_1737618293087/work",
+    "httpcore @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_httpcore_1745602916/work",
+    "httpx @ file:///home/conda/feedstock_root/build_artifacts/httpx_1733663348460/work",
+    "huggingface_hub==1.33.0",
+    "hyperframe @ file:///home/conda/feedstock_root/build_artifacts/hyperframe_1737618333194/work",
+    "idna==3.20",
+    "imagecodecs @ file:///home/conda/feedstock_root/build_artifacts/imagecodecs_1780051571663/work",
+    "imageio @ file:///home/conda/feedstock_root/build_artifacts/imageio_1738273805233/work",
+    "importlib_metadata @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_importlib-metadata_1779714582/work",
+    "importlib_resources @ file:///home/conda/feedstock_root/build_artifacts/importlib_resources_1776068706467/work",
+    "iniconfig==2.3.1",
+    "installer @ file:///home/conda/feedstock_root/build_artifacts/python-installer_1778554130319/work",
+    "ipykernel @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_ipykernel_1770566133/work",
+    "ipympl @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_ipympl_1769263121/work",
+    "ipython @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_ipython_1780068620/work",
+    "ipython_pygments_lexers @ file:///home/conda/feedstock_root/build_artifacts/ipython_pygments_lexers_1737123620466/work",
+    "ipywidgets @ file:///home/conda/feedstock_root/build_artifacts/ipywidgets_1762040433881/work",
+    "isoduration @ file:///home/conda/feedstock_root/build_artifacts/isoduration_1733493628631/work/dist",
+    "jedi @ file:///home/conda/feedstock_root/build_artifacts/jedi_1733300866624/work",
+    "Jinja2 @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_jinja2_1764517220/work",
+    "joblib @ file:///home/conda/feedstock_root/build_artifacts/joblib_1765794027227/work",
+    "json5 @ file:///home/conda/feedstock_root/build_artifacts/json5_1774655335424/work",
+    "jsonpatch @ file:///home/conda/feedstock_root/build_artifacts/jsonpatch_1733814567314/work",
+    "jsonpointer @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_jsonpointer_1774311356/work",
+    "jsonschema @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_jsonschema_1767839954/work",
+    "jsonschema-specifications @ file:///tmp/tmptzik3dqa/src",
+    "jupyter-events @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_jupyter_events_1776861872/work",
+    "jupyter-lsp @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_jupyter-lsp_1775136333/work/jupyter-lsp",
+    "jupyter_client @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_jupyter_client_1767954655/work",
+    "jupyter_core @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_jupyter_core_1760643864/work",
+    "jupyter_server @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_jupyter_server_1780151480/work",
+    "jupyter_server_terminals @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_jupyter_server_terminals_1768574057/work",
+    "jupyterlab @ file:///home/conda/feedstock_root/build_artifacts/jupyterlab_1777483022156/work",
+    "jupyterlab-git-core==0.53.0",
+    "jupyterlab_git==0.53.0",
+    "jupyterlab_pygments @ file:///home/conda/feedstock_root/build_artifacts/jupyterlab_pygments_1733328101776/work",
+    "jupyterlab_server @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_jupyterlab_server_1761145478/work",
+    "jupyterlab_widgets @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_jupyterlab_widgets_1762267481/work/python/jupyterlab_widgets",
+    "jupytext==1.19.6",
+    "kaggle==2.2.4",
+    "kagglesdk==0.1.37",
+    "kfp==2.16.1",
+    "kfp-pipeline-spec==2.16.1",
+    "kfp-server-api==2.16.1",
+    "kiwisolver @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_kiwisolver_1773067050/work",
+    "kubeflow==0.4.0",
+    "kubeflow_katib_api==0.19.0",
+    "kubeflow_trainer_api==2.2.0",
+    "kubernetes==30.1.0",
+    "lark @ file:///home/conda/feedstock_root/build_artifacts/lark_1761596826058/work",
+    "lazy-loader @ file:///home/conda/feedstock_root/build_artifacts/lazy-loader_1772817235966/work",
+    "libmambapy @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_libmambapy_1780589226/work/libmambapy",
+    "markdown-it-py==4.2.0",
+    "MarkupSafe @ file:///home/conda/feedstock_root/build_artifacts/markupsafe_1772444934960/work",
+    "matplotlib==3.10.9",
+    "matplotlib-inline @ file:///home/conda/feedstock_root/build_artifacts/matplotlib-inline_1778264321245/work",
+    "mdit-py-plugins==0.6.1",
+    "mdurl==0.1.2",
+    "menuinst @ file:///home/conda/feedstock_root/build_artifacts/menuinst_1765733085292/work",
+    "mistune @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_mistune_1777824616/work",
+    "mpmath==1.3.0",
+    "msgpack @ file:///home/conda/feedstock_root/build_artifacts/msgpack-python_1762503974934/work",
+    "munkres==1.1.4",
+    "narwhals @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_narwhals_1780347345/work",
+    "nbclient @ file:///home/conda/feedstock_root/build_artifacts/nbclient_1766485478710/work",
+    "nbconvert @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_nbconvert-core_1775615493/work",
+    "nbdime==4.0.4",
+    "nbformat @ file:///home/conda/feedstock_root/build_artifacts/nbformat_1733402752141/work",
+    "nest_asyncio @ file:///home/conda/feedstock_root/build_artifacts/nest-asyncio_1733325553580/work",
+    "networkx==3.6.1",
+    "notebook @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_notebook_1777553380/work",
+    "notebook_shim @ file:///home/conda/feedstock_root/build_artifacts/notebook-shim_1733408315203/work",
+    "numpy @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_numpy_1779169200/work/dist/numpy-2.4.6-cp312-cp312-linux_x86_64.whl#sha256=d6484481626c8057fc4fb6bfae594630db97cddb21d66be50e1096c5ca99f638",
+    "nvidia-cublas==13.1.1.3",
+    "nvidia-cuda-cupti==13.0.85",
+    "nvidia-cuda-nvrtc==13.0.88",
+    "nvidia-cuda-runtime==13.0.96",
+    "nvidia-cudnn-cu13==9.20.0.48",
+    "nvidia-cufft==12.0.0.61",
+    "nvidia-cufile==1.15.1.6",
+    "nvidia-curand==10.4.0.35",
+    "nvidia-cusolver==12.0.4.66",
+    "nvidia-cusparse==12.6.3.3",
+    "nvidia-cusparselt-cu13==0.8.1",
+    "nvidia-nccl-cu13==2.29.7",
+    "nvidia-nvjitlink==13.0.88",
+    "nvidia-nvshmem-cu13==3.4.5",
+    "nvidia-nvtx==13.0.85",
+    "oauthlib==3.3.1",
+    "overrides @ file:///home/conda/feedstock_root/build_artifacts/overrides_1734587627321/work",
+    "packaging @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_packaging_1777103621/work",
+    "pandas @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_pandas_1778602625/work",
+    "pandocfilters @ file:///home/conda/feedstock_root/build_artifacts/pandocfilters_1631603243851/work",
+    "parso @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_parso_1777722955/work",
+    "patsy @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_patsy_1760998269/work",
+    "peft==0.21.2",
+    "pexpect @ file:///home/conda/feedstock_root/build_artifacts/pexpect_1733301927746/work",
+    "pillow==12.2.0",
+    "platformdirs @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_platformdirs_1779972894/work",
+    "pluggy @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_pluggy_1764896838/work",
+    "prometheus_client @ file:///home/conda/feedstock_root/build_artifacts/prometheus_client_1775771358777/work",
+    "prompt_toolkit @ file:///home/conda/feedstock_root/build_artifacts/prompt-toolkit_1756321756983/work",
+    "proto-plus==1.28.0",
+    "protobuf==6.33.6",
+    "psutil @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_psutil_1769678155/work",
+    "ptyprocess @ file:///home/conda/feedstock_root/build_artifacts/ptyprocess_1733302279685/work/dist/ptyprocess-0.7.0-py2.py3-none-any.whl#sha256=92c32ff62b5fd8cf325bec5ab90d7be3d2a8ca8c8a3813ff487a8d2002630d1f",
+    "pure_eval @ file:///home/conda/feedstock_root/build_artifacts/pure_eval_1733569405015/work",
+    "py-rattler @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_py-rattler_1779182640/work",
+    "pyarrow==25.0.1",
+    "pyasn1==0.6.3",
+    "pyasn1_modules==0.4.2",
+    "pycosat @ file:///home/conda/feedstock_root/build_artifacts/pycosat_1757744639790/work",
+    "pycparser @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_pycparser_1779293633/work",
+    "pydantic @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_pydantic_1778103405/work",
+    "pydantic_core @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_pydantic-core_1778084226/work",
+    "Pygments @ file:///home/conda/feedstock_root/build_artifacts/pygments_1774796700044/work",
+    "pyparsing @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_pyparsing_1769003998/work",
+    "pyproject_hooks @ file:///home/conda/feedstock_root/build_artifacts/pyproject_hooks_1733710025763/work",
+    "PySide6==6.11.1",
+    "PySocks @ file:///home/conda/feedstock_root/build_artifacts/pysocks_1733217236728/work",
+    "pytest==9.1.1",
+    "python-dateutil @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_python-dateutil_1751104122/work",
+    "python-dotenv==1.2.4",
+    "python-json-logger @ file:///home/conda/feedstock_root/build_artifacts/python-json-logger_1777318601910/work",
+    "python-slugify==9.1.3",
+    "PyYAML @ file:///home/conda/feedstock_root/build_artifacts/pyyaml_1770223234623/work",
+    "pyzmq @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_pyzmq_1779483879/work",
+    "referencing @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_referencing_1760379115/work",
+    "regex==2026.9.29",
+    "requests @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_requests_1778851103/work",
+    "requests-oauthlib==2.0.0",
+    "requests-toolbelt==1.0.0",
+    "rfc3339_validator @ file:///home/conda/feedstock_root/build_artifacts/rfc3339-validator_1733599910982/work",
+    "rfc3986-validator @ file:///home/conda/feedstock_root/build_artifacts/rfc3986-validator_1598024191506/work",
+    "rfc3987-syntax @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_rfc3987-syntax_1752876729/work",
+    "rich==15.0.0",
+    "rpds-py @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_rpds-py_1779976992/work",
+    "ruamel.yaml @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_ruamel.yaml_1766175816/work",
+    "ruamel.yaml.clib @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_ruamel.yaml.clib_1766159515/work",
+    "safetensors==0.8.0",
+    "scikit-image @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_scikit-image_1766684359/work/dist/scikit_image-0.26.0-cp312-cp312-linux_x86_64.whl#sha256=70240319905528f7a16bc6a018e6c3c0a390fb60bb36e2c47dba6d9b8762602a",
+    "scikit-learn==1.9.1",
+    "scipy==1.18.1",
+    "seaborn @ file:///home/conda/feedstock_root/build_artifacts/seaborn-split_1733730015268/work",
+    "Send2Trash @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_send2trash_1770937597/work",
+    "setuptools==70.2.0",
+    "shellingham==1.5.4",
+    "shiboken6==6.11.1",
+    "six @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_six_1753199211/work",
+    "smmap==5.0.3",
+    "sniffio @ file:///home/conda/feedstock_root/build_artifacts/sniffio_1762941432086/work",
+    "soupsieve @ file:///home/conda/feedstock_root/build_artifacts/soupsieve_1779635457288/work",
+    "stack_data @ file:///home/conda/feedstock_root/build_artifacts/stack_data_1733569443808/work",
+    "statsmodels @ file:///home/conda/feedstock_root/build_artifacts/statsmodels_1764983117433/work",
+    "sympy==1.14.0",
+    "tabulate==0.10.0",
+    "terminado @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_terminado_1766513766/work",
+    "text-unidecode==1.3",
+    "threadpoolctl @ file:///home/conda/feedstock_root/build_artifacts/threadpoolctl_1741878222898/work",
+    "tifffile @ file:///home/conda/feedstock_root/build_artifacts/tifffile_1780298467241/work",
+    "tinycss2 @ file:///home/conda/feedstock_root/build_artifacts/tinycss2_1729802851396/work",
+    "tokenizers==0.23.2",
+    "tomli @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_tomli_1774492402/work",
+    "torch==2.12.0+cu130",
+    "torchaudio==2.11.0+cu130",
+    "torchvision==0.27.0+cu130",
+    "tornado @ file:///home/conda/feedstock_root/build_artifacts/tornado_1779915848789/work",
+    "tqdm @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_tqdm_1770153424/work",
+    "traitlets @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_traitlets_1780507822/work",
+    "transformers==5.19.0",
+    "triton==3.7.1",
+    "truststore @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_truststore_1766494826/work",
+    "typer==0.27.3",
+    "typing-inspection @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_typing-inspection_1777105465/work",
+    "typing_extensions @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_typing_extensions_1756220668/work",
+    "typing_utils @ file:///home/conda/feedstock_root/build_artifacts/typing_utils_1733331286120/work",
+    "tzdata @ file:///home/conda/feedstock_root/build_artifacts/python-tzdata_1777068919240/work",
+    "unearth @ file:///home/conda/feedstock_root/build_artifacts/unearth_1766474644449/work",
+    "unicodedata2 @ file:///home/conda/feedstock_root/build_artifacts/unicodedata2_1770908957718/work",
+    "uri-template @ file:///home/conda/feedstock_root/build_artifacts/uri-template_1733323593477/work/dist",
+    "urllib3 @ file:///home/conda/feedstock_root/build_artifacts/urllib3_1778188571305/work",
+    "wcwidth @ file:///home/conda/feedstock_root/build_artifacts/wcwidth_1777744409267/work",
+    "webcolors @ file:///home/conda/feedstock_root/build_artifacts/webcolors_1761899299899/work",
+    "webencodings @ file:///home/conda/feedstock_root/build_artifacts/webencodings_1733236011802/work",
+    "websocket-client @ file:///home/conda/feedstock_root/build_artifacts/websocket-client_1759928050786/work",
+    "wheel==0.47.0",
+    "widgetsnbextension @ file:///home/conda/feedstock_root/build_artifacts/widgetsnbextension_1762040310212/work",
+    "xgboost @ file:///home/conda/feedstock_root/build_artifacts/xgboost-split_1779358028906/work/python-package",
+    "xyzservices @ file:///home/conda/feedstock_root/build_artifacts/xyzservices_1774899962131/work",
+    "zipp @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_zipp_1779159948/work",
+    "zstandard==0.25.0"
+  ]
+}
+WARNING (slow mode): linear-attention kernels missing (causal_conv1d); pip install flash-linear-attention causal-conv1d --no-build-isolation
++ /opt/conda/bin/python -m procir_train.train --config /home/jovyan/HCMUT_Fashion_MV/configs/procir_fast.yaml --set output_dir=runs/photo_single_s42 image_root=data/images_official_hr chunk_size=4 gradient_checkpointing=true eval_batch_size=8 train_fraction=0.25 multi_turn=false align=false
+Loading weights:   0%|                                                                                                                                                                               | 0/473 [00:00<?, ?it/s]Loading weights: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 473/473 [00:00<00:00, 14137.83it/s]
+/opt/conda/lib/python3.12/site-packages/transformers/models/qwen2_vl/image_processing_qwen2_vl.py:129: FutureWarning: Passing `min_pixels` and `max_pixels` to a processor call is deprecated and will be removed in v5.23. Pass in `size={'longest_edge': xxx, 'shortest_edge': xxx} to override the target size.`
+  warnings.warn(
+/opt/conda/lib/python3.12/site-packages/transformers/models/qwen2_vl/image_processing_qwen2_vl.py:129: FutureWarning: Passing `min_pixels` and `max_pixels` to a processor call is deprecated and will be removed in v5.23. Pass in `size={'longest_edge': xxx, 'shortest_edge': xxx} to override the target size.`
+  warnings.warn(
+/opt/conda/lib/python3.12/site-packages/transformers/models/qwen2_vl/image_processing_qwen2_vl.py:129: FutureWarning: Passing `min_pixels` and `max_pixels` to a processor call is deprecated and will be removed in v5.23. Pass in `size={'longest_edge': xxx, 'shortest_edge': xxx} to override the target size.`
+  warnings.warn(
+/opt/conda/lib/python3.12/site-packages/transformers/models/qwen2_vl/image_processing_qwen2_vl.py:129: FutureWarning: Passing `min_pixels` and `max_pixels` to a processor call is deprecated and will be removed in v5.23. Pass in `size={'longest_edge': xxx, 'shortest_edge': xxx} to override the target size.`
+  warnings.warn(
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+{'step': 10, 'loss': 0.7533873319625854, 'l_cir': 0.7533873319625854, 'lr': 9.995181817171016e-05, 'grad_norm': 12.181830406188965, 'sec_per_step': 26.494027137756348, 'max_mem_gb': 2.2185654640197754, 'max_mem_reserved_gb': 2.259765625}
+{'step': 20, 'loss': 0.4908110797405243, 'l_cir': 0.4908110797405243, 'lr': 9.978538291768082e-05, 'grad_norm': 4.117519855499268, 'sec_per_step': 27.110694646835327, 'max_mem_gb': 2.2275819778442383, 'max_mem_reserved_gb': 2.279296875}
+{'step': 30, 'loss': 0.29662686586380005, 'l_cir': 0.29662686586380005, 'lr': 9.950049529887099e-05, 'grad_norm': 3.0267956256866455, 'sec_per_step': 25.883699893951416, 'max_mem_gb': 2.2284045219421387, 'max_mem_reserved_gb': 2.279296875}
+{'step': 40, 'loss': 0.2492785006761551, 'l_cir': 0.2492785006761551, 'lr': 9.90978331369658e-05, 'grad_norm': 2.1078550815582275, 'sec_per_step': 23.430967330932617, 'max_mem_gb': 2.2284045219421387, 'max_mem_reserved_gb': 2.28125}
+{'step': 50, 'loss': 0.1817093789577484, 'l_cir': 0.1817093789577484, 'lr': 9.857835446989707e-05, 'grad_norm': 1.9720234870910645, 'sec_per_step': 23.846455574035645, 'max_mem_gb': 2.2300448417663574, 'max_mem_reserved_gb': 2.28125}
+{'step': 60, 'loss': 0.20328836143016815, 'l_cir': 0.20328836143016815, 'lr': 9.794329527242208e-05, 'grad_norm': 1.6916245222091675, 'sec_per_step': 23.734362602233887, 'max_mem_gb': 2.2300448417663574, 'max_mem_reserved_gb': 2.28125}
+{'step': 70, 'loss': 0.16666872799396515, 'l_cir': 0.16666872799396515, 'lr': 9.719416651541839e-05, 'grad_norm': 1.6766597032546997, 'sec_per_step': 23.795654296875, 'max_mem_gb': 2.2308616638183594, 'max_mem_reserved_gb': 2.28125}
+{'step': 80, 'loss': 0.15757280588150024, 'l_cir': 0.15757280588150024, 'lr': 9.63327505708914e-05, 'grad_norm': 1.365984320640564, 'sec_per_step': 24.10571002960205, 'max_mem_gb': 2.2308616638183594, 'max_mem_reserved_gb': 2.28125}
+{'step': 90, 'loss': 0.25530338287353516, 'l_cir': 0.25530338287353516, 'lr': 9.536109697124822e-05, 'grad_norm': 1.6953595876693726, 'sec_per_step': 23.947320699691772, 'max_mem_gb': 2.2308616638183594, 'max_mem_reserved_gb': 2.28125}
+{'step': 100, 'loss': 0.26118263602256775, 'l_cir': 0.26118263602256775, 'lr': 9.428151753292731e-05, 'grad_norm': 1.9228566884994507, 'sec_per_step': 24.210896253585815, 'max_mem_gb': 2.2308616638183594, 'max_mem_reserved_gb': 2.28125}
+/opt/conda/lib/python3.12/site-packages/transformers/models/qwen2_vl/image_processing_qwen2_vl.py:129: FutureWarning: Passing `min_pixels` and `max_pixels` to a processor call is deprecated and will be removed in v5.23. Pass in `size={'longest_edge': xxx, 'shortest_edge': xxx} to override the target size.`
+  warnings.warn(
+{'step': 100, 'dev': {'deepfashion': {'n_queries': 392, 'n_gallery': 443, 'R@1': 15.31, 'R@5': 89.54, 'R@10': 95.92, 'R@1_src_excluded': 65.82, 'R@5_src_excluded': 92.09, 'R@10_src_excluded': 95.92}, 'f200k': {'n_queries': 500, 'n_gallery': 887, 'R@1': 9.4, 'R@5': 89.8, 'R@10': 96.4, 'R@1_src_excluded': 67.4, 'R@5_src_excluded': 91.8, 'R@10_src_excluded': 97.0}, 'fashiongen_train': {'n_queries': 500, 'n_gallery': 879, 'R@1': 12.4, 'R@5': 92.2, 'R@10': 96.8, 'R@1_src_excluded': 68.2, 'R@5_src_excluded': 93.6, 'R@10_src_excluded': 96.8}}, 'dev_score': 90.51333333333334, 'best_step': 100}
+{'step': 110, 'loss': 0.17030882835388184, 'l_cir': 0.17030882835388184, 'lr': 9.309658085598644e-05, 'grad_norm': 1.2604212760925293, 'sec_per_step': 25.750059127807617, 'max_mem_gb': 2.2308616638183594, 'max_mem_reserved_gb': 2.28125}
+{'step': 120, 'loss': 0.17479048669338226, 'l_cir': 0.17479048669338226, 'lr': 9.180910621273555e-05, 'grad_norm': 1.6280006170272827, 'sec_per_step': 24.21515655517578, 'max_mem_gb': 2.2308616638183594, 'max_mem_reserved_gb': 2.28125}
+{'step': 130, 'loss': 0.1316567361354828, 'l_cir': 0.1316567361354828, 'lr': 9.042215683995516e-05, 'grad_norm': 1.346616506576538, 'sec_per_step': 24.594147443771362, 'max_mem_gb': 2.2308616638183594, 'max_mem_reserved_gb': 2.28125}
+{'step': 140, 'loss': 0.14598408341407776, 'l_cir': 0.14598408341407776, 'lr': 8.893903265066011e-05, 'grad_norm': 1.1076682806015015, 'sec_per_step': 23.321489095687866, 'max_mem_gb': 2.2308616638183594, 'max_mem_reserved_gb': 2.28125}
+{'step': 150, 'loss': 0.18389169871807098, 'l_cir': 0.18389169871807098, 'lr': 8.736326238274872e-05, 'grad_norm': 3.038536787033081, 'sec_per_step': 24.29175114631653, 'max_mem_gb': 2.2341418266296387, 'max_mem_reserved_gb': 2.28125}
+{'step': 160, 'loss': 0.2640141248703003, 'l_cir': 0.2640141248703003, 'lr': 8.569859520321833e-05, 'grad_norm': 1.8602427244186401, 'sec_per_step': 26.083085536956787, 'max_mem_gb': 2.2341418266296387, 'max_mem_reserved_gb': 2.28125}
+{'step': 170, 'loss': 0.1643265187740326, 'l_cir': 0.1643265187740326, 'lr': 8.394899178792263e-05, 'grad_norm': 1.4996638298034668, 'sec_per_step': 25.900245189666748, 'max_mem_gb': 2.2341418266296387, 'max_mem_reserved_gb': 2.28125}
+{'step': 180, 'loss': 0.15812017023563385, 'l_cir': 0.15812017023563385, 'lr': 8.21186148980944e-05, 'grad_norm': 1.8808449506759644, 'sec_per_step': 26.622841596603394, 'max_mem_gb': 2.2341418266296387, 'max_mem_reserved_gb': 2.28125}
+{'step': 190, 'loss': 0.3098101317882538, 'l_cir': 0.3098101317882538, 'lr': 8.021181947605473e-05, 'grad_norm': 2.097348213195801, 'sec_per_step': 25.87752342224121, 'max_mem_gb': 2.2341418266296387, 'max_mem_reserved_gb': 2.28125}
+{'step': 200, 'loss': 0.1834670752286911, 'l_cir': 0.1834670752286911, 'lr': 7.82331422836734e-05, 'grad_norm': 1.4010846614837646, 'sec_per_step': 25.68368935585022, 'max_mem_gb': 2.2341418266296387, 'max_mem_reserved_gb': 2.28125}
+{'step': 200, 'dev': {'deepfashion': {'n_queries': 392, 'n_gallery': 443, 'R@1': 9.69, 'R@5': 89.29, 'R@10': 95.92, 'R@1_src_excluded': 66.84, 'R@5_src_excluded': 92.35, 'R@10_src_excluded': 95.92}, 'f200k': {'n_queries': 500, 'n_gallery': 887, 'R@1': 10.0, 'R@5': 91.6, 'R@10': 96.2, 'R@1_src_excluded': 70.6, 'R@5_src_excluded': 92.8, 'R@10_src_excluded': 96.2}, 'fashiongen_train': {'n_queries': 500, 'n_gallery': 879, 'R@1': 16.2, 'R@5': 93.2, 'R@10': 97.2, 'R@1_src_excluded': 71.6, 'R@5_src_excluded': 95.0, 'R@10_src_excluded': 97.8}}, 'dev_score': 91.36333333333334, 'best_step': 200}
+{'step': 210, 'loss': 0.10193118453025818, 'l_cir': 0.10193118453025818, 'lr': 7.618729110823332e-05, 'grad_norm': 0.8897515535354614, 'sec_per_step': 25.667750358581543, 'max_mem_gb': 2.2341418266296387, 'max_mem_reserved_gb': 2.28125}
+{'step': 220, 'loss': 0.12846016883850098, 'l_cir': 0.12846016883850098, 'lr': 7.407913356138109e-05, 'grad_norm': 1.2377396821975708, 'sec_per_step': 27.507352113723755, 'max_mem_gb': 2.2374215126037598, 'max_mem_reserved_gb': 2.28125}
+{'step': 230, 'loss': 0.1124584823846817, 'l_cir': 0.1124584823846817, 'lr': 7.191368549781383e-05, 'grad_norm': 0.9059191346168518, 'sec_per_step': 26.597206830978394, 'max_mem_gb': 2.2374215126037598, 'max_mem_reserved_gb': 2.28125}
+{'step': 240, 'loss': 0.09775771200656891, 'l_cir': 0.09775771200656891, 'lr': 6.969609908125717e-05, 'grad_norm': 0.8414325714111328, 'sec_per_step': 27.006258010864258, 'max_mem_gb': 2.2374215126037598, 'max_mem_reserved_gb': 2.28125}
+{'step': 250, 'loss': 0.08274756371974945, 'l_cir': 0.08274756371974945, 'lr': 6.743165052612899e-05, 'grad_norm': 0.7259538769721985, 'sec_per_step': 25.965142965316772, 'max_mem_gb': 2.2374215126037598, 'max_mem_reserved_gb': 2.28125}
+{'step': 260, 'loss': 0.18760544061660767, 'l_cir': 0.18760544061660767, 'lr': 6.51257275440538e-05, 'grad_norm': 1.8786925077438354, 'sec_per_step': 26.838553428649902, 'max_mem_gb': 2.239884376525879, 'max_mem_reserved_gb': 2.28125}
+{'step': 270, 'loss': 0.11786746978759766, 'l_cir': 0.11786746978759766, 'lr': 6.278381652509676e-05, 'grad_norm': 1.1191344261169434, 'sec_per_step': 25.773360013961792, 'max_mem_gb': 2.239884376525879, 'max_mem_reserved_gb': 2.28125}
+{'step': 280, 'loss': 0.12651056051254272, 'l_cir': 0.12651056051254272, 'lr': 6.041148948421574e-05, 'grad_norm': 0.9808776378631592, 'sec_per_step': 26.05118155479431, 'max_mem_gb': 2.239884376525879, 'max_mem_reserved_gb': 2.28125}
+{'step': 290, 'loss': 0.11891645193099976, 'l_cir': 0.11891645193099976, 'lr': 5.8014390803989685e-05, 'grad_norm': 1.1767297983169556, 'sec_per_step': 25.72387409210205, 'max_mem_gb': 2.239884376525879, 'max_mem_reserved_gb': 2.28125}
+{'step': 300, 'loss': 0.14308299124240875, 'l_cir': 0.14308299124240875, 'lr': 5.559822380516539e-05, 'grad_norm': 1.3961622714996338, 'sec_per_step': 25.97192668914795, 'max_mem_gb': 2.239884376525879, 'max_mem_reserved_gb': 2.28125}
+{'step': 300, 'dev': {'deepfashion': {'n_queries': 392, 'n_gallery': 443, 'R@1': 27.04, 'R@5': 92.35, 'R@10': 97.7, 'R@1_src_excluded': 69.9, 'R@5_src_excluded': 94.39, 'R@10_src_excluded': 97.96}, 'f200k': {'n_queries': 500, 'n_gallery': 887, 'R@1': 24.2, 'R@5': 93.6, 'R@10': 97.8, 'R@1_src_excluded': 74.0, 'R@5_src_excluded': 94.6, 'R@10_src_excluded': 97.8}, 'fashiongen_train': {'n_queries': 500, 'n_gallery': 879, 'R@1': 34.4, 'R@5': 93.2, 'R@10': 97.0, 'R@1_src_excluded': 73.2, 'R@5_src_excluded': 94.8, 'R@10_src_excluded': 97.0}}, 'dev_score': 93.05, 'best_step': 300}
+{'step': 310, 'loss': 0.0663241297006607, 'l_cir': 0.0663241297006607, 'lr': 5.316873717697544e-05, 'grad_norm': 0.8014707565307617, 'sec_per_step': 27.073199033737183, 'max_mem_gb': 2.239884376525879, 'max_mem_reserved_gb': 2.28125}
+{'step': 320, 'loss': 0.06109292805194855, 'l_cir': 0.06109292805194855, 'lr': 5.073171129951223e-05, 'grad_norm': 0.7312225699424744, 'sec_per_step': 26.37825870513916, 'max_mem_gb': 2.239884376525879, 'max_mem_reserved_gb': 2.28125}
+{'step': 330, 'loss': 0.10635453462600708, 'l_cir': 0.10635453462600708, 'lr': 4.829294449070161e-05, 'grad_norm': 0.9722517132759094, 'sec_per_step': 26.604583024978638, 'max_mem_gb': 2.239884376525879, 'max_mem_reserved_gb': 2.28125}
+{'step': 340, 'loss': 0.13889864087104797, 'l_cir': 0.13889864087104797, 'lr': 4.585823921059758e-05, 'grad_norm': 1.5078556537628174, 'sec_per_step': 26.76818537712097, 'max_mem_gb': 2.239884376525879, 'max_mem_reserved_gb': 2.28125}
+{'step': 350, 'loss': 0.15347573161125183, 'l_cir': 0.15347573161125183, 'lr': 4.343338825582173e-05, 'grad_norm': 1.5270864963531494, 'sec_per_step': 25.945830821990967, 'max_mem_gb': 2.239884376525879, 'max_mem_reserved_gb': 2.28125}
+{'step': 360, 'loss': 0.09774854779243469, 'l_cir': 0.09774854779243469, 'lr': 4.1024160976994706e-05, 'grad_norm': 0.9336073398590088, 'sec_per_step': 25.78073811531067, 'max_mem_gb': 2.239884376525879, 'max_mem_reserved_gb': 2.28125}
+{'step': 370, 'loss': 0.1124459058046341, 'l_cir': 0.1124459058046341, 'lr': 3.863628955195154e-05, 'grad_norm': 1.4823890924453735, 'sec_per_step': 26.26318049430847, 'max_mem_gb': 2.239884376525879, 'max_mem_reserved_gb': 2.28125}
+{'step': 380, 'loss': 0.07896296679973602, 'l_cir': 0.07896296679973602, 'lr': 3.627545534740096e-05, 'grad_norm': 0.8326427340507507, 'sec_per_step': 24.932040452957153, 'max_mem_gb': 2.239884376525879, 'max_mem_reserved_gb': 2.28125}
+{'step': 390, 'loss': 0.14160394668579102, 'l_cir': 0.14160394668579102, 'lr': 3.394727540147732e-05, 'grad_norm': 1.1735470294952393, 'sec_per_step': 26.14520835876465, 'max_mem_gb': 2.239884376525879, 'max_mem_reserved_gb': 2.28125}
+{'step': 400, 'loss': 0.1123339980840683, 'l_cir': 0.1123339980840683, 'lr': 3.165728905934718e-05, 'grad_norm': 1.1439266204833984, 'sec_per_step': 26.96669030189514, 'max_mem_gb': 2.239884376525879, 'max_mem_reserved_gb': 2.28125}
+{'step': 400, 'dev': {'deepfashion': {'n_queries': 392, 'n_gallery': 443, 'R@1': 19.13, 'R@5': 91.58, 'R@10': 97.19, 'R@1_src_excluded': 70.15, 'R@5_src_excluded': 93.88, 'R@10_src_excluded': 97.45}, 'f200k': {'n_queries': 500, 'n_gallery': 887, 'R@1': 17.8, 'R@5': 94.8, 'R@10': 98.0, 'R@1_src_excluded': 75.0, 'R@5_src_excluded': 96.0, 'R@10_src_excluded': 98.6}, 'fashiongen_train': {'n_queries': 500, 'n_gallery': 879, 'R@1': 29.6, 'R@5': 95.0, 'R@10': 98.2, 'R@1_src_excluded': 77.0, 'R@5_src_excluded': 96.0, 'R@10_src_excluded': 98.6}}, 'dev_score': 93.79333333333334, 'best_step': 400}
+{'step': 410, 'loss': 0.11673673242330551, 'l_cir': 0.11673673242330551, 'lr': 2.941094479366743e-05, 'grad_norm': 1.1795916557312012, 'sec_per_step': 25.774056673049927, 'max_mem_gb': 2.239884376525879, 'max_mem_reserved_gb': 2.28125}
+{'step': 420, 'loss': 0.09327391535043716, 'l_cir': 0.09327391535043716, 'lr': 2.721358724125287e-05, 'grad_norm': 1.1402019262313843, 'sec_per_step': 26.344390630722046, 'max_mem_gb': 2.239884376525879, 'max_mem_reserved_gb': 2.28125}
+{'step': 430, 'loss': 0.0740562379360199, 'l_cir': 0.0740562379360199, 'lr': 2.5070444486796184e-05, 'grad_norm': 0.7681313753128052, 'sec_per_step': 26.15772318840027, 'max_mem_gb': 2.239884376525879, 'max_mem_reserved_gb': 2.28125}
+{'step': 440, 'loss': 0.12740901112556458, 'l_cir': 0.12740901112556458, 'lr': 2.2986615623895774e-05, 'grad_norm': 1.3563194274902344, 'sec_per_step': 26.59273910522461, 'max_mem_gb': 2.239884376525879, 'max_mem_reserved_gb': 2.28125}
+{'step': 450, 'loss': 0.16293834149837494, 'l_cir': 0.16293834149837494, 'lr': 2.0967058622986762e-05, 'grad_norm': 1.4179292917251587, 'sec_per_step': 26.839733839035034, 'max_mem_gb': 2.239884376525879, 'max_mem_reserved_gb': 2.28125}
+{'step': 460, 'loss': 0.12363135814666748, 'l_cir': 0.12363135814666748, 'lr': 1.901657853504088e-05, 'grad_norm': 1.2131646871566772, 'sec_per_step': 25.69563055038452, 'max_mem_gb': 2.239884376525879, 'max_mem_reserved_gb': 2.28125}
+{'step': 470, 'loss': 0.06246153265237808, 'l_cir': 0.06246153265237808, 'lr': 1.7139816059101387e-05, 'grad_norm': 0.7201789021492004, 'sec_per_step': 25.463435888290405, 'max_mem_gb': 2.239884376525879, 'max_mem_reserved_gb': 2.28125}
+{'step': 480, 'loss': 0.05884687975049019, 'l_cir': 0.05884687975049019, 'lr': 1.5341236500853963e-05, 'grad_norm': 0.6991226077079773, 'sec_per_step': 26.03282880783081, 'max_mem_gb': 2.239884376525879, 'max_mem_reserved_gb': 2.28125}
+{'step': 490, 'loss': 0.08039386570453644, 'l_cir': 0.08039386570453644, 'lr': 1.3625119148504011e-05, 'grad_norm': 1.214927315711975, 'sec_per_step': 26.345605850219727, 'max_mem_gb': 2.239884376525879, 'max_mem_reserved_gb': 2.28125}
+{'step': 500, 'loss': 0.1256313920021057, 'l_cir': 0.1256313920021057, 'lr': 1.1995547091237824e-05, 'grad_norm': 1.2143874168395996, 'sec_per_step': 25.981196403503418, 'max_mem_gb': 2.239884376525879, 'max_mem_reserved_gb': 2.28125}
+{'step': 500, 'dev': {'deepfashion': {'n_queries': 392, 'n_gallery': 443, 'R@1': 23.72, 'R@5': 93.37, 'R@10': 97.96, 'R@1_src_excluded': 71.94, 'R@5_src_excluded': 95.92, 'R@10_src_excluded': 98.72}, 'f200k': {'n_queries': 500, 'n_gallery': 887, 'R@1': 20.8, 'R@5': 94.8, 'R@10': 97.8, 'R@1_src_excluded': 74.6, 'R@5_src_excluded': 96.0, 'R@10_src_excluded': 98.0}, 'fashiongen_train': {'n_queries': 500, 'n_gallery': 879, 'R@1': 30.4, 'R@5': 94.2, 'R@10': 98.2, 'R@1_src_excluded': 78.0, 'R@5_src_excluded': 95.0, 'R@10_src_excluded': 98.4}}, 'dev_score': 94.12333333333333, 'best_step': 500}
+{'step': 510, 'loss': 0.08557875454425812, 'l_cir': 0.08557875454425812, 'lr': 1.045639750449226e-05, 'grad_norm': 0.9919724464416504, 'sec_per_step': 27.193986177444458, 'max_mem_gb': 2.239884376525879, 'max_mem_reserved_gb': 2.28125}
+{'step': 520, 'loss': 0.07338574528694153, 'l_cir': 0.07338574528694153, 'lr': 9.011332425146735e-06, 'grad_norm': 0.7793883085250854, 'sec_per_step': 26.34834909439087, 'max_mem_gb': 2.239884376525879, 'max_mem_reserved_gb': 2.28125}
+{'step': 530, 'loss': 0.0682784765958786, 'l_cir': 0.0682784765958786, 'lr': 7.663790038585793e-06, 'grad_norm': 0.7393895983695984, 'sec_per_step': 26.412366151809692, 'max_mem_gb': 2.239884376525879, 'max_mem_reserved_gb': 2.28125}
+{'step': 540, 'loss': 0.07998299598693848, 'l_cir': 0.07998299598693848, 'lr': 6.416976498362443e-06, 'grad_norm': 0.9692527055740356, 'sec_per_step': 26.38998579978943, 'max_mem_gb': 2.239884376525879, 'max_mem_reserved_gb': 2.28125}
+{'step': 550, 'loss': 0.09425650537014008, 'l_cir': 0.09425650537014008, 'lr': 5.273858297925655e-06, 'grad_norm': 1.2071233987808228, 'sec_per_step': 26.7686505317688, 'max_mem_gb': 2.239884376525879, 'max_mem_reserved_gb': 2.28125}
+{'step': 560, 'loss': 0.17841115593910217, 'l_cir': 0.17841115593910217, 'lr': 4.237155212561461e-06, 'grad_norm': 1.646589756011963, 'sec_per_step': 25.897952795028687, 'max_mem_gb': 2.239884376525879, 'max_mem_reserved_gb': 2.28125}
+{'step': 570, 'loss': 0.13840961456298828, 'l_cir': 0.13840961456298828, 'lr': 3.3093338283407217e-06, 'grad_norm': 1.3037296533584595, 'sec_per_step': 27.303835153579712, 'max_mem_gb': 2.239884376525879, 'max_mem_reserved_gb': 2.28125}
+{'step': 580, 'loss': 0.08937621116638184, 'l_cir': 0.08937621116638184, 'lr': 2.4926016734697743e-06, 'grad_norm': 1.0262038707733154, 'sec_per_step': 26.412049055099487, 'max_mem_gb': 2.239884376525879, 'max_mem_reserved_gb': 2.28125}
+{'step': 590, 'loss': 0.10637723654508591, 'l_cir': 0.10637723654508591, 'lr': 1.7889019660071783e-06, 'grad_norm': 1.3157111406326294, 'sec_per_step': 26.088165998458862, 'max_mem_gb': 2.239884376525879, 'max_mem_reserved_gb': 2.28125}
+{'step': 600, 'loss': 0.09378305822610855, 'l_cir': 0.09378305822610855, 'lr': 1.1999089904428385e-06, 'grad_norm': 1.0173866748809814, 'sec_per_step': 26.008450508117676, 'max_mem_gb': 2.239884376525879, 'max_mem_reserved_gb': 2.28125}
+{'step': 600, 'dev': {'deepfashion': {'n_queries': 392, 'n_gallery': 443, 'R@1': 23.98, 'R@5': 94.13, 'R@10': 98.47, 'R@1_src_excluded': 72.45, 'R@5_src_excluded': 95.66, 'R@10_src_excluded': 98.72}, 'f200k': {'n_queries': 500, 'n_gallery': 887, 'R@1': 22.0, 'R@5': 95.0, 'R@10': 98.0, 'R@1_src_excluded': 76.2, 'R@5_src_excluded': 95.8, 'R@10_src_excluded': 98.0}, 'fashiongen_train': {'n_queries': 500, 'n_gallery': 879, 'R@1': 32.6, 'R@5': 94.6, 'R@10': 98.2, 'R@1_src_excluded': 79.0, 'R@5_src_excluded': 95.4, 'R@10_src_excluded': 98.6}}, 'dev_score': 94.57666666666667, 'best_step': 600}
+{'step': 610, 'loss': 0.09079974889755249, 'l_cir': 0.09079974889755249, 'lr': 7.270241141401569e-07, 'grad_norm': 1.0028587579727173, 'sec_per_step': 26.965816020965576, 'max_mem_gb': 2.239884376525879, 'max_mem_reserved_gb': 2.28125}
+{'step': 620, 'loss': 0.11793047189712524, 'l_cir': 0.11793047189712524, 'lr': 3.7137245311881784e-07, 'grad_norm': 1.1184583902359009, 'sec_per_step': 26.12422204017639, 'max_mem_gb': 2.239884376525879, 'max_mem_reserved_gb': 2.28125}
+{'step': 630, 'loss': 0.09757503867149353, 'l_cir': 0.09757503867149353, 'lr': 1.338001951113943e-07, 'grad_norm': 1.1665667295455933, 'sec_per_step': 25.95004105567932, 'max_mem_gb': 2.239884376525879, 'max_mem_reserved_gb': 2.28125}
+{'step': 640, 'loss': 0.1006791889667511, 'l_cir': 0.1006791889667511, 'lr': 1.4872586262792975e-08, 'grad_norm': 1.1108263731002808, 'sec_per_step': 26.09317684173584, 'max_mem_gb': 2.239884376525879, 'max_mem_reserved_gb': 2.28125}
+{'step': 644, 'loss': 0.045112527906894684, 'l_cir': 0.045112527906894684, 'lr': 5.949317655462583e-10, 'grad_norm': 0.6025552153587341, 'sec_per_step': 26.768879890441895, 'max_mem_gb': 2.239884376525879, 'max_mem_reserved_gb': 2.28125}
+{'step': 644, 'dev': {'deepfashion': {'n_queries': 392, 'n_gallery': 443, 'R@1': 24.23, 'R@5': 94.13, 'R@10': 98.47, 'R@1_src_excluded': 72.45, 'R@5_src_excluded': 95.66, 'R@10_src_excluded': 98.72}, 'f200k': {'n_queries': 500, 'n_gallery': 887, 'R@1': 22.2, 'R@5': 94.8, 'R@10': 98.0, 'R@1_src_excluded': 75.8, 'R@5_src_excluded': 95.8, 'R@10_src_excluded': 98.0}, 'fashiongen_train': {'n_queries': 500, 'n_gallery': 879, 'R@1': 33.0, 'R@5': 94.6, 'R@10': 98.2, 'R@1_src_excluded': 78.4, 'R@5_src_excluded': 95.6, 'R@10_src_excluded': 98.6}}, 'dev_score': 94.50999999999999, 'best_step': 600}
++ /opt/conda/bin/python -m procir_train.export --config /home/jovyan/HCMUT_Fashion_MV/runs/photo_single_s42/config.yaml --checkpoint /home/jovyan/HCMUT_Fashion_MV/runs/photo_single_s42/ckpt/latest.pt --out /home/jovyan/HCMUT_Fashion_MV/runs/photo_single_s42/export
+Loading weights:   0%|                                                                                                                                                                               | 0/473 [00:00<?, ?it/s]Loading weights:   4%|███████▎                                                                                                                                                             | 21/473 [00:00<00:02, 201.36it/s]Loading weights:   9%|██████████████▋                                                                                                                                                      | 42/473 [00:00<00:02, 160.51it/s]Loading weights:  12%|████████████████████▌                                                                                                                                                | 59/473 [00:00<00:02, 151.43it/s]Loading weights:  18%|██████████████████████████████                                                                                                                                       | 86/473 [00:00<00:02, 187.24it/s]Loading weights:  22%|████████████████████████████████████▊                                                                                                                               | 106/473 [00:00<00:02, 183.42it/s]Loading weights:  26%|███████████████████████████████████████████▎                                                                                                                        | 125/473 [00:00<00:01, 181.61it/s]Loading weights:  30%|█████████████████████████████████████████████████▉                                                                                                                  | 144/473 [00:00<00:01, 169.13it/s]Loading weights:  34%|████████████████████████████████████████████████████████▏                                                                                                           | 162/473 [00:00<00:01, 163.11it/s]Loading weights:  40%|██████████████████████████████████████████████████████████████████▏                                                                                                 | 191/473 [00:01<00:01, 183.58it/s]Loading weights:  46%|███████████████████████████████████████████████████████████████████████████▉                                                                                        | 219/473 [00:01<00:01, 193.59it/s]Loading weights:  52%|█████████████████████████████████████████████████████████████████████████████████████▉                                                                              | 248/473 [00:01<00:01, 214.22it/s]Loading weights:  57%|█████████████████████████████████████████████████████████████████████████████████████████████▌                                                                      | 270/473 [00:01<00:00, 207.75it/s]Loading weights:  62%|████████████████████████████████████████████████████████████████████████████████████████████████████▉                                                               | 291/473 [00:01<00:01, 177.91it/s]Loading weights:  66%|███████████████████████████████████████████████████████████████████████████████████████████████████████████▍                                                        | 310/473 [00:01<00:00, 170.07it/s]Loading weights:  69%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋                                                  | 328/473 [00:01<00:00, 167.34it/s]Loading weights:  75%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▍                                         | 353/473 [00:01<00:00, 182.48it/s]Loading weights:  80%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋                                 | 377/473 [00:02<00:00, 177.96it/s]Loading weights:  87%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▊                     | 412/473 [00:02<00:00, 216.32it/s]Loading weights:  92%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▊             | 435/473 [00:02<00:00, 206.64it/s]Loading weights: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 473/473 [00:02<00:00, 197.62it/s]
+Writing model shards:   0%|                                                                                                                                                                            | 0/1 [00:00<?, ?it/s]Writing model shards: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:33<00:00, 33.42s/it]Writing model shards: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:33<00:00, 33.42s/it]
++ /opt/conda/bin/python -m procir_train.retrieval_eval --config /home/jovyan/HCMUT_Fashion_MV/runs/photo_single_s42/config.yaml --checkpoint /home/jovyan/HCMUT_Fashion_MV/runs/photo_single_s42/ckpt/latest.pt --data_dir data/FashionMV_hf/data/data --image_root data/images_official_hr --datasets deepfashion f200k fashiongen_val --out /home/jovyan/HCMUT_Fashion_MV/runs/photo_single_s42/eval_upstream.json --protocol upstream --batch_size 8
+Loading weights:   0%|                                                                                                                                                                               | 0/473 [00:00<?, ?it/s]Loading weights: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 473/473 [00:00<00:00, 11291.18it/s]
+/opt/conda/lib/python3.12/site-packages/transformers/models/qwen2_vl/image_processing_qwen2_vl.py:129: FutureWarning: Passing `min_pixels` and `max_pixels` to a processor call is deprecated and will be removed in v5.23. Pass in `size={'longest_edge': xxx, 'shortest_edge': xxx} to override the target size.`
+  warnings.warn(
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+{
+  "deepfashion": {
+    "n_queries": 5188,
+    "n_gallery": 2791,
+    "R@1": 27.72,
+    "R@5": 81.55,
+    "R@10": 91.46,
+    "R@1_src_excluded": 51.87,
+    "R@5_src_excluded": 84.68,
+    "R@10_src_excluded": 92.64
+  },
+  "f200k": {
+    "n_queries": 18499,
+    "n_gallery": 10720,
+    "R@1": 20.64,
+    "R@5": 69.86,
+    "R@10": 81.77,
+    "R@1_src_excluded": 44.88,
+    "R@5_src_excluded": 73.17,
+    "R@10_src_excluded": 83.04
+  },
+  "fashiongen_val": {
+    "n_queries": 9031,
+    "n_gallery": 5292,
+    "R@1": 31.36,
+    "R@5": 70.04,
+    "R@10": 81.04,
+    "R@1_src_excluded": 45.64,
+    "R@5_src_excluded": 72.71,
+    "R@10_src_excluded": 82.08
+  },
+  "protocol": {
+    "name": "upstream",
+    "max_views": 5,
+    "pixels": [
+      16384,
+      262144
+    ]
+  }
+}
++ /opt/conda/bin/python -m procir_train.retrieval_eval --config /home/jovyan/HCMUT_Fashion_MV/runs/photo_single_s42/config.yaml --checkpoint /home/jovyan/HCMUT_Fashion_MV/runs/photo_single_s42/ckpt/latest.pt --data_dir data/FashionMV_hf/data/data --image_root data/images_official_hr --datasets deepfashion f200k fashiongen_val --out /home/jovyan/HCMUT_Fashion_MV/runs/photo_single_s42/eval_train.json --protocol train --batch_size 8
+Loading weights:   0%|                                                                                                                                                                               | 0/473 [00:00<?, ?it/s]Loading weights: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 473/473 [00:00<00:00, 11040.47it/s]
+/opt/conda/lib/python3.12/site-packages/transformers/models/qwen2_vl/image_processing_qwen2_vl.py:129: FutureWarning: Passing `min_pixels` and `max_pixels` to a processor call is deprecated and will be removed in v5.23. Pass in `size={'longest_edge': xxx, 'shortest_edge': xxx} to override the target size.`
+  warnings.warn(
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+{
+  "deepfashion": {
+    "n_queries": 5188,
+    "n_gallery": 2791,
+    "R@1": 21.84,
+    "R@5": 73.28,
+    "R@10": 85.58,
+    "R@1_src_excluded": 44.2,
+    "R@5_src_excluded": 76.58,
+    "R@10_src_excluded": 86.84
+  },
+  "f200k": {
+    "n_queries": 18499,
+    "n_gallery": 10720,
+    "R@1": 20.59,
+    "R@5": 64.88,
+    "R@10": 77.09,
+    "R@1_src_excluded": 39.99,
+    "R@5_src_excluded": 68.18,
+    "R@10_src_excluded": 78.43
+  },
+  "fashiongen_val": {
+    "n_queries": 9031,
+    "n_gallery": 5292,
+    "R@1": 30.96,
+    "R@5": 69.77,
+    "R@10": 80.7,
+    "R@1_src_excluded": 45.76,
+    "R@5_src_excluded": 72.58,
+    "R@10_src_excluded": 81.9
+  },
+  "protocol": {
+    "name": "train",
+    "max_views": 3,
+    "pixels": [
+      16384,
+      112896
+    ]
+  }
+}

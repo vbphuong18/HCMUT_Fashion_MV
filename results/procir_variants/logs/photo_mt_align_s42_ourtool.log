@@ -1,0 +1,44 @@
+Loading weights:   0%|                                                                                                                                                                               | 0/473 [00:00<?, ?it/s]Loading weights: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 473/473 [00:00<00:00, 9827.74it/s]
+/opt/conda/lib/python3.12/site-packages/transformers/models/qwen2_vl/image_processing_qwen2_vl.py:129: FutureWarning: Passing `min_pixels` and `max_pixels` to a processor call is deprecated and will be removed in v5.23. Pass in `size={'longest_edge': xxx, 'shortest_edge': xxx} to override the target size.`
+  warnings.warn(
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+{
+  "deepfashion": {
+    "n_queries": 5188,
+    "n_gallery": 2791,
+    "R@1": 37.09,
+    "R@5": 83.87,
+    "R@10": 92.75,
+    "R@1_src_excluded": 57.77,
+    "R@5_src_excluded": 86.93,
+    "R@10_src_excluded": 93.62
+  },
+  "f200k": {
+    "n_queries": 18499,
+    "n_gallery": 10720,
+    "R@1": 27.45,
+    "R@5": 72.51,
+    "R@10": 83.62,
+    "R@1_src_excluded": 47.65,
+    "R@5_src_excluded": 75.4,
+    "R@10_src_excluded": 84.67
+  },
+  "fashiongen_val": {
+    "n_queries": 9031,
+    "n_gallery": 5292,
+    "R@1": 34.27,
+    "R@5": 71.54,
+    "R@10": 82.08,
+    "R@1_src_excluded": 47.77,
+    "R@5_src_excluded": 74.12,
+    "R@10_src_excluded": 83.26
+  },
+  "protocol": {
+    "name": "upstream",
+    "max_views": 5,
+    "pixels": [
+      16384,
+      262144
+    ]
+  }
+}

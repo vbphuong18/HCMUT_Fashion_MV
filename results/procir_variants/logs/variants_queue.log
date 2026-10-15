@@ -1,0 +1,46 @@
+nohup: ignoring input
+photos in place: 67680 products (Sun Oct 11 05:59:45 PM UTC 2026)
+building variant mixed (Sun Oct 11 05:59:45 PM UTC 2026)
+DONE 67680 products {'cropped': 132213, 'released': 0, 'no_box': 94090}
+building variant crop (Sun Oct 11 06:21:35 PM UTC 2026)
+DONE 67680 products {'cropped': 226290, 'released': 0, 'no_box': 13}
+building variant mixed_other (Sun Oct 11 06:44:05 PM UTC 2026)
+DONE 67680 products {'cropped': 94077, 'released': 0, 'no_box': 132226}
+=== check_photo start Sun Oct 11 07:03:28 PM UTC 2026
+=== check_photo exit 0 Sun Oct 11 07:57:21 PM UTC 2026
+authors' checkpoint on the photos: R@5 = 78.29 (paper 77.6, earlier test 78.29)
+=== photo_mt_align_s42 start Sun Oct 11 07:57:21 PM UTC 2026
+=== photo_mt_align_s42 exit 0 Mon Oct 12 08:22:15 AM UTC 2026
+=== photo_single_s42 start Mon Oct 12 08:22:15 AM UTC 2026
+=== photo_single_s42 exit 0 Mon Oct 12 07:59:59 PM UTC 2026
+=== photo_mt_align_s42_ourtool start Mon Oct 12 07:59:59 PM UTC 2026
+=== photo_mt_align_s42_ourtool exit 0 Mon Oct 12 11:25:57 PM UTC 2026
+=== check_mixed start Mon Oct 12 11:25:57 PM UTC 2026
+=== check_mixed exit 0 Tue Oct 13 12:10:47 AM UTC 2026
+=== mixed_mt_align_s42 start Tue Oct 13 12:10:47 AM UTC 2026
+=== mixed_mt_align_s42 exit 0 Tue Oct 13 10:34:37 AM UTC 2026
+=== mixed_mt_align_s42_on_photos start Tue Oct 13 10:34:37 AM UTC 2026
+=== mixed_mt_align_s42_on_photos exit 0 Tue Oct 13 11:27:55 AM UTC 2026
+=== check_crop start Tue Oct 13 11:27:55 AM UTC 2026
+=== check_crop exit 0 Tue Oct 13 12:03:11 PM UTC 2026
+=== crop_mt_align_s42 start Tue Oct 13 12:03:11 PM UTC 2026
+=== crop_mt_align_s42 exit 0 Tue Oct 13 09:56:18 PM UTC 2026
+=== crop_mt_align_s42_on_photos start Tue Oct 13 09:56:18 PM UTC 2026
+=== crop_mt_align_s42_on_photos exit 0 Tue Oct 13 10:49:30 PM UTC 2026
+=== check_mixed_other start Tue Oct 13 10:49:30 PM UTC 2026
+=== check_mixed_other exit 0 Tue Oct 13 11:39:36 PM UTC 2026
+=== mixed_other_mt_align_s42 start Tue Oct 13 11:39:36 PM UTC 2026
+=== mixed_other_mt_align_s42 exit 0 Wed Oct 14 10:13:40 AM UTC 2026
+=== mixed_other_mt_align_s42_on_photos start Wed Oct 14 10:13:40 AM UTC 2026
+=== mixed_other_mt_align_s42_on_photos exit 0 Wed Oct 14 11:07:10 AM UTC 2026
+=== queue finished Wed Oct 14 11:07:10 AM UTC 2026
+Fashion200K R@5 (upstream evaluate.py)      own images   photos
+authors' checkpoint / photo                 78.29
+authors' checkpoint / mixed                 75.72
+authors' checkpoint / crop                  74.86
+authors' checkpoint / mixed_other           76.04
+photo_mt_align_s42                          72.48        72.48
+mixed_mt_align_s42                          72.14        72.62
+crop_mt_align_s42                           73.07        70.84
+mixed_other_mt_align_s42                    72.69        73.28
+photo_single_s42 (our tool)                 69.86

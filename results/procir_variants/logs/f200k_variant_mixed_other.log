@@ -1,0 +1,15 @@
+detection boxes: 136407
+5000/67680 products {'cropped': 10161, 'released': 0, 'no_box': 6188}
+10000/67680 products {'cropped': 19081, 'released': 0, 'no_box': 13933}
+15000/67680 products {'cropped': 28303, 'released': 0, 'no_box': 19390}
+20000/67680 products {'cropped': 35216, 'released': 0, 'no_box': 28218}
+25000/67680 products {'cropped': 42101, 'released': 0, 'no_box': 39005}
+30000/67680 products {'cropped': 49293, 'released': 0, 'no_box': 47985}
+35000/67680 products {'cropped': 55965, 'released': 0, 'no_box': 58719}
+40000/67680 products {'cropped': 62747, 'released': 0, 'no_box': 69962}
+45000/67680 products {'cropped': 69341, 'released': 0, 'no_box': 79557}
+50000/67680 products {'cropped': 75637, 'released': 0, 'no_box': 89742}
+55000/67680 products {'cropped': 80464, 'released': 0, 'no_box': 103089}
+60000/67680 products {'cropped': 85394, 'released': 0, 'no_box': 116496}
+65000/67680 products {'cropped': 91130, 'released': 0, 'no_box': 126464}
+DONE 67680 products {'cropped': 94077, 'released': 0, 'no_box': 132226}
