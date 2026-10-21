@@ -31,7 +31,8 @@ if pgrep -f 'queue_f200k_[v]ariants|procir_[t]rain|[e]valuate.py|retrieval_[e]va
   echo "another training or evaluation is using the GPU: wait for it to finish, then start this queue again"; exit 1
 fi
 $PY -c "import fla, peft, transformers, triton" \
-  || { echo "packages missing (the notebook restarted?): Run All in the notebook, then start this queue again"; exit 1; }
+  || { echo "packages missing (the notebook restarted?): in procir_server.ipynb run only the first four code cells" \
+            "(parameters, helpers, repo, packages), not Run All, which can launch training; then start this queue again"; exit 1; }
 n=$(ls "$HR/f200k" | wc -l)
 [ "$n" -eq 67680 ] || { echo "expected the 67680 Fashion200K photo folders in $HR/f200k, found $n"; exit 1; }
 [ -e data/images_official_hr/f200k_cropped ] && echo "note: $HR/f200k_cropped exists; scoring uses $HR/f200k (photos)"
