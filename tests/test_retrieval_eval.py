@@ -182,3 +182,33 @@ def test_protocol_settings():
     assert re_.protocol_settings("train", cfg) == (3, (128 * 128, 336 * 336))
     with pytest.raises(ValueError, match="protocol"):
         re_.protocol_settings("other", cfg)
+
+
+def test_prepared_batches_keep_order_and_size(monkeypatch):
+    monkeypatch.setattr(re_, "load_images", lambda paths: list(paths))
+    items = [([f"p{i}"], i) for i in range(11)]
+    batches = list(re_._prepared(items, 4, lambda extra, imgs: (extra, imgs)))
+    assert [len(b) for b in batches] == [4, 4, 3]
+    assert [x for b in batches for x in b] == [(i, [f"p{i}"]) for i in range(11)]
+    assert list(re_._prepared([], 4, lambda e, i: e)) == []
+
+
+def test_score_dump_matches_recall(fake_setup, tmp_path):
+    from eval_metrics.ranking import load_dump
+
+    emb, recs = fake_setup
+    for r in recs:
+        r["source_id"], r["target_id"] = r["source_key"][2:], r["target_key"][2:]
+    products = {}
+    for r in recs:
+        products.setdefault(r["source_key"], r["source_images"])
+        products.setdefault(r["target_key"], r["target_images"])
+    res = re_._score(FakeEnc(emb), None, products, recs, True, (1, 2), 1, dump_path=tmp_path / "d.npz")
+    d = load_dump(tmp_path / "d.npz")
+    assert d["gallery_keys"].tolist() == list(products)
+    assert d["source_ids"].tolist() == ["a", "c"] and d["target_ids"].tolist() == ["b", "e"]
+    assert d["rank_keep"].tolist() == [1, 2]   # second query: own source first, then target
+    assert d["rank_excl"].tolist() == [1, 1]
+    assert d["rank_src"].tolist() == [2, 1]
+    assert 100 * (d["rank_keep"] <= 1).mean() == res["R@1"]
+    assert d["meta"]["recall"]["R@1"] == res["R@1"] and d["meta"]["multi_turn"] is True

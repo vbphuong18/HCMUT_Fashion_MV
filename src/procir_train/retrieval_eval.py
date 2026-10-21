@@ -15,7 +15,9 @@ Usage: PYTHONPATH=src:external/FashionMV python -m procir_train.retrieval_eval -
 import argparse
 import json
 import os
+import time
 from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import torch
@@ -51,27 +53,42 @@ def recall_at_k(q, g, gt, ks=(1, 5, 10), exclude=None):
     return out
 
 
-def _score(encoder, processor, products, queries, multi_turn, px, batch_size):
-    keys = list(products)
-    g_rows = []
-    for i in range(0, len(keys), batch_size):
-        inputs = []
-        for k in keys[i:i + batch_size]:
-            imgs = load_images(products[k])
-            inputs.append(process_visual(processor, doc_text(processor, len(imgs)), imgs, *px))
-        g_rows.append(encoder.encode_single(inputs).float().cpu())
+def _prepared(items, batch_size, build, io_threads=4):
+    """Yield build-ready batches: the next batch's images are read (io_threads in parallel) and
+    processed in a worker thread while the caller encodes the current one. Only that one worker
+    calls the processor, so the tokenizer is never used from two threads at once. Batches and the
+    inputs inside them keep their order, so the encodings are the same as without prefetching."""
+    chunks = [items[i:i + batch_size] for i in range(0, len(items), batch_size)]
+    with ThreadPoolExecutor(max_workers=io_threads) as io, ThreadPoolExecutor(max_workers=1) as worker:
+        def prepare(chunk):
+            imgs = io.map(load_images, [paths for paths, _ in chunk])
+            return [build(extra, im) for (_, extra), im in zip(chunk, imgs)]
 
-    build = multiturn_query_text if multi_turn else singleturn_query_text
+        fut = worker.submit(prepare, chunks[0]) if chunks else None
+        for i in range(len(chunks)):
+            inputs = fut.result()
+            fut = worker.submit(prepare, chunks[i + 1]) if i + 1 < len(chunks) else None
+            yield inputs
+
+
+def _score(encoder, processor, products, queries, multi_turn, px, batch_size, dump_path=None):
+    keys = list(products)
+    t0 = time.perf_counter()
+    g_rows = []
+    doc = lambda _, imgs: process_visual(processor, doc_text(processor, len(imgs)), imgs, *px)
+    for inputs in _prepared([(products[k], None) for k in keys], batch_size, doc):
+        g_rows.append(encoder.encode_single(inputs).float().cpu())
+    t_gallery = time.perf_counter() - t0
+
+    text = multiturn_query_text if multi_turn else singleturn_query_text
+    query = lambda mod, imgs: process_visual(processor, text(processor, len(imgs), mod), imgs, *px)
     q_rows = []
-    for i in range(0, len(queries), batch_size):
-        inputs = []
-        for r in queries[i:i + batch_size]:
-            imgs = load_images(r["source_images"])
-            inputs.append(process_visual(processor, build(processor, len(imgs), r["mod_short"]), imgs, *px))
+    for inputs in _prepared([(r["source_images"], r["mod_short"]) for r in queries], batch_size, query):
         if multi_turn:
             q_rows.append(encoder.encode_multiturn(inputs)[1].float().cpu())
         else:
             q_rows.append(encoder.encode_single(inputs).float().cpu())
+    t_queries = time.perf_counter() - t0 - t_gallery
 
     g, q = torch.cat(g_rows), torch.cat(q_rows)
     idx = {k: i for i, k in enumerate(keys)}
@@ -80,6 +97,14 @@ def _score(encoder, processor, products, queries, multi_turn, px, batch_size):
     res = {"n_queries": len(queries), "n_gallery": len(keys)}
     res.update(recall_at_k(q, g, gt))
     res.update({f"{k}_src_excluded": v for k, v in recall_at_k(q, g, gt, exclude=src).items()})
+    if dump_path is not None:
+        from eval_metrics.ranking import save_dump
+
+        save_dump(dump_path, q.numpy(), g.numpy(), keys, [r["source_id"] for r in queries],
+                  [r["target_id"] for r in queries], gt, src,
+                  meta={"tool": "procir_train.retrieval_eval", "multi_turn": multi_turn,
+                        "pixels": list(px), "batch_size": batch_size, "recall": res,
+                        "seconds_gallery": round(t_gallery, 1), "seconds_queries": round(t_queries, 1)})
     return res
 
 
@@ -130,7 +155,9 @@ def val_gallery_and_queries(data_dir, image_root, dataset, max_views=UPSTREAM_MA
 
 
 def evaluate_val(encoder, processor, data_dir, image_root, datasets, multi_turn, batch_size=16,
-                 max_views=UPSTREAM_MAX_VIEWS, pixels=UPSTREAM_PIXELS):
+                 max_views=UPSTREAM_MAX_VIEWS, pixels=UPSTREAM_PIXELS, dump_dir=None):
+    """dump_dir: also write <dump_dir>/<dataset>.npz with embeddings, per-query ranks and top-K
+    lists (eval_metrics.ranking); Recall is unchanged."""
     # build and validate every dataset first, so a bad one does not waste earlier compute
     built = {}
     for ds in datasets:
@@ -140,7 +167,8 @@ def evaluate_val(encoder, processor, data_dir, image_root, datasets, multi_turn,
         built[ds] = (products, queries)
 
     def run():
-        return {ds: _score(encoder, processor, products, queries, multi_turn, pixels, batch_size)
+        return {ds: _score(encoder, processor, products, queries, multi_turn, pixels, batch_size,
+                           dump_path=Path(dump_dir) / f"{ds}.npz" if dump_dir else None)
                 for ds, (products, queries) in built.items()}
 
     return _in_eval_mode(encoder, run)
@@ -163,6 +191,8 @@ def main(argv=None):
     ap.add_argument("--protocol", choices=PROTOCOLS, default="upstream",
                     help="upstream: 5 views, 128^2-512^2 px (reported numbers); "
                          "train: the run's max_views and pixel range (diagnostic)")
+    ap.add_argument("--dump_dir", default=None,
+                    help="also save embeddings, per-query ranks and top-K lists per dataset here")
     args = ap.parse_args(argv)
 
     cfg = load_config(args.config)
@@ -170,7 +200,8 @@ def main(argv=None):
     load_checkpoint(args.checkpoint, encoder)
     max_views, pixels = protocol_settings(args.protocol, cfg)
     res = evaluate_val(encoder, processor, args.data_dir, args.image_root, args.datasets,
-                       cfg.multi_turn, args.batch_size, max_views=max_views, pixels=pixels)
+                       cfg.multi_turn, args.batch_size, max_views=max_views, pixels=pixels,
+                       dump_dir=args.dump_dir)
     res["protocol"] = {"name": args.protocol, "max_views": max_views, "pixels": list(pixels)}
     Path(args.out).write_text(json.dumps(res, indent=2), encoding="utf-8")
     print(json.dumps(res, indent=2))
