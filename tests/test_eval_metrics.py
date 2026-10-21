@@ -262,3 +262,37 @@ def test_report_refuses_ranks_that_disagree_with_printed_recall(tmp_path):
               meta={"recall": {"R@1": 99.0}})
     with pytest.raises(ValueError, match="R@1 from ranks"):
         R.check_recall("m", R.load_model(tmp_path / "m"))
+
+
+def test_rank_buckets_and_depth():
+    rank = np.array([1, 3, 8, 30, 70, 300, 900, 1000])
+    b = M.rank_buckets(rank)
+    assert b == {"1": 12.5, "2-5": 12.5, "6-10": 12.5, "11-50": 12.5, "51-100": 12.5, "101-500": 12.5, ">500": 25.0}
+    assert sum(b.values()) == 100.0
+    d = M.depth([1, 501, 1000], 1001)  # 0%, 50%, 99.9% of the gallery above the target
+    assert d["mean_pct_above"] == round((0 + 50 + 99.9) / 3, 2)
+    assert d["median_pct_above"] == 50.0
+    assert d["bottom_half"] == round(200 / 3, 2) and d["bottom_10pct"] == round(100 / 3, 2)
+    assert d["worst_rank"] == 1000
+
+
+def test_report_shows_deepest_targets(tmp_path):
+    import json as _json
+
+    from eval_metrics import report as R
+
+    rng = np.random.default_rng(3)
+    rows = [{"source_id": f"{ds}-{i}", "target_id": f"{ds}-{(i + 5) % n}", "dataset": ds,
+             "views_involved": ["front"], "modification_text_short": f"t{i}"}
+            for ds, n in (("deepfashion", 60), ("f200k", 90)) for i in range(n - 10)]
+    data = tmp_path / "data"
+    data.mkdir()
+    (data / "val_triplets.jsonl").write_text("\n".join(_json.dumps(r) for r in rows) + "\n")
+    _fake_model(tmp_path, "m", rng, 0.5, rows)
+    R.main(["--data_dir", str(data), "--out", str(tmp_path / "out"), "--model", f"m={tmp_path / 'm'}"])
+    deep = _json.loads((tmp_path / "out" / "examples.json").read_text())["deepest_targets"]["m"]["f200k"]
+    ranks = [x["rank"] for x in deep]
+    assert ranks == sorted(ranks, reverse=True) and deep[0]["n_gallery"] == 90
+    mm = _json.loads((tmp_path / "out" / "metrics.json").read_text())["m"]["f200k"]
+    assert abs(sum(mm["buckets"].values()) - 100) < 0.05
+    assert "How deep the target sits" in (tmp_path / "out" / "tables.md").read_text()

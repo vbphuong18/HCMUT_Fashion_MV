@@ -55,6 +55,31 @@ def rank_histogram(rank, k=10):
     return out
 
 
+RANK_BUCKETS = ((1, 1), (2, 5), (6, 10), (11, 50), (51, 100), (101, 500), (501, None))
+
+
+def rank_buckets(rank):
+    """Share of queries (%) whose target falls in each rank band, down to the end of the gallery."""
+    rank = np.asarray(rank)
+    out = {}
+    for lo, hi in RANK_BUCKETS:
+        inside = (rank >= lo) if hi is None else (rank >= lo) & (rank <= hi)
+        label = f"{lo}" if lo == hi else (f">{lo - 1}" if hi is None else f"{lo}-{hi}")
+        out[label] = round(100 * float(inside.mean()), 2)
+    return out
+
+
+def depth(rank, n_gallery):
+    """How deep the target sits relative to the gallery size (galleries differ: 2,791 to 10,720):
+    % of the gallery ranked above the target, its mean and median, and the share of queries whose
+    target is in the bottom half / bottom 10% of the whole list."""
+    pos = 100 * (np.asarray(rank, dtype=np.float64) - 1) / max(n_gallery - 1, 1)
+    return {"mean_pct_above": round(float(pos.mean()), 2), "median_pct_above": round(float(np.median(pos)), 2),
+            "bottom_half": round(100 * float((pos >= 50).mean()), 2),
+            "bottom_10pct": round(100 * float((pos >= 90).mean()), 2),
+            "worst_rank": int(np.max(rank))}
+
+
 def canonical_views(views):
     """Group key of a triplet's views_involved: the front/back/side names it mentions, sorted;
     any other view (detail, sleeve, ...) adds 'other'; an empty list gives 'none'."""

@@ -7,7 +7,8 @@ Usage: PYTHONPATH=src python -m eval_metrics.report --data_dir DIR --out DIR \
 Each model directory holds <dataset>.npz from eval_metrics.ranking.save_dump. Writes:
   metrics.json   per model and dataset: both protocols, leak rates, rank histogram, views groups
   compare.json   per pair: deltas with paired-bootstrap CI and p, McNemar, per-query rank changes
-  examples.json  per pair and dataset: queries with the largest rank gains and losses, with top-5 lists
+  examples.json  per model: the queries whose target sits deepest; per pair and dataset: queries
+                 with the largest rank gains and losses; all with top-5 lists
   tables.md      the same, as Markdown tables
 Before anything else it checks that Recall@1/5/10 from the stored ranks equals the Recall the
 evaluation run printed (stored in each dump's meta) and stops if not.
@@ -70,6 +71,8 @@ def model_metrics(dumps, triplets):
         out[ds] = {"n_queries": int(len(d["rank_keep"])), "n_gallery": int(len(d["gallery_keys"])),
                    "keep": M.summary(d["rank_keep"]), "excl": M.summary(d["rank_excl"]),
                    "leak": M.leak_rates(d["rank_src"]), "hist_top10": M.rank_histogram(d["rank_keep"]),
+                   "buckets": M.rank_buckets(d["rank_keep"]),
+                   "depth": M.depth(d["rank_keep"], len(d["gallery_keys"])),
                    "by_views": M.by_group(d["rank_keep"], views)}
     mean = {}
     for proto in ("keep", "excl", "leak"):
@@ -145,6 +148,22 @@ def examples(a, b, triplets, n=10, top=5):
     return out
 
 
+def worst(dumps, triplets, n=10, top=5):
+    """Per dataset, the queries whose target this model ranks deepest (source kept), with top lists."""
+    out = {}
+    for ds, d in dumps.items():
+        rank = d["rank_keep"]
+        out[ds] = []
+        for i in np.argsort(-rank, kind="stable")[:n]:
+            s, t = str(d["source_ids"][i]), str(d["target_ids"][i])
+            trip = triplets[(ds, s, t)]
+            out[ds].append({"source_id": s, "target_id": t, "text": trip["modification_text_short"],
+                            "views_involved": trip["views_involved"], "rank": int(rank[i]),
+                            "n_gallery": int(len(d["gallery_keys"])), "source_rank": int(d["rank_src"][i]),
+                            "top": d["gallery_keys"][d["top_idx"][i, :top]].tolist()})
+    return out
+
+
 def _fmt(v):
     return f"{v:.2f}" if isinstance(v, float) else str(v)
 
@@ -169,6 +188,17 @@ def tables(all_metrics, comparisons):
         for ds in [x for x in DATASETS if x in mm]:
             h = mm[ds]["hist_top10"]
             lines.append(f"| {name} | {DISPLAY[ds]} | " + " | ".join(_fmt(v) for v in h.values()) + " |")
+    buckets = list(next(iter(next(iter(all_metrics.values())).values()))["buckets"])
+    lines += ["", "## How deep the target sits (source kept): % of queries per rank band, and depth in the gallery",
+              "", "| Model | Dataset | " + " | ".join(buckets)
+              + " | % of gallery above target, mean / median | bottom half | bottom 10% | worst rank |",
+              "|---|---|" + "---|" * (len(buckets) + 4)]
+    for name, mm in all_metrics.items():
+        for ds in [x for x in DATASETS if x in mm]:
+            b, dp = mm[ds]["buckets"], mm[ds]["depth"]
+            lines.append(f"| {name} | {DISPLAY[ds]} | " + " | ".join(_fmt(v) for v in b.values())
+                         + f" | {dp['mean_pct_above']:.2f} / {dp['median_pct_above']:.2f} | {dp['bottom_half']:.2f}"
+                         f" | {dp['bottom_10pct']:.2f} | {dp['worst_rank']} of {mm[ds]['n_gallery']} |")
     lines += ["", "## Recall@5 by the views the modification text involves (source kept)", ""]
     for ds in DATASETS:
         groups = []
@@ -215,7 +245,8 @@ def main(argv=None):
         models[name] = load_model(path)
         check_recall(name, models[name])
     all_metrics = {name: model_metrics(d, triplets) for name, d in models.items()}
-    comparisons, exs = {}, {}
+    comparisons = {}
+    exs = {"deepest_targets": {name: worst(d, triplets) for name, d in models.items()}}
     for spec in args.compare:
         a, b = spec.split(":")
         comparisons[f"{a} vs {b}"] = compare(models[a], models[b], args.n_boot)
