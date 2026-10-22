@@ -1,0 +1,16 @@
+{
+  "model_path": "data/FashionMV_hf/model",
+  "image_root": "data/images_official_hr",
+  "batch_size": 8,
+  "seconds_gallery": 1929.2,
+  "seconds_queries": 3095.1,
+  "tool": "eval_metrics.upstream_dump (evaluate.py protocol)",
+  "recall": {
+    "R@1": 39.59,
+    "R@5": 75.82,
+    "R@10": 86.05
+  },
+  "n_queries": 9031,
+  "n_gallery": 5292,
+  "k_store": 51
+}

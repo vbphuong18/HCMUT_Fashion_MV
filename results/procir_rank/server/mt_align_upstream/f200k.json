@@ -1,0 +1,16 @@
+{
+  "model_path": "runs/photo_mt_align_s42/export",
+  "image_root": "data/images_official_hr",
+  "batch_size": 8,
+  "seconds_gallery": 1949.2,
+  "seconds_queries": 3067.9,
+  "tool": "eval_metrics.upstream_dump (evaluate.py protocol)",
+  "recall": {
+    "R@1": 27.46,
+    "R@5": 72.48,
+    "R@10": 83.55
+  },
+  "n_queries": 18499,
+  "n_gallery": 10720,
+  "k_store": 51
+}

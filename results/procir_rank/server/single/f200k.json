@@ -1,0 +1,24 @@
+{
+  "tool": "procir_train.retrieval_eval",
+  "multi_turn": false,
+  "pixels": [
+    16384,
+    262144
+  ],
+  "batch_size": 8,
+  "recall": {
+    "n_queries": 18499,
+    "n_gallery": 10720,
+    "R@1": 20.64,
+    "R@5": 69.86,
+    "R@10": 81.77,
+    "R@1_src_excluded": 44.88,
+    "R@5_src_excluded": 73.17,
+    "R@10_src_excluded": 83.04
+  },
+  "seconds_gallery": 3100.6,
+  "seconds_queries": 5123.6,
+  "n_queries": 18499,
+  "n_gallery": 10720,
+  "k_store": 51
+}
